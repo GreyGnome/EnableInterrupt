@@ -1,0 +1,89 @@
+// in vim, :set ts=2 sts=2 sw=2 et
+
+// My Enable Interrupts
+
+// The External Interrupts are triggered by the INT0 and INT1 pins or any of the PCINT23...0 pins.
+
+// PIN CHANGE INTERRUPT REGISTER BESTIARY
+The pin change interrupt PCI2 will trigger if any enabled PCINT[23:16] pin toggles.
+The pin change interrupt PCI1 will trigger if any enabled PCINT[14:8] pin toggles.
+The pin change interrupt PCI0 will trigger if any enabled PCINT[7:0] pin toggles.
+The PCMSK2, PCMSK1 and PCMSK0 Registers control which pins contribute to the pin change interrupts.
+Pin change interrupts on PCINT23...0 are detected asynchronously. This implies that these interrupts
+can be used for waking the part also from sleep modes other than Idle mode.
+
+// GLOBALLY
+SREG:  7   6   5   4   3   2   1   0  (AVR Status Register)
+       I -Global Interrupt Enable bit  Set to enable interrupts.
+      rw
+
+// PIN CHANGE INTERRUPTS REGISTER BESTIARY
+PCICR: 7   6   5   4   3   2   1   0  (When PCIE2 is set and GIE is set, PCI2 is enabled)
+                       PCIE2   1   0   Likewise for 1 and 0.
+       -   -   -   -   -  rw  rw  rw
+
+PCMSK2:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT23:16
+  PCINT23           ...      PCINT16   If PCIE2 in PCICR and this bit is set, it is enabled on that
+      rw  rw  rw  rw  rw  rw  rw  rw   pin.)
+    PD7  PD6 PD5 PD4 PD3 PD2 PD1 PD0   =PORTD
+
+PCMSK1:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT14:8
+       - PCINT14    ...       PCINT8   If PCIE1 in PCICR and this bit is set, it is enabled on that
+       r  rw  rw  rw  rw  rw  rw  rw   pin.)
+         PC6 PC5 PC4 PC3 PC2 PC1 PC0   =PORTC
+
+PCMSK0:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT7:0
+  PCINT7            ...       PCINT0   If PCIE0 in PCICR and this bit is set, it is enabled on that
+      rw  rw  rw  rw  rw  rw  rw  rw   pin.)
+     PB7 PB6 PB5 PB4 PB3 PB2 PB1 PB0   =PORTB
+
+// set...
+PCIFR: 7   6   5   4   3   2   1   0  (When logic change triggers IRQ, bececomes set. Cleared when
+                       PCIF2   1   0   IRQ is executed. PCIF2 == PCIE2, etc.)
+       -   -   -   -   -  rw  rw  rw
+
+// EXTERNAL INTERRUPTS REGISTER BESTIARY
+
+EICRA: 7   6   5   4   3   2   1   0  (External Interrupt Control Register A)
+                 ISC  11  10  01  00  Interrupt Sense Control Bits
+       -   -   -   -  rw  rw  rw  rw
+
+        ISC11 / ISC10 : INT1    ISC01 / ISC00
+          0      0    Low       (similar to ISC11/10)
+          0      1    Change
+          1      0    Falling
+          1      1    Rising
+
+EIMSK:  7   6   5   4   3   2   1   0  (External Interrupt Mask Register)
+                              INT1 INT0
+        -   -   -   -   -   -  rw  rw   set to 1 to enable this interrupt
+
+// set...
+EIFR: INTF1: Bit 1: set when edge/logic chg on INT1 triggers IRQ.  Cleared  when IRQ executed.
+      INTF0: Bit 0: set when edge/logic chg on INT0 triggers IRQ.  Cleared  when IRQ executed.
+
+
+The INT0 and INT1 interrupts can be triggered by a falling or rising edge or a low level. This is
+set up as indicated in the specification for the External Interrupt Control Register A – EICRA.
+When the INT0 or INT1 interrupts are enabled and are configured as level triggered, the inter-
+rupts will trigger as long as the pin is held low.
+Low level interrupt on INT0 and INT1 is detected asynchronously. This implies that this interrupt
+can be used for waking the part also from sleep modes other than Idle mode. The I/O clock is halted
+in all sleep modes except Idle mode.
+
+// 
+
+#define PINCHANGEINTERRUPT 0x80
+#define SLOWINTERRUPT      0x80
+
+void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode) {
+  uint8_t arduinoPin;
+
+  arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
+	if (interruptDesignator && PINCHANGEINTERRUPT) {
+    
+  } else {
+  }
+}
+
+void 

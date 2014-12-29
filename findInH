@@ -1,0 +1,13 @@
+#!/bin/bash
+# A utility program for looking for stuff in the #include directories on my system.
+# Tracked so I have a backup of it.
+
+arduinoToo=false
+
+[ "$1" = "-a" ] && arduinoToo=true && shift
+find /usr/avr/include /usr/lib/gcc/avr/*/include /usr/lib/gcc/avr/*/include-fixed \
+	/usr/lib/gcc/avr/*/plugin/include \
+	-type f -exec grep -i "$1" {} \; -print
+
+$arduinoToo && find /usr/share/arduino \
+	-type f -exec grep -i "$1" {} \; -print
