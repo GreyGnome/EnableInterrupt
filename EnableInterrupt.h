@@ -1,7 +1,8 @@
 #include <Arduino.h>
 // in vim, :set ts=2 sts=2 sw=2 et
 
-// enableInterrupt, a library by Mike Schwager aka GreyGnome.
+// EnableInterrupt, a library by GreyGnome.  Copyright 2014 by Michael Schwager.
+
 /*
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,10 +28,43 @@
 #define digital_pin_to_PCMSK_bitmask digital_pin_to_bit_mask_PGM
 volatile uint8_t *pcmsk;
 
-static volatile void *interruptFunctionPointerArray[NUM_DIGITAL_PINS];
+const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
+  0, // 0 == port D, 0
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  0, // 8 == port B, 0
+  1,
+  2,
+  3,
+  4,
+  5,
+  0, // 14 == port C, 0
+  1,
+  2,
+  3,
+  4,
+  5,
+};
+
+//we can declare all of these functionPointerArrays for the PORTS without gobbling memory,
+//I think, because the compiler won't create what the program doesn't use. TBD. -MIKE
+volatile void *functionPointerArrayPORTB[6]; // 2 of the interrupts are unsupported on Arduino UNO.
+volatile void *functionPointerArrayPORTC[6]; // 1 of the interrupts are used as RESET on Arduino UNO.
+volatile void *functionPointerArrayPORTD[8];
+
 // For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
 // we have to know how we were defined.
-static volatile int interruptModes[NUM_DIGITAL_PINS];
+static volatile uint8_t risingPinsPORTB=0;
+static volatile uint8_t fallingPinsPORTB=0;
+static volatile uint8_t risingPinsPORTC=0;
+static volatile uint8_t fallingPinsPORTC=0;
+static volatile uint8_t risingPinsPORTD=0;
+static volatile uint8_t fallingPinsPORTD=0;
 
 // Arduino.h has these, but the block is surrounded by #ifdef ARDUINO_MAIN
 #define PA 1
@@ -44,9 +78,17 @@ static volatile int interruptModes[NUM_DIGITAL_PINS];
 #define PJ 10
 #define PK 11
 #define PL 12
+#define TOTAL_PORTS 13 // The 12 above, plus 0 which is not used.
 
-// for the state of the ports
-static volatile uint8_t portSnapshot[sizeof(port_to_input_PGM)];
+// for the saved state of the ports
+static volatile uint8_t portSnapshot[TOTAL_PORTS];
+// which pins on the port are defined rising
+static volatile uint8_t portRisingPins[TOTAL_PORTS];
+// which pins on the port are defined falling. If a pin is marked CHANGE, it will be in both arrays.
+static volatile uint8_t portFallingPins[TOTAL_PORTS];
+
+// current state of a port inside the interrupt handler.
+volatile uint8_t current;
 
 // From /usr/share/arduino/hardware/arduino/cores/robot/Arduino.h
 // #define CHANGE 1
@@ -57,29 +99,61 @@ void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), ui
   uint8_t arduinoPin;
   uint8_t EICRAvalue;
   uint8_t EIMSKvalue=1;
-  uint8_t portNum;
+  uint8_t portNumber;
 
   arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
 
   // Pin Change Interrupts
 	if ( (interruptDesignator && PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
+    portNumber=digital_pin_to_port_PGM[arduinoPin];
+
+    // save the mode
+    if ((mode == RISING) || (mode == CHANGE)) {
+      if (portNumber==PB)
+        risingPinsPORTB |= digital_pin_to_bit_mask_PGM[arduinoPin];
+      if (portNumber==PC)
+        risingPinsPORTC |= digital_pin_to_bit_mask_PGM[arduinoPin];
+      if (portNumber==PD)
+        risingPinsPORTD |= digital_pin_to_bit_mask_PGM[arduinoPin];
+    }
+    if ((mode == FALLING) || (mode == CHANGE)) {
+      if (portNumber==PB)
+        fallingPinsPORTB |= digital_pin_to_bit_mask_PGM[arduinoPin];
+      if (portNumber==PC)
+        fallingPinsPORTC |= digital_pin_to_bit_mask_PGM[arduinoPin];
+      if (portNumber==PD)
+        fallingPinsPORTD |= digital_pin_to_bit_mask_PGM[arduinoPin];
+    }
     interruptModes[arduinoPin]=mode;
-    // assign the function to be run in the ISR
-    interruptFunctionPointerArray[arduinoPin] = userFuncton;
+
     // set the appropriate PCICR bit
     PCICR |= digitalPinToPCICRbit(arduinoPin);
     // save the initial value of the port
-    portNum=digital_pin_to_port_PGM[arduinoPin];
-    portSnapshot[portNum]=*port_to_input_PGM[portNum];
+    portSnapshot[portNumber]=*port_to_input_PGM[portNumber];
+    // assign the function to be run in the ISR
+    if (portNumber==PB) 
+      functionPointerArrayPORTB[digital_pin_to_port_bit_number_PGM[arduinoPin]] = userFuncton;
+    if (portNumber==PC) 
+      functionPointerArrayPORTC[digital_pin_to_port_bit_number_PGM[arduinoPin]] = userFuncton;
+    if (portNumber==PD) 
+      functionPointerArrayPORTD[digital_pin_to_port_bit_number_PGM[arduinoPin]] = userFuncton;
     // set the appropriate bit on the appropriate PCMSK register
-    pcmsk=digitalPinToPCMSK(arduinoPin);        // appropriate register
+    pcmsk=digitalPinToPCMSK(arduinoPin);        // appropriate PCMSK register
     *pcmsk |= digital_pin_to_bit_mask_PGM[arduinoPin];  // appropriate bit
+    // digitalPinToBitMask(P) calls
+    // digital_pin_to_bit_mask_PGM[]: Given the Arduino pin, returns the bit associated with its port.
+
     // With the exception of the Global Interrupt Enable bit in SREG, interrupts on the arduinoPin
     // are now ready. This bit may have already been set on a previous enable, so it's important
     // to take note of the order in which things were done, above.
+
+  // *******************
+  // External Interrupts
   } else {
     EICRAvalue=mode;
+    // MUST BE FIXED. THIS IS LIKELY UNNCESSESARY. -MIKE
     interruptFunctionPointerArray[arduinoPin] = userFunction;
+
     if (arduinoPin == 3) {
       EICRAvalue << 2;
       EIMSKvalue << 1;
@@ -90,4 +164,34 @@ void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), ui
   SREG |= (1 << SREG_I); // from /usr/avr/include/avr/common.h
 }
 
-void 
+void pinChangeInterruptHandler() {
+
+}
+
+// NOTE: PCINT1_vect is different on different chips.
+#define PORTB_VECT PCINT1_vect
+ISR(PORTB_VECT) {
+  uint8_t changedPins;
+  uint8_t interruptMask;
+  uint8_t i;
+
+  // current:      0b 0000 0000
+  // portSnapshot: 0b 0000 0000
+  // Given: Changed pin on the port.
+  //        Port
+  //        Pin of interest on the port.
+  //        Mode chosen for the pin on the port.
+  // Find:  If this change is of interest, we run the interrupt.
+  interruptMask = PCMSK0;
+	current = portInputRegister(PB);
+  changedPins=(portSnapshot[PB] ^ current) & ((risingPinsPORTB & current) | (fallingPinsPORTB & ~current));
+  portSnapshot[PB] =  current;
+  
+  for (i=0; i < 6; i++) {
+    if (0x01 & interruptMask & changedPins) {
+      *functionPointerArrayPORTB[i];
+      interruptMask >> 1;
+    }
+  }
+}
+
