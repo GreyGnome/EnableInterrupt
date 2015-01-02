@@ -53,9 +53,9 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
 
 //we can declare all of these functionPointerArrays for the PORTS without gobbling memory,
 //I think, because the compiler won't create what the program doesn't use. TBD. -MIKE
-volatile void *functionPointerArrayPORTB[6]; // 2 of the interrupts are unsupported on Arduino UNO.
-volatile void *functionPointerArrayPORTC[6]; // 1 of the interrupts are used as RESET on Arduino UNO.
-volatile void *functionPointerArrayPORTD[8];
+void (*functionPointerArrayPORTB[6])(void); // 2 of the interrupts are unsupported on Arduino UNO.
+void (*functionPointerArrayPORTC[6])(void); // 1 of the interrupts are used as RESET on Arduino UNO.
+void (*functionPointerArrayPORTD[8])(void);
 
 // For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
 // we have to know how we were defined.
@@ -189,9 +189,10 @@ ISR(PORTB_VECT) {
   
   for (i=0; i < 6; i++) {
     if (0x01 & interruptMask & changedPins) {
-      *functionPointerArrayPORTB[i];
-      interruptMask >> 1;
+      (*functionPointerArrayPORTB[i])();
+      return();
     }
+    interruptMask >> 1;
   }
 }
 
