@@ -100,8 +100,11 @@ void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), ui
   uint8_t EICRAvalue;
   uint8_t EIMSKvalue=1;
   uint8_t portNumber;
+  uint8_t portMask;
 
   arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
+
+  portMask=digital_pin_to_bit_mask_PGM[arduinoPin];
 
   // Pin Change Interrupts
 	if ( (interruptDesignator && PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
@@ -110,19 +113,19 @@ void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), ui
     // save the mode
     if ((mode == RISING) || (mode == CHANGE)) {
       if (portNumber==PB)
-        risingPinsPORTB |= digital_pin_to_bit_mask_PGM[arduinoPin];
+        risingPinsPORTB |= portMask;
       if (portNumber==PC)
-        risingPinsPORTC |= digital_pin_to_bit_mask_PGM[arduinoPin];
+        risingPinsPORTC |= portMask;
       if (portNumber==PD)
-        risingPinsPORTD |= digital_pin_to_bit_mask_PGM[arduinoPin];
+        risingPinsPORTD |= portMask;
     }
     if ((mode == FALLING) || (mode == CHANGE)) {
       if (portNumber==PB)
-        fallingPinsPORTB |= digital_pin_to_bit_mask_PGM[arduinoPin];
+        fallingPinsPORTB |= portMask;
       if (portNumber==PC)
-        fallingPinsPORTC |= digital_pin_to_bit_mask_PGM[arduinoPin];
+        fallingPinsPORTC |= portMask;
       if (portNumber==PD)
-        fallingPinsPORTD |= digital_pin_to_bit_mask_PGM[arduinoPin];
+        fallingPinsPORTD |= portMask;
     }
     interruptModes[arduinoPin]=mode;
 
@@ -139,7 +142,7 @@ void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), ui
       functionPointerArrayPORTD[digital_pin_to_port_bit_number_PGM[arduinoPin]] = userFuncton;
     // set the appropriate bit on the appropriate PCMSK register
     pcmsk=digitalPinToPCMSK(arduinoPin);        // appropriate PCMSK register
-    *pcmsk |= digital_pin_to_bit_mask_PGM[arduinoPin];  // appropriate bit
+    *pcmsk |= portMask;  // appropriate bit
     // digitalPinToBitMask(P) calls
     // digital_pin_to_bit_mask_PGM[]: Given the Arduino pin, returns the bit associated with its port.
 
@@ -162,10 +165,6 @@ void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), ui
     EICRA|=EICRAvalue;
   }
   SREG |= (1 << SREG_I); // from /usr/avr/include/avr/common.h
-}
-
-void pinChangeInterruptHandler() {
-
 }
 
 // NOTE: PCINT1_vect is different on different chips.
