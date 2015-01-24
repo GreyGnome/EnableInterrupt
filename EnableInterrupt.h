@@ -20,15 +20,22 @@
 // Many definitions in /usr/avr/include/avr/io.h
 
 #define PINCHANGEINTERRUPT 0x80
-#define SLOWINTERRUPT      0x80
+#define SLOWINTERRUPT      0x80 // same thing
+
+
+void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
+
+// Example: printPSTR("This is a nice long string that takes no memory");
+#define printPSTR(x) SerialPrint_P(PSTR(x))
+void SerialPrint_P(PGM_P str) {
+  for (uint8_t c; (c = pgm_read_byte(str)); str++) Serial.write(c);
+}
 
 /* Arduino pin to ATmega port translaton is found doing digital_pin_to_port_PGM[] */
 /* Arduino pin to PCMSKx bitmask is found by doing digital_pin_to_bit_mask_PGM[] */
-
-#define digital_pin_to_PCMSK_bitmask digital_pin_to_bit_mask_PGM
 volatile uint8_t *pcmsk;
 
-const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
+volatile const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   0, // 0 == port D, 0
   1,
   2,
@@ -51,20 +58,19 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   5,
 };
 
-//we can declare all of these functionPointerArrays for the PORTS without gobbling memory,
-//I think, because the compiler won't create what the program doesn't use. TBD. -MIKE
+void (*functionPointerArrayEXTERNAL[2])(void);
 void (*functionPointerArrayPORTB[6])(void); // 2 of the interrupts are unsupported on Arduino UNO.
 void (*functionPointerArrayPORTC[6])(void); // 1 of the interrupts are used as RESET on Arduino UNO.
 void (*functionPointerArrayPORTD[8])(void);
 
 // For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
 // we have to know how we were defined.
-static volatile uint8_t risingPinsPORTB=0;
-static volatile uint8_t fallingPinsPORTB=0;
-static volatile uint8_t risingPinsPORTC=0;
-static volatile uint8_t fallingPinsPORTC=0;
-static volatile uint8_t risingPinsPORTD=0;
-static volatile uint8_t fallingPinsPORTD=0;
+volatile uint8_t risingPinsPORTB=0;
+volatile uint8_t fallingPinsPORTB=0;
+volatile uint8_t risingPinsPORTC=0;
+volatile uint8_t fallingPinsPORTC=0;
+volatile uint8_t risingPinsPORTD=0;
+volatile uint8_t fallingPinsPORTD=0;
 
 // Arduino.h has these, but the block is surrounded by #ifdef ARDUINO_MAIN
 #define PA 1
@@ -81,68 +87,126 @@ static volatile uint8_t fallingPinsPORTD=0;
 #define TOTAL_PORTS 13 // The 12 above, plus 0 which is not used.
 
 // for the saved state of the ports
-static volatile uint8_t portSnapshot[TOTAL_PORTS];
+static volatile uint8_t portSnapshotB;
+static volatile uint8_t portSnapshotC;
+static volatile uint8_t portSnapshotD;
 // which pins on the port are defined rising
 static volatile uint8_t portRisingPins[TOTAL_PORTS];
 // which pins on the port are defined falling. If a pin is marked CHANGE, it will be in both arrays.
 static volatile uint8_t portFallingPins[TOTAL_PORTS];
 
 // current state of a port inside the interrupt handler.
-volatile uint8_t current;
+//volatile uint8_t current;
 
 // From /usr/share/arduino/hardware/arduino/cores/robot/Arduino.h
 // #define CHANGE 1
 // #define FALLING 2
 // #define RISING 3
 
+// "interruptDesignator" is simply the Arduino pin optionally OR'ed with
+// PINCHANGEINTERRUPT (== 0x80)
+#define PINLED 13
+volatile uint8_t led_mask=0;
+volatile uint8_t not_led_mask=led_mask&0xFF;
+volatile uint8_t *led_port;
+
 void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode) {
   uint8_t arduinoPin;
   uint8_t EICRAvalue;
-  uint8_t EIMSKvalue=1;
   uint8_t portNumber;
   uint8_t portMask;
+  uint8_t origSREG; // to save for interrupts
+
+  led_port=portOutputRegister(digitalPinToPort(PINLED));
+  led_mask=digitalPinToBitMask(PINLED);
+  not_led_mask=led_mask^0xFF;
+  pinMode(PINLED, OUTPUT); digitalWrite(PINLED, LOW);
 
   arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
-
-  portMask=digital_pin_to_bit_mask_PGM[arduinoPin];
+  printPSTR("Arduino pin is "); Serial.println(arduinoPin, DEC); // OK-MIKE
 
   // Pin Change Interrupts
+  // Arduino pin is 18
+  // _BV(4) is 0x10
+  // portMask is 0x10
+  // portNumber is 3
+  // Port C, rising pins
+  // Port C, falling pins
+  // PCICR bit: 0x1
+  // Inital value of port: 0x10
+  // function pointer array entry number: 0x8
+  // 
 	if ( (interruptDesignator && PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
-    portNumber=digital_pin_to_port_PGM[arduinoPin];
+    portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]); // OK-MIKE
+    printPSTR("portMask is 0x"); Serial.println(portMask, HEX);    // OK-MIKE
+
+    portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
+
+    printPSTR("portNumber is "); Serial.println(portNumber, HEX);  // OK-MIKE
 
     // save the mode
     if ((mode == RISING) || (mode == CHANGE)) {
-      if (portNumber==PB)
+      printPSTR("Mode is change\r\n");
+      if (portNumber==PB) {
         risingPinsPORTB |= portMask;
-      if (portNumber==PC)
+        PCMSK0 |= portMask;
+      }
+      if (portNumber==PC) {
         risingPinsPORTC |= portMask;
-      if (portNumber==PD)
+        PCMSK1 |= portMask;
+        // save the initial value of the port
+        printPSTR("Port C, rising pins 0x"); // OK-MIKE
+        Serial.println(risingPinsPORTC, HEX);
+        printPSTR("Inital value of port: 0x");
+        Serial.println(*portInputRegister(portNumber), HEX);
+      }
+      if (portNumber==PD) {
         risingPinsPORTD |= portMask;
+        PCMSK2 |= portMask;
+      }
     }
     if ((mode == FALLING) || (mode == CHANGE)) {
-      if (portNumber==PB)
+      printPSTR("Mode is change\r\n");
+      if (portNumber==PB) {
         fallingPinsPORTB |= portMask;
-      if (portNumber==PC)
+        PCMSK0 |= portMask;
+      }
+      if (portNumber==PC) {
         fallingPinsPORTC |= portMask;
-      if (portNumber==PD)
+        printPSTR("Port C, falling pins 0x"); // OK-MIKE
+        Serial.println(fallingPinsPORTC, HEX);
+        PCMSK1 |= portMask;
+        printPSTR("PCMSK1 is 0x"); Serial.println(PCMSK1, HEX);
+      }
+      if (portNumber==PD) {
         fallingPinsPORTD |= portMask;
+        PCMSK2 |= portMask;
+      }
     }
-    interruptModes[arduinoPin]=mode;
 
     // set the appropriate PCICR bit
-    PCICR |= digitalPinToPCICRbit(arduinoPin);
-    // save the initial value of the port
-    portSnapshot[portNumber]=*port_to_input_PGM[portNumber];
+    printPSTR("PCICR bit: 0x");
+    Serial.println(digitalPinToPCICRbit(arduinoPin), HEX);
+    PCICR |= (1 << digitalPinToPCICRbit(arduinoPin)); // OK-MIKE
     // assign the function to be run in the ISR
-    if (portNumber==PB) 
-      functionPointerArrayPORTB[digital_pin_to_port_bit_number_PGM[arduinoPin]] = userFuncton;
-    if (portNumber==PC) 
-      functionPointerArrayPORTC[digital_pin_to_port_bit_number_PGM[arduinoPin]] = userFuncton;
-    if (portNumber==PD) 
-      functionPointerArrayPORTD[digital_pin_to_port_bit_number_PGM[arduinoPin]] = userFuncton;
+    if (portNumber==PB) {
+      functionPointerArrayPORTB[pgm_read_byte(&digital_pin_to_port_bit_number_PGM[arduinoPin])] = userFunction;
+      portSnapshotB=*portInputRegister(portNumber);
+    }
+    if (portNumber==PC) {
+      functionPointerArrayPORTC[pgm_read_byte(&digital_pin_to_port_bit_number_PGM[arduinoPin])] = userFunction;
+      //Serial.print("function pointer array entry number: 0x");
+      //Serial.println(pgm_read_byte(&digital_pin_to_port_bit_number_PGM[arduinoPin]), HEX);
+      portSnapshotC=*portInputRegister(portNumber); // OK-MIKE
+    }
+    if (portNumber==PD) {
+      functionPointerArrayPORTD[pgm_read_byte(&digital_pin_to_port_bit_number_PGM[arduinoPin])] = userFunction;
+      portSnapshotD=*portInputRegister(portNumber); // OK-MIKE
+    }
     // set the appropriate bit on the appropriate PCMSK register
     pcmsk=digitalPinToPCMSK(arduinoPin);        // appropriate PCMSK register
-    *pcmsk |= portMask;  // appropriate bit
+    *pcmsk |= portMask;  // appropriate bit, e.g. this will become PCMSK1 |= portMask;
+
     // digitalPinToBitMask(P) calls
     // digital_pin_to_bit_mask_PGM[]: Given the Arduino pin, returns the bit associated with its port.
 
@@ -154,44 +218,212 @@ void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), ui
   // External Interrupts
   } else {
     EICRAvalue=mode;
-    // MUST BE FIXED. THIS IS LIKELY UNNCESSESARY. -MIKE
-    interruptFunctionPointerArray[arduinoPin] = userFunction;
-
+    origSREG = SREG;
+    cli(); // no interrupts while we're setting up an interrupt.
     if (arduinoPin == 3) {
-      EICRAvalue << 2;
-      EIMSKvalue << 1;
+      functionPointerArrayEXTERNAL[1] = userFunction;
+      EICRA=EICRA & 0b11110011;
+      EICRA|=EICRAvalue << 2;
+      EIMSK|=0x02;
+    } else {
+      functionPointerArrayEXTERNAL[0] = userFunction;
+      EICRA|=EICRAvalue;
+      EIMSK|=0x02;
     }
-    EIMSK|=EIMSKvalue;
-    EICRA|=EICRAvalue;
+    SREG=origSREG;
   }
   SREG |= (1 << SREG_I); // from /usr/avr/include/avr/common.h
 }
 
+ISR(INT0_vect) {
+  (*functionPointerArrayEXTERNAL[0])();
+}
+
+ISR(INT1_vect) {
+  (*functionPointerArrayEXTERNAL[1])();
+}
+
+
 // NOTE: PCINT1_vect is different on different chips.
-#define PORTB_VECT PCINT1_vect
-ISR(PORTB_VECT) {
+#define PORTB_VECT PCINT0_vect
+#define PORTC_VECT PCINT1_vect
+
+extern void interruptFunction();
+extern void interruptFunction2();
+
+/*
+// Future upgrade: Implement in assembly, using the ISR_NAKED attribute. See /usr/avr/include/avr/interrupt.h
+ISR(PORTB_VECT, ISR_NAKED) {
   uint8_t changedPins;
   uint8_t interruptMask;
   uint8_t i;
 
-  // current:      0b 0000 0000
-  // portSnapshot: 0b 0000 0000
-  // Given: Changed pin on the port.
-  //        Port
-  //        Pin of interest on the port.
-  //        Mode chosen for the pin on the port.
-  // Find:  If this change is of interest, we run the interrupt.
-  interruptMask = PCMSK0;
-	current = portInputRegister(PB);
+  interruptFunction();
+
+	current = *portInputRegister(PB);
   changedPins=(portSnapshot[PB] ^ current) & ((risingPinsPORTB & current) | (fallingPinsPORTB & ~current));
   portSnapshot[PB] =  current;
-  
-  for (i=0; i < 6; i++) {
+  if (changedPins == 0) return; // get out quickly if not interested.
+
+  interruptMask = PCMSK0;
+  i=0;
+  while (1) {
     if (0x01 & interruptMask & changedPins) {
       (*functionPointerArrayPORTB[i])();
-      return();
     }
-    interruptMask >> 1;
+    interruptMask=interruptMask >> 1;
+    if (interruptMask == 0) return;
+    i++;
   }
 }
+*/
 
+volatile uint8_t changedPins=0;
+volatile uint8_t functionCalled=0;
+volatile uint16_t interruptsCalled=0;
+volatile uint8_t risingPins=0;
+volatile uint8_t fallingPins=0;
+
+// Future upgrade: Implement in assembly, using the ISR_NAKED attribute. See /usr/avr/include/avr/interrupt.h
+ISR(PORTC_VECT, ISR_NAKED) {
+//ISR(PORTC_VECT) {
+  //uint8_t changedPins;
+  //uint8_t interruptMask;
+  uint8_t current;
+  uint8_t i;
+  uint8_t interruptMask;
+  uint8_t ledon, ledoff;
+
+  ledon=0b00100000; ledoff=0b0;
+
+	//current = PINC; // PortC Input.
+  // BEGASM These two are the same...
+  asm volatile("\t"
+  "push %0" "\t\n\t"
+  "in %0,%1" "\t\n\t"
+  : "=&r" (current)
+  : "I" (_SFR_IO_ADDR(PINC))
+  );
+  // ENDASM ...End of the same.
+  PORTB=ledoff; // LOW
+
+  // in 0x3f saves SREG... then it's pushed onto the stack.
+  // Arrgh... dump of asm shows that 'current' == r25. So we push all other registers.
+  // Is there no mechanism to say 'push all registers except X'? I doubt it. So I just have
+  // to wing it here...
+  asm volatile(
+  "push r1" "\n\t"
+  "push r0" "\n\t"
+  "in r0, __SREG__" "\n\t" // 0x3f
+  "push r0" "\n\t"
+  "eor r1, r1" "\n\t"
+  "push r18" "\n\t"
+  "push r19" "\n\t"
+  "push r20" "\n\t"
+  "push r22" "\n\t"
+  "push r23" "\n\t"
+  "push r24" "\n\t"
+  "push r25" "\n\t"
+  "push r26" "\n\t"
+  "push r27" "\n\t"
+  "push r28" "\n\t"
+  "push r29" "\n\t"
+  "push r30" "\n\t"
+  "push r31" "\n\t"
+  :
+  :); 
+
+  interruptsCalled++;
+  changedPins=(portSnapshotC ^ current) & ((risingPinsPORTC & current) | (fallingPinsPORTC & ~current));
+  portSnapshotC = current;
+  if (changedPins == 0) goto exitISR; // get out quickly if not interested.
+
+  interruptMask = PCMSK1 & changedPins; // ...Tricksy! We are only interested in pins that were changed
+                                        // AND are marked in PCMSK1. Conveniently, we can stuff the combo into
+                                        // a single variable.
+  /*
+  if (interruptMask & 0x01) {
+      interruptFunction();
+  }
+  if (interruptMask & 0x02) {
+      interruptFunction2();
+  }
+  */
+  i=0;
+  while (1) {
+    if (interruptMask & 0x01) {
+      functionCalled=i;
+      //(*functionPointerArrayPORTC[i])();
+      interruptFunction();
+    }
+    interruptMask=interruptMask >> 1;
+    if (interruptMask == 0) goto exitISR;
+    i++;
+  }
+  exitISR: asm volatile(
+  "pop r31" "\n\t"
+  "pop r30" "\n\t"
+  "pop r29" "\n\t"
+  "pop r28" "\n\t"
+  "pop r27" "\n\t"
+  "pop r26" "\n\t"
+  "pop r25" "\n\t"
+  "pop r24" "\n\t"
+  "pop r23" "\n\t"
+  "pop r22" "\n\t"
+  "pop r20" "\n\t"
+  "pop r19" "\n\t"
+  "pop r18" "\n\t"
+  "pop r0" "\n\t"
+  "out __SREG__, r0" "\t\n\t"
+  "pop r0" "\t\n\t"
+  "pop r1" "\t\n\t"
+  "pop r21" "\n\t"
+  "reti" "\t\n\t"
+  :
+  :);
+}
+
+
+/* ISR prefix code
+push    r1
+push    r0
+in      r0, 0x3f        ; 63
+push    r0
+eor     r1, r1
+push    r18
+push    r19
+push    r20
+push    r21
+push    r22
+push    r23
+push    r24
+push    r25
+push    r26
+push    r27
+push    r28
+push    r29
+push    r30
+push    r31
+*/
+/* ISR suffix code
+pop     r31
+pop     r30
+pop     r29
+pop     r28
+pop     r27
+pop     r26
+pop     r25
+pop     r24
+pop     r23
+pop     r22
+pop     r21
+pop     r20
+pop     r19
+pop     r18
+pop     r0
+out     0x3f, r0        ; 63
+pop     r0
+pop     r1
+reti
+*/
