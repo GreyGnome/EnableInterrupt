@@ -58,10 +58,12 @@ volatile const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   5,
 };
 
-void (*functionPointerArrayEXTERNAL[2])(void);
-void (*functionPointerArrayPORTB[6])(void); // 2 of the interrupts are unsupported on Arduino UNO.
-void (*functionPointerArrayPORTC[6])(void); // 1 of the interrupts are used as RESET on Arduino UNO.
-void (*functionPointerArrayPORTD[8])(void);
+
+typedef void (*interruptFunctionType)(void);
+interruptFunctionType functionPointerArrayEXTERNAL[2];
+interruptFunctionType functionPointerArrayPORTB[6]; // 2 of the interrupts are unsupported on Arduino UNO.
+interruptFunctionType functionPointerArrayPORTC[6]; // 1 of the interrupts are used as RESET on Arduino UNO.
+interruptFunctionType functionPointerArrayPORTD[8];
 
 // For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
 // we have to know how we were defined.
@@ -105,22 +107,13 @@ static volatile uint8_t portFallingPins[TOTAL_PORTS];
 
 // "interruptDesignator" is simply the Arduino pin optionally OR'ed with
 // PINCHANGEINTERRUPT (== 0x80)
-#define PINLED 13
-volatile uint8_t led_mask=0;
-volatile uint8_t not_led_mask=led_mask&0xFF;
-volatile uint8_t *led_port;
 
-void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode) {
+void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunction, uint8_t mode) {
   uint8_t arduinoPin;
   uint8_t EICRAvalue;
   uint8_t portNumber;
   uint8_t portMask;
   uint8_t origSREG; // to save for interrupts
-
-  led_port=portOutputRegister(digitalPinToPort(PINLED));
-  led_mask=digitalPinToBitMask(PINLED);
-  not_led_mask=led_mask^0xFF;
-  pinMode(PINLED, OUTPUT); digitalWrite(PINLED, LOW);
 
   arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
   printPSTR("Arduino pin is "); Serial.println(arduinoPin, DEC); // OK-MIKE
@@ -248,9 +241,6 @@ ISR(INT1_vect) {
 #define PORTB_VECT PCINT0_vect
 #define PORTC_VECT PCINT1_vect
 
-extern void interruptFunction();
-extern void interruptFunction2();
-
 /*
 // Future upgrade: Implement in assembly, using the ISR_NAKED attribute. See /usr/avr/include/avr/interrupt.h
 ISR(PORTB_VECT, ISR_NAKED) {
@@ -286,18 +276,16 @@ volatile uint8_t fallingPins=0;
 
 // Future upgrade: Implement in assembly, using the ISR_NAKED attribute. See /usr/avr/include/avr/interrupt.h
 ISR(PORTC_VECT, ISR_NAKED) {
-//ISR(PORTC_VECT) {
-  //uint8_t changedPins;
-  //uint8_t interruptMask;
   uint8_t current;
   uint8_t i;
   uint8_t interruptMask;
-  uint8_t ledon, ledoff;
 
-  ledon=0b00100000; ledoff=0b0;
+//  uint8_t led_on, led_off;         // DEBUG
+//  led_on=0b00100000; led_off=0b0;
 
+  // BEGASM This: 
 	//current = PINC; // PortC Input.
-  // BEGASM These two are the same...
+  // is the same as this:
   asm volatile("\t"
   "push %0" "\t\n\t"
   "in %0,%1" "\t\n\t"
@@ -305,25 +293,24 @@ ISR(PORTC_VECT, ISR_NAKED) {
   : "I" (_SFR_IO_ADDR(PINC))
   );
   // ENDASM ...End of the same.
-  PORTB=ledoff; // LOW
 
-  // in 0x3f saves SREG... then it's pushed onto the stack.
-  // Arrgh... dump of asm shows that 'current' == r25. So we push all other registers.
-  // Is there no mechanism to say 'push all registers except X'? I doubt it. So I just have
-  // to wing it here...
+  // Arrgh... dump of asm shows that 'current' == r25 (from the in, above). So we push all other
+  // registers. Is there no mechanism to say 'push all registers except X'? I doubt it. So I just
+  // have to check it here, after every time we modify this ISR...
   asm volatile(
   "push r1" "\n\t"
   "push r0" "\n\t"
+  // in 0x3f saves SREG... then it's pushed onto the stack.
   "in r0, __SREG__" "\n\t" // 0x3f
   "push r0" "\n\t"
   "eor r1, r1" "\n\t"
   "push r18" "\n\t"
   "push r19" "\n\t"
   "push r20" "\n\t"
+  "push r21" "\n\t"
   "push r22" "\n\t"
   "push r23" "\n\t"
   "push r24" "\n\t"
-  "push r25" "\n\t"
   "push r26" "\n\t"
   "push r27" "\n\t"
   "push r28" "\n\t"
@@ -333,52 +320,45 @@ ISR(PORTC_VECT, ISR_NAKED) {
   :
   :); 
 
-  interruptsCalled++;
+  //interruptsCalled++; // DEBUG
   changedPins=(portSnapshotC ^ current) & ((risingPinsPORTC & current) | (fallingPinsPORTC & ~current));
   portSnapshotC = current;
-  if (changedPins == 0) goto exitISR; // get out quickly if not interested.
-
-  interruptMask = PCMSK1 & changedPins; // ...Tricksy! We are only interested in pins that were changed
-                                        // AND are marked in PCMSK1. Conveniently, we can stuff the combo into
-                                        // a single variable.
-  /*
-  if (interruptMask & 0x01) {
-      interruptFunction();
-  }
-  if (interruptMask & 0x02) {
-      interruptFunction2();
-  }
-  */
+  interruptMask = PCMSK1 & changedPins; // We are only interested in pins that were changed
+                                        // AND are marked in PCMSK1.
+  if (interruptMask == 0) goto exitISR; // Get out quickly if nothing we are interested in changed.
   i=0;
   while (1) {
     if (interruptMask & 0x01) {
-      functionCalled=i;
-      //(*functionPointerArrayPORTC[i])();
-      interruptFunction();
+      // PORTB=ledoff; // LOW // DEBUG
+      // PORTB=ledon; // HIGH
+      // PORTB=ledoff; // LOW
+      // PORTB=ledon; // HIGH
+      (*functionPointerArrayPORTC[i])();
     }
     interruptMask=interruptMask >> 1;
     if (interruptMask == 0) goto exitISR;
     i++;
   }
-  exitISR: asm volatile(
+  exitISR:
+  asm volatile(
   "pop r31" "\n\t"
   "pop r30" "\n\t"
   "pop r29" "\n\t"
   "pop r28" "\n\t"
   "pop r27" "\n\t"
   "pop r26" "\n\t"
-  "pop r25" "\n\t"
   "pop r24" "\n\t"
   "pop r23" "\n\t"
   "pop r22" "\n\t"
   "pop r20" "\n\t"
+  "pop r21" "\n\t"
   "pop r19" "\n\t"
   "pop r18" "\n\t"
   "pop r0" "\n\t"
   "out __SREG__, r0" "\t\n\t"
   "pop r0" "\t\n\t"
   "pop r1" "\t\n\t"
-  "pop r21" "\n\t"
+  "pop r25" "\n\t"
   "reti" "\t\n\t"
   :
   :);

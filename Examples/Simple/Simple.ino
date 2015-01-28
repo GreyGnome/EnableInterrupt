@@ -31,6 +31,7 @@
 // 6. Create your own sketch using the PinChangeInt library!
 
 #include <EnableInterrupt.h>
+//#include <PinChangeInt.h>
 
 // Modify this at your leisure.
 #define ARDUINOPIN A0
@@ -46,65 +47,83 @@ volatile uint16_t interruptCount=0; // The count will go back to 0 after hitting
 void interruptFunction() {
   interruptCount++;
 }
+
+void helloThere() {
+  uint8_t led_on, led_off;         // DEBUG
+  led_on=0b00100000; led_off=0b0;
+
+  PORTB=led_off;
+  PORTB=led_on;
+  PORTB=led_off;
+  PORTB=led_on;
+}
+
+/*
 volatile uint16_t interruptCount1=0; // The count will go back to 0 after hitting 65535.
 void interruptFunction2() {
   interruptCount1++;
 }
+*/
 
+/*
 //extern volatile uint8_t current;
 extern volatile uint8_t risingPinsPORTC;
 extern volatile uint8_t fallingPinsPORTC;
 extern volatile uint8_t functionCalled;
-extern volatile uint16_t interruptsCalled;
+//extern volatile uint16_t interruptsCalled; // DEBUG
 extern volatile uint8_t changedPins;
 extern volatile uint8_t risingPins;
 extern volatile uint8_t fallingPins;
+*/
 
-bool pinThree=0;
+#define PINLED 13
 
 // Attach the interrupt in setup()
 void setup() {
   Serial.begin(115200);
   Serial.println("---------------------------------------");
-  pinMode(ARDUINOPIN, INPUT_PULLUP);  // Configure the pin as an input, and turn on the pullup resistor.
+  pinMode(PINLED, OUTPUT);
+  pinMode(ARDUINOPIN, OUTPUT);  // Configure the pin as an input, and turn on the pullup resistor.
                                       // See http://arduino.cc/en/Tutorial/DigitalPins
+  PORTC=0x01;
   pinMode(A1, INPUT_PULLUP);
   pinMode(A2, INPUT_PULLUP);
   pinMode(A3, INPUT_PULLUP);
   pinMode(A4, INPUT_PULLUP);
   pinMode(A5, INPUT_PULLUP);
-  pinMode(3, OUTPUT); digitalWrite(3, LOW);
-  pinMode(2, OUTPUT); digitalWrite(2, LOW);
   enableInterrupt(ARDUINOPIN, interruptFunction, CHANGE);
+  //attachPinChangeInterrupt(ARDUINOPIN, interruptFunction, CHANGE);
   //current=PINC;
 }
-
-extern volatile uint8_t *led_port;
-extern volatile uint8_t led_mask;
-extern volatile uint8_t not_led_mask;
 
 // In the loop, we just check to see where the interrupt count is at. The value gets updated by the
 // interrupt routine.
 void loop() {
+  uint8_t led_on, led_off;         // DEBUG
+  led_on=0b00100000; led_off=0b0;
+
   //*led_port|=led_mask; // LED high
-  digitalWrite(13, HIGH);
-  delay(1000);                          // Every second,
-  //Serial.print("Pin was interrupted: ");
+  PORTB=led_on;
+  PORTC=0x01;
+  Serial.println("---------------------------------------");
+  delay(2000);                          // Every second,
+  PORTC=0x00; // software interrupt, port A0
+  PORTB=led_on;
+  PORTB=led_off;
+  PORTB=led_on;
+  PORTB=led_off;
+  PORTB=led_on;
+  Serial.print("Pin was interrupted: ");
   Serial.print(interruptCount, DEC);      // print the interrupt count.
-  //Serial.println(" times so far.");
-  Serial.print(" isr's: ");
-  Serial.print(interruptsCalled, DEC);
-  Serial.print(" ris: 0x");
-  Serial.print(risingPinsPORTC, HEX);
-  Serial.print(" fal: 0x");
-  Serial.print(fallingPinsPORTC, HEX);
+  Serial.println(" times so far.");
+
+  //Serial.print(" isr's: ");
+  //Serial.print(interruptsCalled, DEC);
   //Serial.print(" current: 0x");
   //Serial.print(current, HEX);
-  Serial.print(" changedPins: 0x");
-  Serial.print(changedPins, HEX);
-  Serial.print(" function: ");
-  Serial.println(functionCalled, DEC);
-  functionCalled=0;
-  pinThree = pinThree ? 0 : 1;
-  digitalWrite(3, pinThree); 
+  //Serial.print(" changedPins: 0x");
+  //Serial.print(changedPins, HEX);
+  //Serial.print(" function: ");
+  //Serial.println(functionCalled, DEC);
+  //functionCalled=0;
 }

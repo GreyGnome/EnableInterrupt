@@ -87,3 +87,75 @@ void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), ui
 }
 
 void 
+
+
+=============================================================================================
+
+Fri Jan 23 21:51:01 CST 2015
+PROBLEM:
+I have a "dirty" switch: it bounces a lot when pressed. The bounces can occur on the order of
+microseconds apart. So pretend I have turned on a port as an input port, and the pullup resistor
+is on. I have enabled a Pin Change Interrupt on the pin. It will trigger on any level change.
+So when I press the switch, the signal goes from high to low and the interrupt is triggered.
+
+Notice that for Pin Change Interrupts, the interrupt can take place when any pin on the port is
+interrupted. If you have the luxury of knowing ahead of time which pin(s) are interrupting, you
+can design fast, custom code that will react to your simple situation. But remember that I am
+writing a library: I don't know which pin may be doing the interrupting. So I have to survey the
+pins to figure out which one(s) changed, and had triggered the interrupt. Furthermore, there is
+an appreciable amount of time that it takes from the moment the triggering event happened to
+when I enter the interrupt subroutine (ISR) and have gone through the logic to figure out which
+pins did the triggering. ...How much time? That I aim to find out.
+
+Why is this a big deal? Remember my bouncy switch? ...The interrupt triggers, the ISR starts up,
+and the first thing I need to do is query the port to see the state of its pins. Well, some time
+has elapsed since the triggering event and this query. In the course of that time, it's entirely
+possible- and I'm writing this because it's not only possible, but it can happen quite readily-
+that the state of the pin changes before I get a chance to sample it. So I get an interrupt but
+it looks like a false alarm! The ISR never calls the user's function because none of the user's
+interrupt pins appear to have changed.
+
+There is no complete solution to this problem, because of the nature of Pin Change Interrupts.
+All you can do is mitigate the situation. I will attempt to do so by capturing the state of the
+port as early as possible in the ISR. The question is, how early is that?
+
+I attempt a test: my ISR looks like this; this will turn on and off the Arduino Uno's pin 13 LED:
+
+ISR(PORTC_VECT, ISR_NAKED) {
+  uint8_t interruptMask;
+  uint8_t ledon, ledoff;
+
+  ledon=0b00100000; ledoff=0b0;
+
+  PORTB=ledoff; // LOW
+  PORTB=ledon;         // HIGH
+  PORTB=ledoff; // LOW
+  PORTB=ledon;         // HIGH
+  PORTB=ledoff; // LOW
+  (...)
+}
+
+The generated assembly code looks like this:
+
+00000292 <__vector_4>:
+  ledon=0b00100000; ledoff=0b0;
+
+  PORTB=ledoff; // LOW
+     292:       15 b8           out     0x05, r1        ; 5
+  PORTB=ledon;         // HIGH
+     294:       80 e2           ldi     r24, 0x20       ; 32
+     296:       85 b9           out     0x05, r24       ; 5
+  PORTB=ledoff; // LOW
+     298:       15 b8           out     0x05, r1        ; 5
+  PORTB=ledon;         // HIGH
+     29a:       85 b9           out     0x05, r24       ; 5
+  PORTB=ledoff; // LOW
+     29c:       15 b8           out     0x05, r1        ; 5
+
+Notice a little optimization here: r1 is defined to always contain 0, so we don't even have to load
+a value from memory. 0 is an important number! This makes the initial command very quick, and by using
+an oscilloscope we can see just how quickly the chip reacts after receiving the signal.
+see just how fast 
+
+
+
