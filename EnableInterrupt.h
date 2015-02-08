@@ -249,76 +249,177 @@ volatile uint16_t interruptsCalled=0;
 volatile uint8_t risingPins=0;
 volatile uint8_t fallingPins=0;
 
-/*
-#undef EI_PCMSK
-#undef EI_PORTLETTER
-#define EI_PORTLETTER B
-#define EI_PCMSK PCMSK0
-#include "_ei_baseISR.h"
-*/
 
 /*
- * There are 3 ways to code the ISR frontend routine:
- * 1. Using cpp macros, just assemble the ISR.
- * 2. Avoiding macros, call an inline routine from each port's ISR.
- * 3. Attempt to limit the number of registers push'ed and pop'ed: Call the ISR naked,
- *    and have it simply call a short stubby subroutine, which will then call the user's
- *    function. (This one is a fail). Here's the assembly:
-000001c4 <_Z7subISRCh>:
-void subISRC(uint8_t current) {
+  : "I" (_SFR_IO_ADDR(PINC)) \
+*/
+
+#define EI_ASM_PREFIX \
+  /* BEGASM This: \
+  current = PINC; // PortC Input. \
+  is the same as this: */ \
+  asm volatile("\t" \
+  "push %0" "\t\n\t" \
+  "in %0,%1" "\t\n\t" \
+  : "=&r" (current) \
+  : "I" (_SFR_IO_ADDR(port)) \
+  ); \
+  /* ENDASM ...End of the sameness.*/ \
+ \
+   asm volatile( \
+  "push r1" "\n\t" \
+  "push r0" "\n\t" \
+  /* in 0x3f saves SREG... then it's pushed onto the stack.*/ \
+  "in r0, __SREG__" "\n\t" /* 0x3f */\
+  "push r0" "\n\t" \
+  "eor r1, r1" "\n\t" \
+  "push r18" "\n\t" \
+  "push r19" "\n\t" \
+  "push r20" "\n\t" \
+  "push r21" "\n\t" \
+  "push r22" "\n\t" \
+  "push r23" "\n\t" \
+  "push r25" "\n\t" \
+  "push r26" "\n\t" \
+  "push r27" "\n\t" \
+  "push r28" "\n\t" \
+  "push r29" "\n\t" \
+  "push r30" "\n\t" \
+  "push r31" "\n\t" \
+  : \
+  :)
+
+#define EI_ASM_SUFFIX \
+ asm volatile( \
+  "pop r31" "\n\t" \
+  "pop r30" "\n\t" \
+  "pop r29" "\n\t" \
+  "pop r28" "\n\t" \
+  "pop r27" "\n\t" \
+  "pop r26" "\n\t" \
+  "pop r25" "\n\t" \
+  "pop r23" "\n\t" \
+  "pop r22" "\n\t" \
+  "pop r21" "\n\t" \
+  "pop r20" "\n\t" \
+  "pop r19" "\n\t" \
+  "pop r18" "\n\t" \
+  "pop r0" "\n\t" \
+  "out __SREG__, r0" "\t\n\t" \
+  "pop r0" "\t\n\t" \
+  "pop r1" "\t\n\t" \
+  "pop r24" "\n\t" \
+  "reti" "\t\n\t" \
+  : \
+  :)
+
+inline void inlineISR(uint8_t current,
+  volatile uint8_t *portSnapshot,
+  uint8_t risingPins, uint8_t fallingPins,
+  volatile uint8_t pcmsk,
+  interruptFunctionType functionPointerArray[]) {
   uint8_t i;
   uint8_t interruptMask;
   uint8_t changedPins;
 
-  changedPins=(portSnapshotC ^ current) & ((risingPinsPORTC & current) | (fallingPinsPORTC & ~current));
- 1c4:   90 91 61 01     lds     r25, 0x0161
- 1c8:   20 91 65 01     lds     r18, 0x0165
- 1cc:   40 91 64 01     lds     r20, 0x0164
-  portSnapshotC = current;
- 1d0:   80 93 61 01     sts     0x0161, r24
+  changedPins=(*portSnapshot ^ current) & ((risingPins & current) | (fallingPins & ~current));
+  *portSnapshot =  current;
+  if (changedPins == 0) goto exitISR; // get out quickly if not interested.
 
-  //if (changedPins == 0) return; // get out quickly if not interested.
+  interruptMask = pcmsk & changedPins;
+  if (interruptMask == 0) goto exitISR;
+  i=0;
+  while (1) {
+    if (interruptMask & 0x01) {
+      (*functionPointerArray[i])();
+    }
+    interruptMask=interruptMask >> 1;
+    if (interruptMask == 0) goto exitISR;
+    i++;
+  }
+  exitISR: return;
+}
 
-  interruptMask = PCMSK1 & changedPins;
- 1d4:   30 91 6c 00     lds     r19, 0x006C
-void subISRC(uint8_t current) {
-  uint8_t i;
-  uint8_t interruptMask;
-  uint8_t changedPins;
+ISR(PORTB_VECT, ISR_NAKED) {
+  uint8_t current;
+  //uint8_t port;
 
-  changedPins=(portSnapshotC ^ current) & ((risingPinsPORTC & current) | (fallingPinsPORTC & ~current));
- 1d8:   c8 2f           mov     r28, r24
- 1da:   c0 95           com     r28
- 1dc:   c4 23           and     r28, r20
- 1de:   28 23           and     r18, r24
- 1e0:   c2 2b           or      r28, r18
- 1e2:   98 27           eor     r25, r24
- 1e4:   c9 23           and     r28, r25
+  //port=PINB;
+  //EI_ASM_PREFIX;
+  /* BEGASM This: \
+  current = PINC; // PortC Input. \
+  is the same as this: */ \
+  asm volatile("\t" \
+  "push %0" "\t\n\t" \
+  "in %0,%1" "\t\n\t" \
+  : "=&r" (current) \
+  : "I" (_SFR_IO_ADDR(PINB)) \
+  ); \
+  /* ENDASM ...End of the sameness.*/ \
+ \
+   asm volatile( \
+  "push r1" "\n\t" \
+  "push r0" "\n\t" \
+  /* in 0x3f saves SREG... then it's pushed onto the stack.*/ \
+  "in r0, __SREG__" "\n\t" /* 0x3f */\
+  "push r0" "\n\t" \
+  "eor r1, r1" "\n\t" \
+  "push r18" "\n\t" \
+  "push r19" "\n\t" \
+  "push r20" "\n\t" \
+  "push r21" "\n\t" \
+  "push r22" "\n\t" \
+  "push r23" "\n\t" \
+  "push r25" "\n\t" \
+  "push r26" "\n\t" \
+  "push r27" "\n\t" \
+  "push r28" "\n\t" \
+  "push r29" "\n\t" \
+  "push r30" "\n\t" \
+  "push r31" "\n\t" \
+  : \
+  :);
 
- *    
- */
+  inlineISR(current,
+      &portSnapshotB,
+      risingPinsPORTB,
+      fallingPinsPORTB,
+      PCMSK0,
+      functionPointerArrayPORTB );
 
-/*
-#undef EI_PCMSK
-#undef EI_PORTLETTER
-#define EI_PORTLETTER C
-#define EI_PCMSK PCMSK1
-#include "_ei_baseISR.h"
-*/
+  EI_ASM_SUFFIX;
+}
 
-#include "_ei_portCinline.h"
+ISR(PORTC_VECT, ISR_NAKED) {
+  uint8_t current;
+  uint8_t port;
 
-/*
- * THE FOLLOWING CODE IS NO GOOD! IT IS HERE AS AN EXAMPLE. COMPILE IT AND DUMP THE ASSEMBLER,
- * FOR EDUCATIONAL PURPOSES ONLY.
-#include "_ei_portCstubisr.h"
-*/
+  port=PIND;
+  EI_ASM_PREFIX;
 
-/*
-#undef EI_PCMSK
-#undef EI_PORTLETTER
-#define EI_PORTLETTER D
-#define EI_PCMSK PCMSK2
-#include "_ei_baseISR.h"
-*/
+  inlineISR(current,
+      &portSnapshotC,
+      risingPinsPORTC,
+      fallingPinsPORTC,
+      PCMSK1,
+      functionPointerArrayPORTC );
 
+  EI_ASM_SUFFIX;
+}
+
+ISR(PORTD_VECT, ISR_NAKED) {
+  uint8_t current;
+  uint8_t port;
+
+  port=PIND;
+  EI_ASM_PREFIX;
+
+  inlineISR(current,
+      &portSnapshotD,
+      risingPinsPORTD,
+      fallingPinsPORTD,
+      PCMSK2,
+      functionPointerArrayPORTD );
+
+  EI_ASM_SUFFIX;
+}
