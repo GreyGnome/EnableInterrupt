@@ -36,27 +36,18 @@
 // Modify this at your leisure.
 #define ARDUINOPIN A0
 
-// Notice that values that get modified inside an interrupt, that I wish to access
-// outside the interrupt, are marked "volatile". It tells the compiler not to optimize
-// the variable.
-volatile uint16_t interruptCount=0; // The count will go back to 0 after hitting 65535.
-
 // Do not use any Serial.print() in interrupt subroutines. Serial.print() uses interrupts,
 // and by default interrupts are off in interrupt subroutines. Interrupt routines should also
 // be as fast as possible. Here we just increment a counter.
+volatile uint16_t interruptCount=0; // The count will go back to 0 after hitting 65535.
+
 void interruptFunction() {
+  interruptSaysHello();
   interruptCount++;
 }
-
-void helloThere() {
-  uint8_t led_on, led_off;         // DEBUG
-  led_on=0b00100000; led_off=0b0;
-
-  PORTB=led_off;
-  PORTB=led_on;
-  PORTB=led_off;
-  PORTB=led_on;
-}
+// Notice that values that get modified inside an interrupt, that I wish to access
+// outside the interrupt, are marked "volatile". It tells the compiler not to optimize
+// the variable.
 
 /*
 volatile uint16_t interruptCount1=0; // The count will go back to 0 after hitting 65535.
@@ -83,9 +74,9 @@ void setup() {
   Serial.begin(115200);
   Serial.println("---------------------------------------");
   pinMode(PINLED, OUTPUT);
-  pinMode(ARDUINOPIN, OUTPUT);  // Configure the pin as an input, and turn on the pullup resistor.
+  pinMode(ARDUINOPIN, INPUT_PULLUP);  // Configure the pin as an input, and turn on the pullup resistor.
                                       // See http://arduino.cc/en/Tutorial/DigitalPins
-  PORTC=0x01;
+  //PORTC=0x01;
   pinMode(A1, INPUT_PULLUP);
   pinMode(A2, INPUT_PULLUP);
   pinMode(A3, INPUT_PULLUP);
@@ -104,10 +95,10 @@ void loop() {
 
   //*led_port|=led_mask; // LED high
   PORTB=led_on;
-  PORTC=0x01;
+  //PORTC=0x01;
   Serial.println("---------------------------------------");
   delay(2000);                          // Every second,
-  PORTC=0x00; // software interrupt, port A0
+  //PORTC=0x00; // software interrupt, port A0
   PORTB=led_on;
   PORTB=led_off;
   PORTB=led_on;

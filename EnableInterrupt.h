@@ -155,13 +155,13 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       }
       if (portNumber==PC) {
         risingPinsPORTC |= portMask;
+        printPSTR("Port C, rising pins 0x"); // OK-MIKE
+        Serial.println(risingPinsPORTC, HEX);
+        printPSTR("Inital value of port: 0x");
+        Serial.println(*portInputRegister(portNumber), HEX);
       }
       if (portNumber==PD) {
         risingPinsPORTD |= portMask;
-        printPSTR("Port D, rising pins 0x"); // OK-MIKE
-        Serial.println(risingPinsPORTD, HEX);
-        printPSTR("Inital value of port: 0x");
-        Serial.println(*portInputRegister(portNumber), HEX);
       }
     }
     if ((mode == FALLING) || (mode == CHANGE)) {
@@ -171,12 +171,12 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       }
       if (portNumber==PC) {
         fallingPinsPORTC |= portMask;
+        printPSTR("Port C, falling pins 0x"); // OK-MIKE
+        Serial.println(fallingPinsPORTC, HEX);
+        printPSTR("PCMSK1 is 0x"); Serial.println(PCMSK1, HEX);
+      }
       if (portNumber==PD) {
         fallingPinsPORTD |= portMask;
-        printPSTR("Port D, falling pins 0x"); // OK-MIKE
-        Serial.println(fallingPinsPORTD, HEX);
-        printPSTR("PCMSK2 is 0x"); Serial.println(PCMSK2, HEX);
-      }
       }
     }
 
@@ -192,8 +192,8 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     }
     if (portNumber==PC) {
       functionPointerArrayPORTC[pgm_read_byte(&digital_pin_to_port_bit_number_PGM[arduinoPin])] = userFunction;
-      //Serial.print("function pointer array entry number: 0x");
-      //Serial.println(pgm_read_byte(&digital_pin_to_port_bit_number_PGM[arduinoPin]), HEX);
+      printPSTR("function pointer array entry number: 0x");
+      Serial.println(pgm_read_byte(&digital_pin_to_port_bit_number_PGM[arduinoPin]), HEX);
       portSnapshotC=*portInputRegister(portNumber); // OK-MIKE
     }
     if (portNumber==PD) {
@@ -229,6 +229,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
   SREG |= (1 << SREG_I); // from /usr/avr/include/avr/common.h
 }
 
+/*
 ISR(INT0_vect) {
   (*functionPointerArrayEXTERNAL[0])();
 }
@@ -236,97 +237,88 @@ ISR(INT0_vect) {
 ISR(INT1_vect) {
   (*functionPointerArrayEXTERNAL[1])();
 }
-
+*/
 
 // NOTE: The PCINTx vectors are different on different chips.
 #define PORTB_VECT PCINT0_vect
 #define PORTC_VECT PCINT1_vect
 #define PORTD_VECT PCINT2_vect
 
-/*
-// Future upgrade: Implement in assembly, using the ISR_NAKED attribute. See /usr/avr/include/avr/interrupt.h
-ISR(PORTB_VECT, ISR_NAKED) {
-  uint8_t changedPins;
-  uint8_t interruptMask;
-  uint8_t i;
-
-  interruptFunction();
-
-	current = *portInputRegister(PB);
-  changedPins=(portSnapshot[PB] ^ current) & ((risingPinsPORTB & current) | (fallingPinsPORTB & ~current));
-  portSnapshot[PB] =  current;
-  if (changedPins == 0) return; // get out quickly if not interested.
-
-  interruptMask = PCMSK0;
-  i=0;
-  while (1) {
-    if (0x01 & interruptMask & changedPins) {
-      (*functionPointerArrayPORTB[i])();
-    }
-    interruptMask=interruptMask >> 1;
-    if (interruptMask == 0) return;
-    i++;
-  }
-}
-*/
-
-volatile uint8_t changedPins=0;
 volatile uint8_t functionCalled=0;
 volatile uint16_t interruptsCalled=0;
 volatile uint8_t risingPins=0;
 volatile uint8_t fallingPins=0;
 
-#undef _EI_PORTLETTER
-#define _EI_PORTLETTER 'B'
+/*
+#undef EI_PCMSK
+#undef EI_PORTLETTER
+#define EI_PORTLETTER B
+#define EI_PCMSK PCMSK0
 #include "_ei_baseISR.h"
-
-#undef _EI_PORTLETTER
-#define _EI_PORTLETTER 'C'
-#include "_ei_baseISR.h"
-
-#undef _EI_PORTLETTER
-#define _EI_PORTLETTER 'D'
-#include "_ei_baseISR.h"
-
-/* ISR prefix code
-push    r1
-push    r0
-in      r0, 0x3f        ; 63
-push    r0
-eor     r1, r1
-push    r18
-push    r19
-push    r20
-push    r21
-push    r22
-push    r23
-push    r24
-push    r25
-push    r26
-push    r27
-push    r28
-push    r29
-push    r30
-push    r31
 */
-/* ISR suffix code
-pop     r31
-pop     r30
-pop     r29
-pop     r28
-pop     r27
-pop     r26
-pop     r25
-pop     r24
-pop     r23
-pop     r22
-pop     r21
-pop     r20
-pop     r19
-pop     r18
-pop     r0
-out     0x3f, r0        ; 63
-pop     r0
-pop     r1
-reti
+
+/*
+ * There are 3 ways to code the ISR frontend routine:
+ * 1. Using cpp macros, just assemble the ISR.
+ * 2. Avoiding macros, call an inline routine from each port's ISR.
+ * 3. Attempt to limit the number of registers push'ed and pop'ed: Call the ISR naked,
+ *    and have it simply call a short stubby subroutine, which will then call the user's
+ *    function. (This one is a fail). Here's the assembly:
+000001c4 <_Z7subISRCh>:
+void subISRC(uint8_t current) {
+  uint8_t i;
+  uint8_t interruptMask;
+  uint8_t changedPins;
+
+  changedPins=(portSnapshotC ^ current) & ((risingPinsPORTC & current) | (fallingPinsPORTC & ~current));
+ 1c4:   90 91 61 01     lds     r25, 0x0161
+ 1c8:   20 91 65 01     lds     r18, 0x0165
+ 1cc:   40 91 64 01     lds     r20, 0x0164
+  portSnapshotC = current;
+ 1d0:   80 93 61 01     sts     0x0161, r24
+
+  //if (changedPins == 0) return; // get out quickly if not interested.
+
+  interruptMask = PCMSK1 & changedPins;
+ 1d4:   30 91 6c 00     lds     r19, 0x006C
+void subISRC(uint8_t current) {
+  uint8_t i;
+  uint8_t interruptMask;
+  uint8_t changedPins;
+
+  changedPins=(portSnapshotC ^ current) & ((risingPinsPORTC & current) | (fallingPinsPORTC & ~current));
+ 1d8:   c8 2f           mov     r28, r24
+ 1da:   c0 95           com     r28
+ 1dc:   c4 23           and     r28, r20
+ 1de:   28 23           and     r18, r24
+ 1e0:   c2 2b           or      r28, r18
+ 1e2:   98 27           eor     r25, r24
+ 1e4:   c9 23           and     r28, r25
+
+ *    
+ */
+
+/*
+#undef EI_PCMSK
+#undef EI_PORTLETTER
+#define EI_PORTLETTER C
+#define EI_PCMSK PCMSK1
+#include "_ei_baseISR.h"
 */
+
+#include "_ei_portCinline.h"
+
+/*
+ * THIS CODE IS NO GOOD! IT IS HERE AS AN EXAMPLE. COMPILE IT AND DUMP THE ASSEMBLER,
+ * FOR EDUCATIONAL PURPOSES ONLY.
+#include "_ei_portCstubisr.h"
+*/
+
+/*
+#undef EI_PCMSK
+#undef EI_PORTLETTER
+#define EI_PORTLETTER D
+#define EI_PCMSK PCMSK2
+#include "_ei_baseISR.h"
+*/
+
