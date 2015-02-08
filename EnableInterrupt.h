@@ -278,15 +278,15 @@ volatile uint8_t fallingPins=0;
 
 #undef _EI_PORTLETTER
 #define _EI_PORTLETTER 'B'
-#include "_ei_baseISR.h"
+#include "_ei_macroISR.h"
 
 #undef _EI_PORTLETTER
 #define _EI_PORTLETTER 'C'
-#include "_ei_baseISR.h"
+#include "_ei_macroISR.h"
 
 #undef _EI_PORTLETTER
 #define _EI_PORTLETTER 'D'
-#include "_ei_baseISR.h"
+#include "_ei_macroISR.h"
 
 /* ISR prefix code
 push    r1

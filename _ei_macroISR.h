@@ -1,4 +1,3 @@
-// TEST - MIKE
 #define EI_PORTLETTER C
 #define EI_PCMSK PCMSK1
 
