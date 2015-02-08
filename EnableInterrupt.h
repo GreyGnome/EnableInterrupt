@@ -254,7 +254,8 @@ volatile uint8_t fallingPins=0;
   : "I" (_SFR_IO_ADDR(PINC)) \
 */
 
-#define EI_ASM_PREFIX \
+// We have defined "current" as "r18" in the ISR's. */
+#define EI_ASM_PREFIX(x) \
   /* BEGASM This: \
   current = PINC; // PortC Input. \
   is the same as this: */ \
@@ -262,7 +263,7 @@ volatile uint8_t fallingPins=0;
   "push %0" "\t\n\t" \
   "in %0,%1" "\t\n\t" \
   : "=&r" (current) \
-  : "I" (_SFR_IO_ADDR(port)) \
+  : "I" (_SFR_IO_ADDR(x)) \
   ); \
   /* ENDASM ...End of the sameness.*/ \
  \
@@ -273,12 +274,12 @@ volatile uint8_t fallingPins=0;
   "in r0, __SREG__" "\n\t" /* 0x3f */\
   "push r0" "\n\t" \
   "eor r1, r1" "\n\t" \
-  "push r18" "\n\t" \
   "push r19" "\n\t" \
   "push r20" "\n\t" \
   "push r21" "\n\t" \
   "push r22" "\n\t" \
   "push r23" "\n\t" \
+  "push r24" "\n\t" \
   "push r25" "\n\t" \
   "push r26" "\n\t" \
   "push r27" "\n\t" \
@@ -298,17 +299,17 @@ volatile uint8_t fallingPins=0;
   "pop r27" "\n\t" \
   "pop r26" "\n\t" \
   "pop r25" "\n\t" \
+  "pop r24" "\n\t" \
   "pop r23" "\n\t" \
   "pop r22" "\n\t" \
   "pop r21" "\n\t" \
   "pop r20" "\n\t" \
   "pop r19" "\n\t" \
-  "pop r18" "\n\t" \
   "pop r0" "\n\t" \
   "out __SREG__, r0" "\t\n\t" \
   "pop r0" "\t\n\t" \
   "pop r1" "\t\n\t" \
-  "pop r24" "\n\t" \
+  "pop r18" "\n\t" \
   "reti" "\t\n\t" \
   : \
   :)
@@ -341,44 +342,8 @@ inline void inlineISR(uint8_t current,
 }
 
 ISR(PORTB_VECT, ISR_NAKED) {
-  uint8_t current;
-  //uint8_t port;
-
-  //port=PINB;
-  //EI_ASM_PREFIX;
-  /* BEGASM This: \
-  current = PINC; // PortC Input. \
-  is the same as this: */ \
-  asm volatile("\t" \
-  "push %0" "\t\n\t" \
-  "in %0,%1" "\t\n\t" \
-  : "=&r" (current) \
-  : "I" (_SFR_IO_ADDR(PINB)) \
-  ); \
-  /* ENDASM ...End of the sameness.*/ \
- \
-   asm volatile( \
-  "push r1" "\n\t" \
-  "push r0" "\n\t" \
-  /* in 0x3f saves SREG... then it's pushed onto the stack.*/ \
-  "in r0, __SREG__" "\n\t" /* 0x3f */\
-  "push r0" "\n\t" \
-  "eor r1, r1" "\n\t" \
-  "push r18" "\n\t" \
-  "push r19" "\n\t" \
-  "push r20" "\n\t" \
-  "push r21" "\n\t" \
-  "push r22" "\n\t" \
-  "push r23" "\n\t" \
-  "push r25" "\n\t" \
-  "push r26" "\n\t" \
-  "push r27" "\n\t" \
-  "push r28" "\n\t" \
-  "push r29" "\n\t" \
-  "push r30" "\n\t" \
-  "push r31" "\n\t" \
-  : \
-  :);
+  register uint8_t current asm("r18");
+  EI_ASM_PREFIX(PINB);
 
   inlineISR(current,
       &portSnapshotB,
@@ -387,15 +352,14 @@ ISR(PORTB_VECT, ISR_NAKED) {
       PCMSK0,
       functionPointerArrayPORTB );
 
+  Serial.println("This is a test");
   EI_ASM_SUFFIX;
 }
 
 ISR(PORTC_VECT, ISR_NAKED) {
-  uint8_t current;
-  uint8_t port;
+  register uint8_t current asm("r18");
 
-  port=PIND;
-  EI_ASM_PREFIX;
+  EI_ASM_PREFIX(PINC);
 
   inlineISR(current,
       &portSnapshotC,
@@ -408,11 +372,9 @@ ISR(PORTC_VECT, ISR_NAKED) {
 }
 
 ISR(PORTD_VECT, ISR_NAKED) {
-  uint8_t current;
-  uint8_t port;
+  register uint8_t current asm("r18");
 
-  port=PIND;
-  EI_ASM_PREFIX;
+  EI_ASM_PREFIX(PIND);
 
   inlineISR(current,
       &portSnapshotD,
