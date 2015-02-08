@@ -159,13 +159,10 @@ see just how fast
 
 
 ***** MACRO vs. INLINE the ISR frontend **************************
-Using the inline ISR technique, this is needed to get the value from the Port:
-	current = *portInputRegister(portNumber);;;
- 28e:	e8 e3       	ldi	r30, 0x38	; 56
- 290:	f1 e0       	ldi	r31, 0x01	; 1
- 292:	a5 91       	lpm	r26, Z+
- 294:	b4 91       	lpm	r27, Z
- 296:	9c 91       	ld	r25, X
+The code compiles to very similar assembler. However, the inline is better looking C code.
+Refer to the "testing0" branch for comparison.
 
+I will use the INLINE method in the production code.
+***** MACRO vs. INLINE the ISR frontend **************************
 
 A lot of the basic Pin and Port definitions are in /usr/avr/include/avr/iom328p.h

@@ -86,7 +86,6 @@ inline void inlineISR(uint8_t current,
   exitISR: return;
 }
 
-/*
 ISR(PORTC_VECT, ISR_NAKED) {
   uint8_t current;
 
@@ -100,9 +99,4 @@ ISR(PORTC_VECT, ISR_NAKED) {
       functionPointerArrayPORTC );
 
   EI_ASM_SUFFIX;
-}
-*/
-volatile uint8_t pinstate;
-ISR(PORTC_VECT) {
-  pinstate=PINC;
 }
