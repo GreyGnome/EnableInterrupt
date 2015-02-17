@@ -77,11 +77,13 @@ void setup() {
   pinMode(ARDUINOPIN, INPUT_PULLUP);  // Configure the pin as an input, and turn on the pullup resistor.
                                       // See http://arduino.cc/en/Tutorial/DigitalPins
   //PORTC=0x01;
+  pinMode(A0, INPUT_PULLUP);
   pinMode(A1, INPUT_PULLUP);
   pinMode(A2, INPUT_PULLUP);
   pinMode(A3, INPUT_PULLUP);
   pinMode(A4, INPUT_PULLUP);
   pinMode(A5, INPUT_PULLUP);
+  pinMode(ARDUINOPIN, INPUT_PULLUP);
   enableInterrupt(ARDUINOPIN, interruptFunction, CHANGE);
   //attachPinChangeInterrupt(ARDUINOPIN, interruptFunction, CHANGE);
   //current=PINC;
@@ -102,6 +104,9 @@ void loop() {
   PORTB=led_on;
   PORTB=led_off;
   PORTB=led_on;
+  PORTB=led_off;
+  PORTB=led_on;
+
   PORTB=led_off;
   PORTB=led_on;
   Serial.print("Pin was interrupted: ");

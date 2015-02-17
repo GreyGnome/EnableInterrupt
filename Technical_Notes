@@ -5,6 +5,7 @@
 // The External Interrupts are triggered by the INT0 and INT1 pins or any of the PCINT23...0 pins.
 
 // PIN CHANGE INTERRUPT REGISTER BESTIARY
+// ATmega328p and similar (328, 168)
 The pin change interrupt PCI2 will trigger if any enabled PCINT[23:16] pin toggles.
 The pin change interrupt PCI1 will trigger if any enabled PCINT[14:8] pin toggles.
 The pin change interrupt PCI0 will trigger if any enabled PCINT[7:0] pin toggles.
@@ -166,3 +167,332 @@ I will use the INLINE method in the production code.
 ***** MACRO vs. INLINE the ISR frontend **************************
 
 A lot of the basic Pin and Port definitions are in /usr/avr/include/avr/iom328p.h
+
+================== ================== ================== ================== ==================
+
+=====================================================================================================
+=====================================================================================================
+Leonardo Support
+=====================================================================================================
+=====================================================================================================
+
+// Map SPI port to 'new' pins D14..D17
+static const uint8_t SS   = 17;
+static const uint8_t MOSI = 16;
+static const uint8_t MISO = 14;
+static const uint8_t SCK  = 15;
+// A0 starts at 18
+
+
+Interrupt pins:
+Pin	External Interrupt	Pin	PC Int
+ 3	INT0			8	PCINT4
+ 2	INT1			9	PCINT5
+ 0	INT2			10	PCINT6
+ 1	INT3			11	PCINT7
+ 7	INT6			SCk/15	PCINT1
+				MOSI/16	PCINT2
+				MISO/14	PCINT3
+
+on ICSP:
+SCK/15: PCINT1 (PB1)
+MOSI/16: PCINT2 (PB2)
+MISO/14: PCINT3 (PB3)
+
+PCINT0 (PB0) is RXLED and is not exposed as a pin on the Leonardo board.
+
+External Interrupts ------------------------------------------------------------------------------
+
+...it is recommended to first disable INTn by clearing its Interrupt Enable bit in the
+EIMSK Register. Then, the ISCn bit can be changed. Finally, the INTn interrupt flag should be
+cleared by writing a logical one to its Interrupt Flag bit (INTFn) in the EIFR Register before the
+interrupt is re-enabled.
+
+EICRA: 7   6   5   4   3   2   1   0  (External Interrupt Control Register A)
+ ISC: 31  30  21  20  11  10  01  00  Interrupt Sense Control Bits
+      rw  rw  rw  rw  rw  rw  rw  rw
+
+EICRB: 7   6   5   4   3   2   1   0  (External Interrupt Control Register A)
+ ISC:  -   -  61  60   -   -   -   -  Interrupt Sense Control Bits
+      rw  rw  rw  rw  rw  rw  rw  rw
+
+        ISCx1 / ISCx0 : INTx
+          0      0    Low
+          0      1    Change
+          1      0    Falling
+          1      1    Rising
+
+EIMSK:  7   6   5   4   3   2   1   0  (External Interrupt Mask Register)
+            n           n   n   n   n
+        -  rw   -   -  rw  rw  rw  rw   set to 1 to enable this interrupt
+
+n= INTn number
+
+External Interrupt Flag Register is set to 1 when a signal generates an IRQ.
+Cleared upon entering the ISR. Can be cleared by writing a 1 to it.
+EIFR:   7   6   5   4   3   2   1   0  (External Interrupt Flag Register)
+            n           n   n   n   n
+        -  rw   -   -  rw  rw  rw  rw
+
+n= INTn number
+
+
+Pin Change Interrupts ---------------------------------------------------------------------------
+// PIN CHANGE INTERRUPTS REGISTER BESTIARY
+PCICR: 7   6   5   4   3   2   1   0  (When PCIE0 is set and GIE is set, PCI0 is enabled)
+                               PCIE0
+       -   -   -   -   -   -   -  rw
+
+// set...
+PCIFR: 7   6   5   4   3   2   1   0  (When logic change triggers IRQ, bececomes set. Cleared when
+                               PCIF0   IRQ is executed. PCIF0 == PCIE0.)
+       -   -   -   -   -   -   -  rw   Can be cleared by writing 1 to it.
+
+PCMSK0:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT7:0
+  PCINT7            ...       PCINT0   If PCIE0 in PCICR and this bit is set, it is enabled on that
+      rw  rw  rw  rw  rw  rw  rw  rw   pin.)
+     PB7 PB6 PB5 PB4 PB3 PB2 PB1 PB0   =PORTB
+
+=====================================================================================================
+=====================================================================================================
+ATmega2560 Support
+=====================================================================================================
+=====================================================================================================
+
+External Interrupts ------------------------------------------------------------------------------
+The following External Interrupts are available on the Arduino:
+Arduino           
+  Pin*  PORT INT  ATmega2560 pin
+  21     PD0  0     43
+  20     PD1  1     44
+  19     PD2  2     45
+  18     PD3  3	    46
+   2     PE4  4      6
+   3     PE5  5      7
+(INT6 and INT7: n/c)
+
+...it is recommended to first disable INTn by clearing its Interrupt Enable bit in the
+EIMSK Register. Then, the ISCn bit can be changed. Finally, the INTn interrupt flag should be
+cleared by writing a logical one to its Interrupt Flag bit (INTFn) in the EIFR Register before the
+interrupt is re-enabled.
+
+EICRA: 7   6   5   4   3   2   1   0  (External Interrupt Control Register A)
+ ISC: 31  30  21  20  11  10  01  00  Interrupt Sense Control Bits
+      rw  rw  rw  rw  rw  rw  rw  rw
+
+EICRB: 7   6   5   4   3   2   1   0  (External Interrupt Control Register A)
+ ISC: 71  70  61  60  51  50  41  40  Interrupt Sense Control Bits
+      rw  rw  rw  rw  rw  rw  rw  rw  NOTE: NO CONNECTION for INT6 and INT7 on ATmega2560*
+
+        ISCx1 / ISCx0 : INTx
+          0      0    Low
+          0      1    Change
+          1      0    Falling
+          1      1    Rising
+
+EIMSK:  7   6   5   4   3   2   1   0  (External Interrupt Mask Register)
+        n   n   n   n   n   n   n   n  NOTE:  NO CONNECTION FOR  INT6 and INT7 on ATmega2560*
+       rw  rw  rw  rw  rw  rw  rw  rw
+n= INTn number
+
+External Interrupt Flag Register is set to 1 when a signal generates an IRQ.
+Cleared upon entering the ISR. Can be cleared by writing a 1 to it.
+EIFR:   7   6   5   4   3   2   1   0  (External Interrupt Flag Register)
+        n   n   n   n   n   n   n   n  NOTE:  NO CONNECTION FOR  INT6 and INT7 on ATmega2560*
+       rw  rw  rw  rw  rw  rw  rw  rw
+n= INTn number
+
+* But that doesn't mean they wouldn't make an excellent resource for software interrupts! ;-) )
+
+Pin Change Interrupts ---------------------------------------------------------------------------
+
+ATMEGA2560 Pin Change Interrupts
+Arduino              Arduino              Arduino
+  Pin*  PORT PCINT     Pin   PORT PCINT     Pin   PORT PCINT
+  A8     PK0  16       10     PB4   4       SS     PB0   0
+  A9     PK1  17       11     PB5   5       SCK    PB1   1
+ A10     PK2  18       12     PB6   6       MOSI   PB2   2
+ A11     PK3  19       13     PB7   7       MISO   PB3   3
+ A12     PK4  20       14     PJ1  10
+ A13     PK5  21       15     PJ0   9
+ A14     PK6  22        0     PE0   8 - this one is a little odd.*
+ A15     PK7  23
+...indeed, the ATmega2560 chip supports many more Pin Change Interrupt pins but
+they are unavailable on the Arduino, unless you want to solder teeny tiny wires.
+(However, that doesn't mean they wouldn't make an excellent resource for software interrupts! :-) )
+
+* Note: Arduino Pin 0 is PE0 (PCINT8), which is RX0. Also, it is the only other
+pin on another port on PCI1. This would make it very costly to integrate with
+the library's code and thus is not supported by this library.  It is the same
+pin the Arduino uses to upload sketches, and it is connected to the FT232RL
+USB-to-Serial chip (ATmega16U2 on the R3).
+
+// PIN CHANGE INTERRUPTS REGISTER BESTIARY for the ATmega2560
+
+PCICR: 7   6   5   4   3   2   1   0  (When PCIE2 is set and GIE is set, PCI2 is enabled)
+                       PCIE2   1   0   Likewise for 1 and 0.
+       -   -   -   -   -  rw  rw  rw
+
+// set...
+PCIFR: 7   6   5   4   3   2   1   0  (When logic change triggers IRQ, bececomes set. Cleared when
+                       PCIF2   1   0   IRQ is executed. PCIF2 == PCIE2, etc.)
+       -   -   -   -   -  rw  rw  rw
+
+PCMSK2:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT23:16
+  PCINT23           ...      PCINT16   If PCIE2 in PCICR and this bit is set, it is enabled on that
+      rw  rw  rw  rw  rw  rw  rw  rw   pin.)
+     PK7 PK6 PK5 PK4 PK3 PK2 PK1 PK0   =PORTK
+       +   +   +   +   +   +   +   +   + == available on the Arduino board.
+
+PCMSK1:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT15:8
+  PCINT15           ...       PCINT8   If PCIE1 in PCICR and this bit is set, it is enabled on that
+      rw  rw  rw  rw  rw  rw  rw  rw   pin.)
+     PJ6 PJ5 PJ4 PJ3 PJ2 PJ1 PJ0 PE0   =PORTJ/E Note pin PE0 is the Arduino's RX pin for programming.
+                           +   +   +   
+
+PCMSK0:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT7:0
+  PCINT7            ...       PCINT0   If PCIE0 in PCICR and this bit is set, it is enabled on that
+      rw  rw  rw  rw  rw  rw  rw  rw   pin.)
+     PB7 PB6 PB5 PB4 PB3 PB2 PB1 PB0   =PORTB
+       +   +   +   +   +   +   +   +
+
+
+=====================================================================================================
+ARDUINO CPU BESTIARY
+=====================================================================================================
+See /usr/avr/include/avr/io.h for the actual #defines for the different CPUs.
+The CPUs are converted to the #defined macros (eg., __AVR_ATmega168__) by the compiler from
+the source file "avr-mcus.def". See
+https://github.com/gcc-mirror/gcc/blob/master/gcc/config/avr/avr-mcus.def
+
+$ grep mcu /usr/share/arduino/hardware/arduino/boards.txt
+uno.build.mcu=atmega328p
+atmega328.build.mcu=atmega328p
+diecimila.build.mcu=atmega168
+nano328.build.mcu=atmega328p
+nano.build.mcu=atmega168
+mega2560.build.mcu=atmega2560
+mega.build.mcu=atmega1280
+leonardo.build.mcu=atmega32u4
+esplora.build.mcu=atmega32u4
+micro.build.mcu=atmega32u4
+mini328.build.mcu=atmega328p
+mini.build.mcu=atmega168
+ethernet.build.mcu=atmega328p
+fio.build.mcu=atmega328p
+bt328.build.mcu=atmega328p
+bt.build.mcu=atmega168
+LilyPadUSB.build.mcu=atmega32u4
+lilypad328.build.mcu=atmega328p
+lilypad.build.mcu=atmega168
+pro5v328.build.mcu=atmega328p
+pro5v.build.mcu=atmega168
+pro328.build.mcu=atmega328p
+pro.build.mcu=atmega168
+atmega168.build.mcu=atmega168
+atmega8.build.mcu=atmega8
+robotControl.build.mcu=atmega32u4
+robotMotor.build.mcu=atmega32u4
+
+ISR Register handing
+
+Tested the following code to ensure that all registers would be pushed/popped correctly, even
+if I was using NAKED_ISR. Note that I did not run code, I merely eyeballed the output to ensure
+it was doing what I expected:
+
+volatile uint8_t storage0;
+volatile uint8_t storage1;
+volatile uint8_t storage2;
+volatile uint8_t storage3;
+volatile uint8_t storage4;
+volatile uint8_t storage5;
+volatile uint8_t storage6;
+volatile uint8_t storage7;
+volatile uint8_t storage8;
+volatile uint8_t storage9;
+volatile uint8_t storage10;
+volatile uint8_t storage11;
+volatile uint8_t storage12;
+volatile uint8_t storage13;
+volatile uint8_t storage14;
+volatile uint8_t storage15;
+volatile uint8_t storage16;
+volatile uint8_t storage17;
+volatile uint8_t storage18;
+volatile uint8_t storage19;
+
+void test_ISR(uint8_t current) {
+
+  uint8_t local0=storage0;
+  uint8_t local1=storage1;
+  uint8_t local2=storage2;
+  uint8_t local3=storage3;
+  uint8_t local4=storage4;
+  uint8_t local5=storage5;
+  uint8_t local6=storage6;
+  uint8_t local7=storage7;
+  uint8_t local8=storage8;
+  uint8_t local9=storage9;
+  uint8_t local10=storage10;
+  uint8_t local11=storage11;
+  uint8_t local12=storage12;
+  uint8_t local13=storage13;
+  uint8_t local14=storage14;
+  uint8_t local15=storage15;
+  uint8_t local16=storage16;
+  uint8_t local17=storage17;
+  uint8_t local18=storage18;
+  uint8_t local19=storage19;
+
+  local0+=current;
+  local1+=current;
+  local2+=current;
+  local3+=current;
+  local4+=current;
+  local5+=current;
+  local6+=current;
+  local7+=current;
+  local8+=current;
+  local9+=current;
+  local10+=current;
+  local11+=current;
+  local12+=current;
+  local13+=current;
+  local14+=current;
+  local15+=current;
+  local16+=current;
+  local17+=current;
+  local18+=current;
+  local19+=current;
+
+  storage0=local0;
+  storage1=local1;
+  storage2=local2;
+  storage3=local3;
+  storage4=local4;
+  storage5=local5;
+  storage6=local6;
+  storage7=local7;
+  storage8=local8;
+  storage9=local9;
+  storage10=local10;
+  storage11=local11;
+  storage12=local12;
+  storage13=local13;
+  storage14=local14;
+  storage15=local15;
+  storage16=local16;
+  storage17=local17;
+  storage18=local18;
+  storage19=local19;
+}
+
+ISR(PORTD_VECT, ISR_NAKED) {
+  register uint8_t current asm("r18");
+  EI_ASM_PREFIX(PIND);
+
+  test_ISR(current);
+
+  EI_ASM_SUFFIX;
+}
+
