@@ -44,6 +44,9 @@ PCIFR: 7   6   5   4   3   2   1   0  (When logic change triggers IRQ, bececomes
        -   -   -   -   -  rw  rw  rw
 
 // EXTERNAL INTERRUPTS REGISTER BESTIARY
+For ATmega328p and the like.
+
+INT0=pin2, INT1=pin3
 
 EICRA: 7   6   5   4   3   2   1   0  (External Interrupt Control Register A)
                  ISC  11  10  01  00  Interrupt Sense Control Bits
@@ -71,24 +74,6 @@ rupts will trigger as long as the pin is held low.
 Low level interrupt on INT0 and INT1 is detected asynchronously. This implies that this interrupt
 can be used for waking the part also from sleep modes other than Idle mode. The I/O clock is halted
 in all sleep modes except Idle mode.
-
-// 
-
-#define PINCHANGEINTERRUPT 0x80
-#define SLOWINTERRUPT      0x80
-
-void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode) {
-  uint8_t arduinoPin;
-
-  arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
-	if (interruptDesignator && PINCHANGEINTERRUPT) {
-    
-  } else {
-  }
-}
-
-void 
-
 
 =============================================================================================
 

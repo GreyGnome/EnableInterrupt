@@ -34,7 +34,7 @@
 //#include <PinChangeInt.h>
 
 // Modify this at your leisure.
-#define ARDUINOPIN A0
+#define ARDUINOPIN 12
 
 // Do not use any Serial.print() in interrupt subroutines. Serial.print() uses interrupts,
 // and by default interrupts are off in interrupt subroutines. Interrupt routines should also
@@ -93,22 +93,22 @@ void setup() {
 // interrupt routine.
 void loop() {
   uint8_t led_on, led_off;         // DEBUG
-  led_on=0b00100000; led_off=0b0;
+  //led_on=0b00100000; led_off=0b0;
 
   //*led_port|=led_mask; // LED high
-  PORTB=led_on;
+  //PORTB=led_on;
   //PORTC=0x01;
   Serial.println("---------------------------------------");
   delay(2000);                          // Every second,
   //PORTC=0x00; // software interrupt, port A0
-  PORTB=led_on;
-  PORTB=led_off;
-  PORTB=led_on;
-  PORTB=led_off;
-  PORTB=led_on;
+  //PORTB=led_on;
+  //PORTB=led_off;
+  //PORTB=led_on;
+  //PORTB=led_off;
+  //PORTB=led_on;
 
-  PORTB=led_off;
-  PORTB=led_on;
+  //PORTB=led_off;
+  //PORTB=led_on;
   Serial.print("Pin was interrupted: ");
   Serial.print(interruptCount, DEC);      // print the interrupt count.
   Serial.println(" times so far.");
