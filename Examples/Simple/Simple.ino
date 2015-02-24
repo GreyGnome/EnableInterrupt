@@ -34,7 +34,10 @@
 //#include <PinChangeInt.h>
 
 // Modify this at your leisure.
-#define ARDUINOPIN 12
+// SS = PB0, A8 = PK0, 15 = PJ0, 14 = PJ1
+//#define ARDUINOPIN A10
+#define ARDUINOPIN SS
+//#define ARDUINOPIN 14
 
 // Do not use any Serial.print() in interrupt subroutines. Serial.print() uses interrupts,
 // and by default interrupts are off in interrupt subroutines. Interrupt routines should also
@@ -67,48 +70,53 @@ extern volatile uint8_t risingPins;
 extern volatile uint8_t fallingPins;
 */
 
-#define PINLED 13
 
 // Attach the interrupt in setup()
 void setup() {
+  //uint8_t pind, pink;
   Serial.begin(115200);
   Serial.println("---------------------------------------");
-  pinMode(PINLED, OUTPUT);
-  pinMode(ARDUINOPIN, INPUT_PULLUP);  // Configure the pin as an input, and turn on the pullup resistor.
+  //PORTD=pind;
+  //PORTK=pink;
+  pinMode(PINSIGNAL, OUTPUT);
+  //pinMode(ARDUINOPIN, INPUT_PULLUP);  // Configure the pin as an input, and turn on the pullup resistor.
                                       // See http://arduino.cc/en/Tutorial/DigitalPins
   //PORTC=0x01;
-  pinMode(A0, INPUT_PULLUP);
-  pinMode(A1, INPUT_PULLUP);
-  pinMode(A2, INPUT_PULLUP);
-  pinMode(A3, INPUT_PULLUP);
-  pinMode(A4, INPUT_PULLUP);
-  pinMode(A5, INPUT_PULLUP);
+  pinMode(SS, INPUT_PULLUP);
+  pinMode(SCK, INPUT_PULLUP);
+  pinMode(MOSI, INPUT_PULLUP);
+  pinMode(MISO, INPUT_PULLUP);
+  pinMode(10, INPUT_PULLUP);
+  pinMode(11, INPUT_PULLUP);
+  pinMode(12, INPUT_PULLUP);
   pinMode(ARDUINOPIN, INPUT_PULLUP);
   enableInterrupt(ARDUINOPIN, interruptFunction, CHANGE);
   //attachPinChangeInterrupt(ARDUINOPIN, interruptFunction, CHANGE);
   //current=PINC;
+  interruptSaysHello(); // to turn on Signal (LED on 328-based Arduino, 21 on Mega)
 }
 
 // In the loop, we just check to see where the interrupt count is at. The value gets updated by the
 // interrupt routine.
 void loop() {
   uint8_t led_on, led_off;         // DEBUG
-  //led_on=0b00100000; led_off=0b0;
+
+  led_on=0b00100000; led_off=~led_on;
 
   //*led_port|=led_mask; // LED high
-  //PORTB=led_on;
+  //PORTB|=led_on;
   //PORTC=0x01;
   Serial.println("---------------------------------------");
-  delay(2000);                          // Every second,
+  delay(1000);                          // Every second,
   //PORTC=0x00; // software interrupt, port A0
-  //PORTB=led_on;
-  //PORTB=led_off;
-  //PORTB=led_on;
-  //PORTB=led_off;
-  //PORTB=led_on;
+  //PORTB|=led_on;
+  //PORTB&=led_off;
+  //PORTB|=led_on;
+  //PORTB&=led_off;
+  //PORTB|=led_on;
 
-  //PORTB=led_off;
-  //PORTB=led_on;
+  //PORTB&=led_off;
+  //PORTB|=led_on;
   Serial.print("Pin was interrupted: ");
   Serial.print(interruptCount, DEC);      // print the interrupt count.
   Serial.println(" times so far.");

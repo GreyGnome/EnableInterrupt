@@ -157,7 +157,7 @@ A lot of the basic Pin and Port definitions are in /usr/avr/include/avr/iom328p.
 
 =====================================================================================================
 =====================================================================================================
-Leonardo Support
+Leonardo Support LEONARDO
 =====================================================================================================
 =====================================================================================================
 
@@ -267,7 +267,7 @@ EICRA: 7   6   5   4   3   2   1   0  (External Interrupt Control Register A)
 
 EICRB: 7   6   5   4   3   2   1   0  (External Interrupt Control Register A)
  ISC: 71  70  61  60  51  50  41  40  Interrupt Sense Control Bits
-      rw  rw  rw  rw  rw  rw  rw  rw  NOTE: NO CONNECTION for INT6 and INT7 on ATmega2560*
+      rw  rw  rw  rw  rw  rw  rw  rw  NOTE: NO CONNECTION for INT6 and INT7 on ATmega2560**
 
         ISCx1 / ISCx0 : INTx
           0      0    Low
@@ -276,14 +276,14 @@ EICRB: 7   6   5   4   3   2   1   0  (External Interrupt Control Register A)
           1      1    Rising
 
 EIMSK:  7   6   5   4   3   2   1   0  (External Interrupt Mask Register)
-        n   n   n   n   n   n   n   n  NOTE:  NO CONNECTION FOR  INT6 and INT7 on ATmega2560*
+        n   n   n   n   n   n   n   n  NOTE:  NO CONNECTION FOR  INT6 and INT7 on ATmega2560**
        rw  rw  rw  rw  rw  rw  rw  rw
 n= INTn number
 
 External Interrupt Flag Register is set to 1 when a signal generates an IRQ.
 Cleared upon entering the ISR. Can be cleared by writing a 1 to it.
 EIFR:   7   6   5   4   3   2   1   0  (External Interrupt Flag Register)
-        n   n   n   n   n   n   n   n  NOTE:  NO CONNECTION FOR  INT6 and INT7 on ATmega2560*
+        n   n   n   n   n   n   n   n  NOTE:  NO CONNECTION FOR  INT6 and INT7 on ATmega2560**
        rw  rw  rw  rw  rw  rw  rw  rw
 n= INTn number
 
@@ -346,7 +346,7 @@ PCMSK0:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is e
 ARDUINO CPU BESTIARY
 =====================================================================================================
 See /usr/avr/include/avr/io.h for the actual #defines for the different CPUs.
-The CPUs are converted to the #defined macros (eg., __AVR_ATmega168__) by the compiler from
+The CPUs are converted to the #defined macros (eg., __AVR_ATmega169__) by the compiler from
 the source file "avr-mcus.def". See
 https://github.com/gcc-mirror/gcc/blob/master/gcc/config/avr/avr-mcus.def
 
@@ -481,3 +481,6 @@ ISR(PORTD_VECT, ISR_NAKED) {
   EI_ASM_SUFFIX;
 }
 
+MISCELLANEOUS:
+STORING FUNCTION POINTERS IN PROGMEM:
+http://stackoverflow.com/questions/28261595/put-progmem-function-pointer-array-into-another-progmem-array
