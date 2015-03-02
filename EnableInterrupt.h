@@ -51,6 +51,7 @@ void SerialPrint_P(PGM_P str) {
   for (uint8_t c; (c = pgm_read_byte(str)); str++) Serial.write(c);
 } 
 
+
 /* Arduino pin to ATmega port translaton is found doing digital_pin_to_port_PGM[] */
 /* Arduino pin to PCMSKx bitmask is found by doing digital_pin_to_bit_mask_PGM[] */
 /* ...except for PortJ, which is shifted left 1 bit in PCI1 */
@@ -209,6 +210,11 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   5, // PK5  pin: 67
   6, // PK6  pin: 68
   7, // PK7  pin: 69
+  2, // PJ2  pin: fake70, trick to allow software interrupts on Port J. PJ2
+  3, // PJ3  pin: fake71 PJ3
+  4, // PJ4  pin: fake72 PJ4
+  5, // PJ5  pin: fake73 PJ5
+  6, // PJ6  pin: fake74 PJ6
 };
 
 interruptFunctionType functionPointerArrayEXTERNAL[6];
@@ -217,7 +223,7 @@ interruptFunctionType functionPointerArrayPORTB[8];
 // and only PJ1 and 2 are supported on the Arduino MEGA.
 // For PCI1 the 0th bit is PE0.   PJ2-6 are not exposed on the Arduino pins, but
 // we will support them anyway. There are clones that provide them, and users may
-// solder in their own connections (go, Makers!)
+// solder in their own connections (...go, Makers!)
 interruptFunctionType functionPointerArrayPORTJ[7];
 interruptFunctionType functionPointerArrayPORTK[8];
 
@@ -310,7 +316,6 @@ void interruptSaysHello() {
   PORTA&=sign_off;
   PORTA|=sign_on;
 #endif
-
 }
 
 
@@ -324,7 +329,6 @@ void interruptSaysHello() {
 
 // "interruptDesignator" is simply the Arduino pin optionally OR'ed with
 // PINCHANGEINTERRUPT (== 0x80)
-
 void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunction, uint8_t mode) {
   uint8_t arduinoPin;
   uint8_t EICRAvalue;
@@ -340,17 +344,23 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 	if ( (interruptDesignator && PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
 #elif defined ARDUINO_MEGA
 	if ( (interruptDesignator && PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3 &&
-                                                       (arduinoPin < 18 || arduinoPin > 21) )
-      ) {
+                                                             (arduinoPin < 18 || arduinoPin > 21))
+           ) {
+    if (arduinoPin > 69) { // Dastardly tricks to support PortJ 2-7
+      portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin-6]); // Steal from PK
+      portNumber=PJ;
+    }
 #else
 #error Unsupported Arduino platform
 #endif
-    portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
+    if (arduinoPin < 70)
+    {
+      portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
+      portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
+    }
       /**/
     printPSTR("portMask is 0x"); Serial.println(portMask, HEX);
       /**/
-
-    portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
 
       /**/
     printPSTR("portNumber is 0x"); Serial.println(portNumber, HEX);  // OK-MIKE
@@ -373,7 +383,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       if (portNumber==PJ) {
         risingPinsPORTJ |= portMask;
       /**/
-        printPSTR("Port J, rising pins 0x"); // OK-MIKE
+        printPSTR("Port J, rising pins 0x");
         Serial.println(risingPinsPORTJ, HEX);
         printPSTR("Initial value of port: 0x");
         Serial.println(*portInputRegister(portNumber), HEX);
@@ -391,7 +401,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       if (portNumber==PB) {
         fallingPinsPORTB |= portMask;
       /**/
-        printPSTR("Port B, falling pins 0x"); // OK-MIKE
+        printPSTR("Port B, falling pins 0x");
         Serial.println(fallingPinsPORTB, HEX);
         printPSTR("PCMSK0 is 0x"); Serial.println(PCMSK0, HEX);
       /**/
@@ -425,11 +435,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     if (portNumber==PC) {
       functionPointerArrayPORTC[portBitNumber] = userFunction;
       portSnapshotC=*portInputRegister(portNumber); // OK-MIKE
-      // set the appropriate PCICR bit. This is broken in pins_arduino.h for the Mega series; the author
-      // decidned to exclude a number of pins for various reasons.
       pcmsk=&PCMSK1;
-      // set the appropriate PCICR bit. This is broken in pins_arduino.h for the Mega series; the author
-      // decidned to exclude a number of pins for various reasons.
       PCICR |= _BV(1);
     }
     if (portNumber==PD) {
@@ -465,7 +471,8 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       pcmsk=&PCMSK0;
       PCICR |= _BV(0);
     }
-    printPSTR("PCMSKn is 0x"); Serial.println(portMask, HEX); // pcmsk was chosen above...
+    printPSTR("We will or 0x"); Serial.print(portMask, HEX); // pcmsk was chosen above...
+    printPSTR(" with PCMSKn.\r");
     *pcmsk |= portMask;  // appropriate bit, e.g. this could be PCMSK1 |= portMask;
     printPSTR("PCICR is 0x"); Serial.println(PCICR, HEX);
     printPSTR("PCMSK0 is 0x"); Serial.println(PCMSK0, HEX);
@@ -483,6 +490,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #warning EXTERNAL INTERRUPTS UNDER DEVELOPMENT
     EICRAvalue=mode;
     origSREG = SREG;
+    /*
     cli(); // no interrupts while we're setting up an interrupt.
     if (arduinoPin == 3) {
       functionPointerArrayEXTERNAL[1] = userFunction;
@@ -504,11 +512,13 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     SREG=origSREG;
 #elif defined ARDUINO_LEONARDO
 #error NOT IMPLEMENTED YET
+  */
 #endif
   }
   SREG |= (1 << SREG_I); // GIE bit in SREG. From /usr/avr/include/avr/common.h
 }
 
+/*
 ISR(INT0_vect) {
   (*functionPointerArrayEXTERNAL[0])();
 }
@@ -534,12 +544,14 @@ ISR(INT5_vect) {
   (*functionPointerArrayEXTERNAL[5])();
 }
 #endif
+*/
 
+/*
 volatile uint8_t functionCalled=0;
 volatile uint16_t interruptsCalled=0;
 volatile uint8_t risingPins=0;
 volatile uint8_t fallingPins=0;
-
+*/
 
 /*
   : "I" (_SFR_IO_ADDR(PINC)) \
@@ -682,7 +694,7 @@ inline void __attribute__((always_inline)) inlineISR (uint8_t current,
   uint8_t interruptMask;
   uint8_t changedPins;
 
-  interruptSaysHello();
+  //interruptSaysHello();
   changedPins=(*portSnapshot ^ current) & ((risingPins & current) | (fallingPins & ~current));
   *portSnapshot =  current;
   if (changedPins == 0) goto exitISR; // get out quickly if not interested.
@@ -703,7 +715,8 @@ inline void __attribute__((always_inline)) inlineISR (uint8_t current,
 
 ISR(PORTB_VECT) {
 //ISR(PORTB_VECT, ISR_NAKED) {
-  register uint8_t current asm("r18");
+  uint8_t current; current=PINB;
+  //register uint8_t current asm("r18");
 
   //EI_ASM_PREFIX(PINB);
 
@@ -751,7 +764,8 @@ ISR(PORTD_VECT, ISR_NAKED) {
 #elif defined ARDUINO_MEGA
 ISR(PORTJ_VECT) {
 //ISR(PORTJ_VECT, ISR_NAKED) {
-  register uint8_t current asm("r18");
+  uint8_t current; current=PINJ;
+  //register uint8_t current asm("r18");
 
   //EI_ASM_PREFIX_JK(PINJ);
 
@@ -767,7 +781,8 @@ ISR(PORTJ_VECT) {
 
 ISR(PORTK_VECT) {
 //ISR(PORTK_VECT, ISR_NAKED) {
-  register uint8_t current asm("r18");
+  uint8_t current; current=PINK;
+  //register uint8_t current asm("r18");
 
   //EI_ASM_PREFIX_JK(PINK);
 

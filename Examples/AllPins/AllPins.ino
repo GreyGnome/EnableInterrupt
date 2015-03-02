@@ -113,6 +113,8 @@ void setup() {
   //PORTC=0x01;
   //setupInterrupt(SS);
   //setupInterrupt(SCK);
+  pinMode(SS, INPUT_PULLUP);
+  enableInterrupt(SS,  interruptFunctionSS, CHANGE);
   pinMode(SCK, INPUT_PULLUP);
   enableInterrupt(SCK,  interruptFunctionSCK, CHANGE);
   pinMode(MOSI, INPUT_PULLUP);
