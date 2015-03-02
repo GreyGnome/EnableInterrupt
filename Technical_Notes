@@ -287,7 +287,7 @@ EIFR:   7   6   5   4   3   2   1   0  (External Interrupt Flag Register)
        rw  rw  rw  rw  rw  rw  rw  rw
 n= INTn number
 
-* But that doesn't mean they wouldn't make an excellent resource for software interrupts! ;-) )
+** But that doesn't mean they wouldn't make an excellent resource for software interrupts! ;-) )
 
 Pin Change Interrupts ---------------------------------------------------------------------------
 
@@ -341,6 +341,42 @@ PCMSK0:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is e
      PB7 PB6 PB5 PB4 PB3 PB2 PB1 PB0   =PORTB
        +   +   +   +   +   +   +   +
 
+From http://www.atmel.com/Images/doc8468.pdf:
+
+External interrupts can be sensed and registered either synchronously or asynchronously. Synchronous sensing
+requires I/O clock whereas asynchronous sensing does not requires I/O clock. This implies that the interrupts
+that are detected asynchronously can be used for waking the device from sleep modes other than idle
+mode because the I/O clock is halted in all sleep modes except idle mode.  The sense configuration for
+external interrupts and pin change interrupts for Atmel ATmega2560 is given in Table 2-2. For device
+specific sense configuration, please refer to the respective datasheet.
+
+Table 2-2.  External interrupts sense configuration.
+Program address	Interrupt source	Sensing
+$0002		INT0			Asynchronous (Edges and level)
+$0004		INT1			Asynchronous (Edges and level)
+$0006		INT2			Asynchronous (Edges and level)
+$0008		INT3			Asynchronous (Edges and level)
+$000A		INT4			Synchronous (Edges and level)
+$000C		INT5			Synchronous (Edges and level)
+$000E		INT6 			Synchronous (Edges and level)
+$0010		INT7			Synchronous (Edges and level)
+$0012		PCINT0			Asynchronous
+$0014		PCINT1			Asynchronous
+$0016		PCINT2			Asynchronous
+From Table 2-2, all the pin change interrupts are detected asynchronously.
+
+...
+The interrupt execution response for all the enabled AVR interrupts is four/five clock cycle’s minimum.
+This four/five clock cycles depends on the program counter width. If the program counter width is not
+more than two bytes, then the interrupt response time will be four clock cycles minimum and if the
+program counter width is more than two bytes, then the interrupt response time will be minimum five
+clock cycles.  These four/five clock cycles include:
+1. Two/Three cycles for pushing the Program Counter (PC) value into the stack.
+2. One cycle for updating the stack pointer.
+3. One cycle for clearing the Global interrupt enable (I) bit.
+If an interrupt occurs when the MCU is in sleep mode, the interrupt execution response time is increased
+by five clock cycles. This increase comes in addition to the start-up time from the selected sleep mode.
+This start up time is the time it will take to start the clock source. 
 
 =====================================================================================================
 ARDUINO CPU BESTIARY
@@ -484,3 +520,4 @@ ISR(PORTD_VECT, ISR_NAKED) {
 MISCELLANEOUS:
 STORING FUNCTION POINTERS IN PROGMEM:
 http://stackoverflow.com/questions/28261595/put-progmem-function-pointer-array-into-another-progmem-array
+
