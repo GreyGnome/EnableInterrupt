@@ -518,10 +518,16 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 }
 
 ISR(INT0_vect) {
+#ifdef SHOWEXTERNAL
+  wasExternalInterrupt++;
+#endif
   (*functionPointerArrayEXTERNAL[0])();
 }
 
 ISR(INT1_vect) {
+#ifdef SHOWEXTERNAL
+  wasExternalInterrupt++;
+#endif
   (*functionPointerArrayEXTERNAL[1])();
 }
 

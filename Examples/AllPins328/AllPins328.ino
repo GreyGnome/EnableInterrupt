@@ -5,12 +5,13 @@
 // This has only been tested on an Arduino Duemilanove and Mega ADK.
 // To use:
 
+#define SHOWEXTERNAL
+volatile uint8_t wasExternalInterrupt=0;
 #include <EnableInterrupt.h>
 
 volatile uint8_t anyInterruptCounter=0;
 
 #ifdef ARDUINO_328
-
 #define PINCOUNT(x) pin ##x ##Count
 
 // Do not use any Serial.print() in interrupt subroutines. Serial.print() uses interrupts,
@@ -27,8 +28,13 @@ volatile uint8_t anyInterruptCounter=0;
 #define updateOn(x) \
   if (PINCOUNT(x) != 0) { \
     printIt((char *) #x, PINCOUNT(x)); \
+    if (wasExternalInterrupt > 0) { printPSTR(" ext: "); Serial.println(wasExternalInterrupt); }; \
     PINCOUNT(x)=0; \
   }
+
+#define setupPCInterrupt(x) \
+  pinMode( x, INPUT_PULLUP); \
+  enableInterrupt( x | PINCHANGEINTERRUPT, interruptFunction##x, CHANGE)
 
 #define setupInterrupt(x) \
   pinMode( x, INPUT_PULLUP); \
@@ -57,7 +63,7 @@ interruptFunction(A5);
 #endif
 
 void printIt(char *pinNumber, uint8_t count) {
-    printPSTR("Pin ");
+    printPSTR(" Pin ");
     Serial.print(pinNumber);
     printPSTR(" was interrupted: ");
     Serial.println(count, DEC);
@@ -67,16 +73,13 @@ void printIt(char *pinNumber, uint8_t count) {
 // NOTE: PORTJ2-6 (aka, "Pin '70', '71', '72', '73', '74'" are turned on as OUTPUT.
 // These are not true pins on the Arduino Mega series!
 void setup() {
-  //uint8_t pind, pink;
   Serial.begin(115200);
   Serial.println("---------------------------------------");
-  //PORTD=pind;
-  //PORTK=pink;
 #ifdef DEBUG
   pinMode(PINSIGNAL, OUTPUT);
 #endif
   // PINS 0 and 1 NOT USED BECAUSE OF Serial.print()
-  setupInterrupt(2);
+  setupPCInterrupt(2); // by default, will be External Interrupt
   setupInterrupt(3);
   setupInterrupt(4);
   setupInterrupt(5);
@@ -88,10 +91,11 @@ void setup() {
   setupInterrupt(11);
   setupInterrupt(12);
 #ifndef DEBUG
-  // NOTE: Because the Arduino Duemilanove has an LED to ground and a 1k resistor in series with it to the pin,
-  // Voltage at the pin should be hovering between 1-3 volts. 'nearly' ground. So a wire to ground will not trip
-  // an interrupt, even though we have INPUT_PULLUP. A wire to PWR will trigger an interrupt. The Uno has a
-  // op-amp buffer/driver to the LED, so will not have this problem.
+  // NOTE: Because the Arduino Duemilanove has an LED to ground and a 1k resistor in series with
+  // it to the pin, Voltage at the pin should be hovering between 1-3 volts. 'nearly' ground. So
+  // a wire to ground will not trip an interrupt, even though we have INPUT_PULLUP. A wire to PWR
+  // will trigger an interrupt. The Uno has a op-amp buffer/driver to the LED, so will not have
+  // this problem.
   setupInterrupt(13);
 #endif
   setupInterrupt(A0);
@@ -126,5 +130,6 @@ void loop() {
   updateOn(A4);
   updateOn(A5);
   printIt((char *) "XXX", anyInterruptCounter);
+  wasExternalInterrupt=0;
 }
 
