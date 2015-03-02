@@ -36,7 +36,7 @@
 // Modify this at your leisure.
 // SS = PB0, A8 = PK0, 15 = PJ0, 14 = PJ1
 //#define ARDUINOPIN A10
-#define ARDUINOPIN SS
+#define ARDUINOPIN 3
 //#define ARDUINOPIN 14
 
 // Do not use any Serial.print() in interrupt subroutines. Serial.print() uses interrupts,
@@ -79,7 +79,7 @@ void setup() {
   //PORTD=pind;
   //PORTK=pink;
   pinMode(PINSIGNAL, OUTPUT);
-  //pinMode(ARDUINOPIN, INPUT_PULLUP);  // Configure the pin as an input, and turn on the pullup resistor.
+  pinMode(ARDUINOPIN, INPUT_PULLUP);  // Configure the pin as an input, and turn on the pullup resistor.
                                       // See http://arduino.cc/en/Tutorial/DigitalPins
   //PORTC=0x01;
   pinMode(SS, INPUT_PULLUP);

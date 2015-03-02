@@ -331,40 +331,38 @@ void interruptSaysHello() {
 // PINCHANGEINTERRUPT (== 0x80)
 void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunction, uint8_t mode) {
   uint8_t arduinoPin;
-  uint8_t EICRAvalue;
-  uint8_t portNumber;
-  uint8_t portMask;
-  uint8_t origSREG; // to save for interrupts
+  uint8_t portNumber=0;
+  uint8_t portMask=0;
   uint8_t portBitNumber; // when an interrupted pin is found, this will be used to choose the function.
 
   arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
   printPSTR("Arduino pin is "); Serial.println(arduinoPin, DEC); // OK-MIKE
 
 #if defined ARDUINO_328
-	if ( (interruptDesignator && PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
+  if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
 #elif defined ARDUINO_MEGA
-	if ( (interruptDesignator && PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3 &&
-                                                             (arduinoPin < 18 || arduinoPin > 21))
-           ) {
+  if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3 &&
+                                                      (arduinoPin < 18 || arduinoPin > 21))
+     ) {
     if (arduinoPin > 69) { // Dastardly tricks to support PortJ 2-7
       portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin-6]); // Steal from PK
       portNumber=PJ;
     }
+    if (arduinoPin < 70)
 #else
 #error Unsupported Arduino platform
 #endif
-    if (arduinoPin < 70)
     {
       portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
       portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
     }
-      /**/
+      ////
     printPSTR("portMask is 0x"); Serial.println(portMask, HEX);
-      /**/
+      ////
 
-      /**/
+      ////
     printPSTR("portNumber is 0x"); Serial.println(portNumber, HEX);  // OK-MIKE
-      /**/
+      ////
 
     // save the mode
     if ((mode == RISING) || (mode == CHANGE)) {
@@ -382,29 +380,29 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #elif defined ARDUINO_MEGA
       if (portNumber==PJ) {
         risingPinsPORTJ |= portMask;
-      /**/
+      ////
         printPSTR("Port J, rising pins 0x");
         Serial.println(risingPinsPORTJ, HEX);
         printPSTR("Initial value of port: 0x");
         Serial.println(*portInputRegister(portNumber), HEX);
-      /**/
+      ////
       }
       if (portNumber==PK) {
         risingPinsPORTK |= portMask;
       }
-    }
 #elif defined ARDUINO_LEONARDO
 #error NOT IMPLEMENTED YET
 #endif
+    }
     if ((mode == FALLING) || (mode == CHANGE)) {
       printPSTR("Mode is change\r\n");
       if (portNumber==PB) {
         fallingPinsPORTB |= portMask;
-      /**/
+      ////
         printPSTR("Port B, falling pins 0x");
         Serial.println(fallingPinsPORTB, HEX);
         printPSTR("PCMSK0 is 0x"); Serial.println(PCMSK0, HEX);
-      /**/
+      ////
       }
 #if defined ARDUINO_328
       if (portNumber==PC) {
@@ -463,10 +461,10 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #endif
     if (portNumber==PB) {
       functionPointerArrayPORTB[portBitNumber] = userFunction;
-      /**/
+      ////
       printPSTR("function pointer array entry number: 0x");
       Serial.println(portBitNumber, HEX);
-      /**/
+      ////
       portSnapshotB=*portInputRegister(portNumber);
       pcmsk=&PCMSK0;
       PCICR |= _BV(0);
@@ -486,11 +484,13 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
   // *******************
   // External Interrupts
   } else {
+    Serial.print("External Interrupt chosen!");
+    uint8_t EICRAvalue;
+    uint8_t origSREG; // to save for interrupts
 #if defined ARDUINO_328
 #warning EXTERNAL INTERRUPTS UNDER DEVELOPMENT
     EICRAvalue=mode;
     origSREG = SREG;
-    /*
     cli(); // no interrupts while we're setting up an interrupt.
     if (arduinoPin == 3) {
       functionPointerArrayEXTERNAL[1] = userFunction;
@@ -512,13 +512,11 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     SREG=origSREG;
 #elif defined ARDUINO_LEONARDO
 #error NOT IMPLEMENTED YET
-  */
 #endif
   }
   SREG |= (1 << SREG_I); // GIE bit in SREG. From /usr/avr/include/avr/common.h
 }
 
-/*
 ISR(INT0_vect) {
   (*functionPointerArrayEXTERNAL[0])();
 }
@@ -544,7 +542,6 @@ ISR(INT5_vect) {
   (*functionPointerArrayEXTERNAL[5])();
 }
 #endif
-*/
 
 /*
 volatile uint8_t functionCalled=0;
