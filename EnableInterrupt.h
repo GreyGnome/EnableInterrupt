@@ -215,9 +215,11 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   4, // PJ4  pin: fake72 PJ4
   5, // PJ5  pin: fake73 PJ5
   6, // PJ6  pin: fake74 PJ6
+  6, // PE6  pin: fake75 PE6
+  7, // PE7  pin: fake76 PE7
 };
 
-interruptFunctionType functionPointerArrayEXTERNAL[6];
+interruptFunctionType functionPointerArrayEXTERNAL[8];
 interruptFunctionType functionPointerArrayPORTB[8];
 // only 7 pins total of port J are supported as interrupts on the ATmega2560,
 // and only PJ1 and 2 are supported on the Arduino MEGA.
@@ -341,7 +343,11 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #if defined ARDUINO_328
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
 #elif defined ARDUINO_MEGA
+  // NOTE: PJ2-6 and PE6 & 7 are not exposed on the Arduino, but they are supported here
+  // for software interrupts and support of non-Arduino platforms which expose more pins.
+  // PJ2-6 are called pins 70-74, PE6 is pin 75, PE7 is pin 76.
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3 &&
+                                                      arduinoPin != 75 && arduinoPin != 76 &&
                                                       (arduinoPin < 18 || arduinoPin > 21))
      ) {
     if (arduinoPin > 69) { // Dastardly tricks to support PortJ 2-7
@@ -487,11 +493,11 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     Serial.print("External Interrupt chosen!");
     uint8_t EICRAvalue;
     uint8_t origSREG; // to save for interrupts
+    origSREG = SREG;
+    cli(); // no interrupts while we're setting up an interrupt.
 #if defined ARDUINO_328
 #warning EXTERNAL INTERRUPTS UNDER DEVELOPMENT
     EICRAvalue=mode;
-    origSREG = SREG;
-    cli(); // no interrupts while we're setting up an interrupt.
     if (arduinoPin == 3) {
       functionPointerArrayEXTERNAL[1] = userFunction;
       EICRA=EICRA & 0b11110011;
@@ -503,16 +509,78 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       EICRA|=EICRAvalue;
       EIMSK|=0x01;
     }
-    SREG=origSREG;
 #elif defined ARDUINO_MEGA
 #warning EXTERNAL INTERRUPTS UNDER DEVELOPMENT
-    EICRAvalue=mode;
-    origSREG = SREG;
-    EICRA|=EICRAvalue;
-    SREG=origSREG;
+    switch (arduinoPin) {
+      case 21 : // INT0
+        functionPointerArrayEXTERNAL[0] = userFunction;
+        EIMSK &= ~_BV(0);
+        EICRA &= (~_BV(0) & ~_BV(1));
+        EICRA |= mode;
+        EIFR |= _BV(0);
+        EIMSK |= _BV(0);
+        break;
+      case 20 : // INT1
+        functionPointerArrayEXTERNAL[1] = userFunction;
+        EIMSK &= ~_BV(1);
+        EICRA &= (~_BV(2) & ~_BV(3));
+        EICRA |= (mode << 2);
+        EIFR |= _BV(1);
+        EIMSK |= _BV(1);
+        break;
+      case 19 : // INT2
+        functionPointerArrayEXTERNAL[2] = userFunction;
+        EIMSK &= ~_BV(2);
+        EICRA &= (~_BV(4) & ~_BV(5));
+        EICRA |= (mode << 4);
+        EIFR |= _BV(2);
+        EIMSK |= _BV(2);
+        break;
+      case 18 : // INT3
+        functionPointerArrayEXTERNAL[3] = userFunction;
+        EIMSK &= ~_BV(3);
+        EICRA &= (~_BV(6) & ~_BV(7));
+        EICRA |= (mode << 6);
+        EIFR |= _BV(3);
+        EIMSK |= _BV(3);
+        break;
+      case  2 : // INT4
+        functionPointerArrayEXTERNAL[4] = userFunction;
+        EIMSK &= ~_BV(4);
+        EICRB &= (~_BV(0) & ~_BV(1));
+        EICRB |= mode;
+        EIFR |= _BV(4);
+        EIMSK |= _BV(4);
+        break;
+      case  3 : // INT5
+        functionPointerArrayEXTERNAL[5] = userFunction;
+        EIMSK &= ~_BV(5);
+        EICRB &= (~_BV(2) & ~_BV(3));
+        EICRB |= (mode << 2);
+        EIFR |= _BV(5);
+        EIMSK |= _BV(5);
+        break;
+      case 75 : // INT6- Fake Arduino Pin
+        functionPointerArrayEXTERNAL[6] = userFunction;
+        EIMSK &= ~_BV(6);
+        EICRB &= (~_BV(4) & ~_BV(5));
+        EICRB |= (mode << 4);
+        EIFR |= _BV(6);
+        EIMSK |= _BV(6);
+        break;
+      case 76 : // INT7- Fake Arduino Pin
+        functionPointerArrayEXTERNAL[7] = userFunction;
+        EIMSK &= ~_BV(7);
+        EICRB &= (~_BV(6) & ~_BV(7));
+        EICRB |= (mode << 6);
+        EIFR |= _BV(7);
+        EIMSK |= _BV(7);
+        break;
+    }
 #elif defined ARDUINO_LEONARDO
 #error NOT IMPLEMENTED YET
 #endif
+    SREG=origSREG;
   }
   SREG |= (1 << SREG_I); // GIE bit in SREG. From /usr/avr/include/avr/common.h
 }
@@ -533,28 +601,47 @@ ISR(INT1_vect) {
 
 #if defined ARDUINO_MEGA
 ISR(INT2_vect) {
+#ifdef SHOWEXTERNAL
+  wasExternalInterrupt++;
+#endif
   (*functionPointerArrayEXTERNAL[2])();
 }
 
 ISR(INT3_vect) {
+#ifdef SHOWEXTERNAL
+  wasExternalInterrupt++;
+#endif
   (*functionPointerArrayEXTERNAL[3])();
 }
 
 ISR(INT4_vect) {
+#ifdef SHOWEXTERNAL
+  wasExternalInterrupt++;
+#endif
   (*functionPointerArrayEXTERNAL[4])();
 }
 
 ISR(INT5_vect) {
+#ifdef SHOWEXTERNAL
+  wasExternalInterrupt++;
+#endif
   (*functionPointerArrayEXTERNAL[5])();
 }
-#endif
 
-/*
-volatile uint8_t functionCalled=0;
-volatile uint16_t interruptsCalled=0;
-volatile uint8_t risingPins=0;
-volatile uint8_t fallingPins=0;
-*/
+ISR(INT6_vect) {
+#ifdef SHOWEXTERNAL
+  wasExternalInterrupt++;
+#endif
+  (*functionPointerArrayEXTERNAL[6])();
+}
+
+ISR(INT7_vect) {
+#ifdef SHOWEXTERNAL
+  wasExternalInterrupt++;
+#endif
+  (*functionPointerArrayEXTERNAL[7])();
+}
+#endif
 
 /*
   : "I" (_SFR_IO_ADDR(PINC)) \

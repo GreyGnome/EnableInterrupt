@@ -254,7 +254,8 @@ Arduino
   18     PD3  3	    46
    2     PE4  4      6
    3     PE5  5      7
-(INT6 and INT7: n/c)
+ n/c     PE6  6	     8  (fake pin 75)
+ n/c     PE7  7	     9  (fake pin 76)
 
 ...it is recommended to first disable INTn by clearing its Interrupt Enable bit in the
 EIMSK Register. Then, the ISCn bit can be changed. Finally, the INTn interrupt flag should be
@@ -265,7 +266,7 @@ EICRA: 7   6   5   4   3   2   1   0  (External Interrupt Control Register A)
  ISC: 31  30  21  20  11  10  01  00  Interrupt Sense Control Bits
       rw  rw  rw  rw  rw  rw  rw  rw
 
-EICRB: 7   6   5   4   3   2   1   0  (External Interrupt Control Register A)
+EICRB: 7   6   5   4   3   2   1   0  (External Interrupt Control Register B)
  ISC: 71  70  61  60  51  50  41  40  Interrupt Sense Control Bits
       rw  rw  rw  rw  rw  rw  rw  rw  NOTE: NO CONNECTION for INT6 and INT7 on ATmega2560**
 
