@@ -95,7 +95,7 @@ void setup() {
   // it to the pin, Voltage at the pin should be hovering between 1-3 volts. 'nearly' ground. So
   // a wire to ground will not trip an interrupt, even though we have INPUT_PULLUP. A wire to PWR
   // will trigger an interrupt. The Uno has a op-amp buffer/driver to the LED, so will not have
-  // this problem.
+  // this problem; it will behave like the other pins.
   setupInterrupt(13);
 #endif
   setupInterrupt(A0);
