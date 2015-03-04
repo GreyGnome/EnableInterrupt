@@ -5,8 +5,8 @@
 // This has only been tested on an Arduino Duemilanove and Mega ADK.
 // To use:
 
-#define SHOWEXTERNAL
-volatile uint8_t wasExternalInterrupt=0;
+#define COUNTEXTERNAL
+volatile uint8_t externalInterruptCounter=0;
 #include <EnableInterrupt.h>
 
 volatile uint8_t anyInterruptCounter=0;
@@ -28,7 +28,7 @@ volatile uint8_t anyInterruptCounter=0;
 #define updateOn(x) \
   if (PINCOUNT(x) != 0) { \
     printIt((char *) #x, PINCOUNT(x)); \
-    if (wasExternalInterrupt > 0) { printPSTR(" ext: "); Serial.println(wasExternalInterrupt); }; \
+    if (externalInterruptCounter > 0) { printPSTR(" ext: "); Serial.println(externalInterruptCounter); }; \
     PINCOUNT(x)=0; \
   }
 
@@ -130,6 +130,6 @@ void loop() {
   updateOn(A4);
   updateOn(A5);
   printIt((char *) "XXX", anyInterruptCounter);
-  wasExternalInterrupt=0;
+  externalInterruptCounter=0;
 }
 
