@@ -17,27 +17,65 @@
     limitations under the License.
 */ 
 
-
 // Many definitions in /usr/avr/include/avr/io.h
 
-/* Function Prototypes */
-/* These are the only functions the end user (programmer) needs to consider. This means you! */
+#ifndef EnableInterrupt_h
+#define EnableInterrupt_h
+#include <Arduino.h>
 
+// *************************************************************************************
+// *************************************************************************************
+// Function Prototypes *****************************************************************
+// *************************************************************************************
+// *************************************************************************************
+
+// These are the only functions the end user (programmer) needs to consider. This means you!
+
+// Arduino Due (not Duemilanove) macros. Easy-peasy.
+#if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__
+define enableInterrupt(pin,userFunc,mode) attachInterrupt(pin, userFunc,mode)
+define disableInterrupt(pin) detachInterrupt(pin)
+#else
 /* 
  * enableInterrupt- Sets up an interrupt on a selected Arduino pin.
  * 
- * Call like::
+ * Usage:
+ * enableInterrupt(uint8_t pinNumber, void (*userFunction)(void), uint8_t mode);
+ * or
  * enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
+ *
+ * ---------------------------------------------------------------------------------------
+ *
+ * disableInterrupt- Disables interrupt on a selected Arduino pin.
+ *
+ * Usage:
+ *
+ * disableInterrupt(uint8_t pinNumber);
+ * or
+ * disableInterrupt(uint8_t interruptDesignator);
+ *
+ * ---------------------------------------------------------------------------------------
  *
  * interruptDesignator: Essentially this is an Arduino pin, and if that's all you want to give
  * the function, it will work just fine. Why is it called an "interruptDesignator", then? Because
- * there's a twist: You can perform a bitwise "and" with the pin
+ * there's a twist: You can perform a bitwise "and" with the pin number and PINCHANGEINTERRUPT
+ * to specify that you want to use a Pin Change Interrupt type of interrupt. Otherwise, the system
+ * will choose whatever interrupt type (External, or Pin Change) normally applies to that pin,
+ * with priority to External Interrupt. 
+ *
+ * Believe it or not, the complexity is all because of pins 2 and 3 on the ATmega328-based
+ * Arduinos. Those are the only pins in the Arduino line that can share External or Pin Change
+ * Interrupt types. Otherwise, each pin only supports a single type of interrupt and the
+ * PINCHANGEINTERRUPT scheme changes nothing. This means you can ignore this whole discussion
+ * for ATmega2560- or ATmega32U4-based Arduinos.
  */
 void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
 
 void disableInterrupt(uint8_t interruptDesignator);
 
-/* End Function Prototypes */
+// *************************************************************************************
+// End Function Prototypes *************************************************************
+// *************************************************************************************
 
 #undef PINCHANGEINTERRUPT
 #undef SLOWINTERRUPT
@@ -45,6 +83,7 @@ void disableInterrupt(uint8_t interruptDesignator);
 #define PINCHANGEINTERRUPT 0x80
 #define SLOWINTERRUPT      0x80 // same thing
 
+#ifndef LIBCALL_ENABLEINTERRUPT // LIBCALL_ENABLEINTERRUPT ****************************************
 // Example: printPSTR("This is a nice long string that takes no static ram");
 #define printPSTR(x) SerialPrint_P(PSTR(x))
 void SerialPrint_P(PGM_P str) {
@@ -338,8 +377,12 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
   uint8_t portBitNumber; // when an interrupted pin is found, this will be used to choose the function.
 
   arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
-  printPSTR("Arduino pin is "); Serial.println(arduinoPin, DEC); // OK-MIKE
 
+  // *************************************************************************************
+  // *************************************************************************************
+  // External Interrupts
+  // *************************************************************************************
+  // *************************************************************************************
 #if defined ARDUINO_328
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
 #elif defined ARDUINO_MEGA
@@ -363,16 +406,15 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
     }
       ////
-    printPSTR("portMask is 0x"); Serial.println(portMask, HEX);
+    //printPSTR("portMask is 0x"); Serial.println(portMask, HEX);
       ////
 
       ////
-    printPSTR("portNumber is 0x"); Serial.println(portNumber, HEX);  // OK-MIKE
+    //printPSTR("portNumber is 0x"); Serial.println(portNumber, HEX);  // OK-MIKE
       ////
 
     // save the mode
     if ((mode == RISING) || (mode == CHANGE)) {
-      printPSTR("Mode is change\r\n");
       if (portNumber==PB) {
         risingPinsPORTB |= portMask;
       }
@@ -386,12 +428,6 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #elif defined ARDUINO_MEGA
       if (portNumber==PJ) {
         risingPinsPORTJ |= portMask;
-      ////
-        printPSTR("Port J, rising pins 0x");
-        Serial.println(risingPinsPORTJ, HEX);
-        printPSTR("Initial value of port: 0x");
-        Serial.println(*portInputRegister(portNumber), HEX);
-      ////
       }
       if (portNumber==PK) {
         risingPinsPORTK |= portMask;
@@ -401,14 +437,8 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #endif
     }
     if ((mode == FALLING) || (mode == CHANGE)) {
-      printPSTR("Mode is change\r\n");
       if (portNumber==PB) {
         fallingPinsPORTB |= portMask;
-      ////
-        printPSTR("Port B, falling pins 0x");
-        Serial.println(fallingPinsPORTB, HEX);
-        printPSTR("PCMSK0 is 0x"); Serial.println(PCMSK0, HEX);
-      ////
       }
 #if defined ARDUINO_328
       if (portNumber==PC) {
@@ -420,9 +450,6 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #elif defined ARDUINO_MEGA
       if (portNumber==PJ) {
         fallingPinsPORTJ |= portMask;
-        printPSTR("Port J, falling pins 0x"); // OK-MIKE
-        Serial.println(fallingPinsPORTJ, HEX);
-        printPSTR("PCMSK1 is 0x"); Serial.println(PCMSK1, HEX);
       }
       if (portNumber==PK) {
         fallingPinsPORTK |= portMask;
@@ -467,30 +494,22 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #endif
     if (portNumber==PB) {
       functionPointerArrayPORTB[portBitNumber] = userFunction;
-      ////
-      printPSTR("function pointer array entry number: 0x");
-      Serial.println(portBitNumber, HEX);
-      ////
       portSnapshotB=*portInputRegister(portNumber);
       pcmsk=&PCMSK0;
       PCICR |= _BV(0);
     }
-    printPSTR("We will or 0x"); Serial.print(portMask, HEX); // pcmsk was chosen above...
-    printPSTR(" with PCMSKn.\r");
     *pcmsk |= portMask;  // appropriate bit, e.g. this could be PCMSK1 |= portMask;
-    printPSTR("PCICR is 0x"); Serial.println(PCICR, HEX);
-    printPSTR("PCMSK0 is 0x"); Serial.println(PCMSK0, HEX);
-    printPSTR("PCMSK1 is 0x"); Serial.println(PCMSK1, HEX);
-    printPSTR("PCMSK2 is 0x"); Serial.println(PCMSK2, HEX);
 
     // With the exception of the Global Interrupt Enable bit in SREG, interrupts on the arduinoPin
     // are now ready. GIE may have already been set on a previous enable, so it's important
     // to take note of the order in which things were done, above.
 
-  // *******************
+  // *************************************************************************************
+  // *************************************************************************************
   // External Interrupts
+  // *************************************************************************************
+  // *************************************************************************************
   } else {
-    Serial.print("External Interrupt chosen!");
     uint8_t origSREG; // to save for interrupts
     origSREG = SREG;
     cli(); // no interrupts while we're setting up an interrupt.
@@ -626,71 +645,204 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
   SREG |= (1 << SREG_I); // GIE bit in SREG. From /usr/avr/include/avr/common.h
 }
 
-ISR(INT0_vect) {
-#ifdef COUNTEXTERNAL
-  externalInterruptCounter++;
+void disableInterrupt (uint8_t interruptDesignator) {
+
+  uint8_t origSREG; // to save for interrupts
+  uint8_t arduinoPin;
+  uint8_t portNumber=0;
+  uint8_t portMask=0;
+
+  origSREG = SREG;
+  cli();
+  arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
+#if defined ARDUINO_328
+  if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
+#elif defined ARDUINO_MEGA
+  // NOTE: PJ2-6 and PE6 & 7 are not exposed on the Arduino, but they are supported here
+  // for software interrupts and support of non-Arduino platforms which expose more pins.
+  // PJ2-6 are called pins 70-74, PE6 is pin 75, PE7 is pin 76.
+  if ( (arduinoPin != 2 && arduinoPin != 3 && arduinoPin != 75 && arduinoPin != 76
+                                           && (arduinoPin < 18 || arduinoPin > 21))
+     ) {
+    if (arduinoPin > 69) { // Dastardly tricks to support PortJ 2-7
+      portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin-6]); // Steal from PK
+      portNumber=PJ;
+    } else
+#elif defined ARDUINO_LEONARDO
+  if ( (arduinoPin > 3) && (arduinoPin != 7) ) {
+#else
+#error Unsupported Arduino platform
 #endif
+    {
+      portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
+      portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
+    }
+    if (portNumber == PB) {
+      PCMSK0 &= ~portMask;
+      if (PCMSK0 == 0) { PCICR &= ~_BV(0); };
+      risingPinsPORTB &= ~portMask;
+      fallingPinsPORTB &= ~portMask;
+    }
+#if defined ARDUINO_328
+    if (portNumber == PC) {
+      PCMSK1 &= ~portMask;
+      if (PCMSK1 == 0) { PCICR &= ~_BV(1); };
+      risingPinsPORTC &= ~portMask;
+      fallingPinsPORTC &= ~portMask;
+    }
+    if (portNumber == PD) {
+      PCMSK2 &= ~portMask;
+      if (PCMSK2 == 0) { PCICR &= ~_BV(2); };
+      risingPinsPORTD &= ~portMask;
+      fallingPinsPORTD &= ~portMask;
+    }
+#elif defined ARDUINO_MEGA
+    if (portNumber == PJ) {
+      // Handle port J's oddness. PJ0 is actually 1 on PCMSK1.
+      PCMSK1 &= ((~portMask << 1) | 0x01); // or with 1 to not touch PE0.
+      if (PCMSK1 == 0) { PCICR &= ~_BV(1); };
+      risingPinsPORTJ &= ~portMask;
+      fallingPinsPORTJ &= ~portMask;
+    }
+    if (portNumber == PK) {
+      PCMSK2 &= ~portMask;
+      if (PCMSK2 == 0) { PCICR &= ~_BV(2); };
+      risingPinsPORTK &= ~portMask;
+      fallingPinsPORTK &= ~portMask;
+    }
+#elif defined ARDUINO_LEONARDO
+    // No other Pin Change Interrupt ports than B on Leonardo
+#endif
+  } else {
+#if defined ARDUINO_328
+    if (arduinoPin == 3) {
+      EIMSK &= ~_BV(1);
+      EICRA &= (~_BV(2) & ~_BV(3));
+      EIFR  |= _BV(1); // using a clue from the ATmega2560 datasheet.
+    } else {
+      EIMSK &= ~_BV(0);
+      EICRA &= (~_BV(0) & ~_BV(1));
+      EIFR  |= _BV(0); // using a clue from the ATmega2560 datasheet.
+    }
+#elif defined ARDUINO_MEGA
+    switch (arduinoPin) {
+      case 21 : // INT0
+        EIMSK &= ~_BV(0);
+        EICRA &= (~_BV(0) & ~_BV(1));
+        EIFR |= _BV(0);
+        break;
+      case 20 : // INT1
+        EIMSK &= ~_BV(1);
+        EICRA &= (~_BV(2) & ~_BV(3));
+        EIFR |= _BV(1);
+        break;
+      case 19 : // INT2
+        EIMSK &= ~_BV(2);
+        EICRA &= (~_BV(4) & ~_BV(5));
+        EIFR |= _BV(2);
+        break;
+      case 18 : // INT3
+        EIMSK &= ~_BV(3);
+        EICRA &= (~_BV(6) & ~_BV(7));
+        EIFR |= _BV(3);
+        break;
+      case  2 : // INT4
+        EIMSK &= ~_BV(4);
+        EICRB &= (~_BV(0) & ~_BV(1));
+        EIFR |= _BV(4);
+        break;
+      case  3 : // INT5
+        EIMSK &= ~_BV(5);
+        EICRB &= (~_BV(2) & ~_BV(3));
+        EIFR |= _BV(5);
+        break;
+      case 75 : // INT6- Fake Arduino Pin
+        EIMSK &= ~_BV(6);
+        EICRB &= (~_BV(4) & ~_BV(5));
+        EIFR |= _BV(6);
+        break;
+      case 76 : // INT7- Fake Arduino Pin
+        EIMSK &= ~_BV(7);
+        EICRB &= (~_BV(6) & ~_BV(7));
+        EIFR |= _BV(7);
+        break;
+    }
+#elif defined ARDUINO_LEONARDO
+    switch (arduinoPin) {
+      case 3 : // INT0
+        EIMSK &= ~_BV(0);
+        EICRA &= (~_BV(0) & ~_BV(1));
+        EIFR |= _BV(0);
+        break;
+      case 2 : // INT1
+        EIMSK &= ~_BV(1);
+        EICRA &= (~_BV(2) & ~_BV(3));
+        EIFR |= _BV(1);
+        break;
+      case 0 : // INT2
+        EIMSK &= ~_BV(2);
+        EICRA &= (~_BV(4) & ~_BV(5));
+        EIFR |= _BV(2);
+        break;
+      case 1 : // INT3
+        EIMSK &= ~_BV(3);
+        EICRA &= (~_BV(6) & ~_BV(7));
+        EIFR |= _BV(3);
+        break;
+      case 7 : // INT6
+        EIMSK &= ~_BV(6);
+        EICRB &= (~_BV(4) & ~_BV(5));
+        EIFR |= _BV(6);
+        break;
+    }
+#endif
+  }
+  SREG = origSREG;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////// ISRs /////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+ISR(INT0_vect) {
   (*functionPointerArrayEXTERNAL[0])();
 }
 
 ISR(INT1_vect) {
-#ifdef COUNTEXTERNAL
-  externalInterruptCounter++;
-#endif
   (*functionPointerArrayEXTERNAL[1])();
 }
 
 #if defined ARDUINO_MEGA || defined ARDUINO_LEONARDO
 ISR(INT2_vect) {
-#ifdef COUNTEXTERNAL
-  externalInterruptCounter++;
-#endif
   (*functionPointerArrayEXTERNAL[2])();
 }
 
 ISR(INT3_vect) {
-#ifdef COUNTEXTERNAL
-  externalInterruptCounter++;
-#endif
   (*functionPointerArrayEXTERNAL[3])();
 }
 #endif
 
 #if defined ARDUINO_MEGA
 ISR(INT4_vect) {
-#ifdef COUNTEXTERNAL
-  externalInterruptCounter++;
-#endif
   (*functionPointerArrayEXTERNAL[4])();
 }
 
 ISR(INT5_vect) {
-#ifdef COUNTEXTERNAL
-  externalInterruptCounter++;
-#endif
   (*functionPointerArrayEXTERNAL[5])();
 }
 
 ISR(INT6_vect) {
-#ifdef COUNTEXTERNAL
-  externalInterruptCounter++;
-#endif
   (*functionPointerArrayEXTERNAL[6])();
 }
 
 ISR(INT7_vect) {
-#ifdef COUNTEXTERNAL
-  externalInterruptCounter++;
-#endif
   (*functionPointerArrayEXTERNAL[7])();
 }
 #endif
 
 #if defined ARDUINO_LEONARDO
 ISR(INT6_vect) {
-#ifdef COUNTEXTERNAL
-  externalInterruptCounter++;
-#endif
   (*functionPointerArrayEXTERNAL[4])();
 }
 #endif
@@ -873,10 +1025,12 @@ ISR(PORTB_VECT) {
 }
 
 #if defined ARDUINO_328
-ISR(PORTC_VECT, ISR_NAKED) {
-  register uint8_t current asm("r18");
+ISR(PORTC_VECT) {
+//ISR(PORTC_VECT, ISR_NAKED) {
+  uint8_t current; current=PINC;
+  //register uint8_t current asm("r18");
 
-  EI_ASM_PREFIX(PINC);
+  //EI_ASM_PREFIX(PINC);
 
   inlineISR(current,
       &portSnapshotC,
@@ -885,13 +1039,15 @@ ISR(PORTC_VECT, ISR_NAKED) {
       PCMSK1,
       functionPointerArrayPORTC );
 
-  EI_ASM_SUFFIX;
+  //EI_ASM_SUFFIX;
 }
 
-ISR(PORTD_VECT, ISR_NAKED) {
-  register uint8_t current asm("r18");
+ISR(PORTD_VECT) {
+//ISR(PORTD_VECT, ISR_NAKED) {
+  uint8_t current; current=PIND;
+  //register uint8_t current asm("r18");
 
-  EI_ASM_PREFIX(PIND);
+  //EI_ASM_PREFIX(PIND);
 
   inlineISR(current,
       &portSnapshotD,
@@ -900,7 +1056,7 @@ ISR(PORTD_VECT, ISR_NAKED) {
       PCMSK2,
       functionPointerArrayPORTD );
 
-  EI_ASM_SUFFIX;
+  //EI_ASM_SUFFIX;
 }
 
 #elif defined ARDUINO_MEGA
@@ -940,3 +1096,6 @@ ISR(PORTK_VECT) {
 #elif defined ARDUINO_LEONARDO
   // No other Pin Change Interrupt ports than B on Leonardo
 #endif
+#endif // #ifndef LIBCALL_ENABLEINTERRUPT *********************************************************
+#endif // #if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__
+#endif // #ifndef EnableInterrupt_h ***************************************************************

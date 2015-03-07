@@ -129,6 +129,8 @@ void setup() {
   enableInterrupt(76, interruptFunction76, CHANGE);
 }
 
+uint8_t enabledToggle=1;
+uint8_t disableCounter=0;
 // In the loop, we just check to see where the interrupt count is at. The value gets updated by the
 // interrupt routine.
 void loop() {
@@ -136,6 +138,30 @@ void loop() {
   uint8_t njbits=0b00000001; // PJ2
   uint8_t ebits =0b11000000; // PE6/7
   uint8_t nebits=0b00111111; // PE6/7
+
+  if (disableCounter & 0x08) {
+    printPSTR("Toggle 20, 71, 75, A8, 15, MISO...");
+    delay(1000);
+    if (enabledToggle==1) {
+      disableInterrupt(20);
+      disableInterrupt(71);
+      disableInterrupt(75);
+      disableInterrupt(15);
+      disableInterrupt(A8);
+      disableInterrupt(MISO);
+      enabledToggle=0;
+    }
+    else {
+      setupInterrupt(20);
+      setupInterrupt(71);
+      setupInterrupt(75);
+      setupInterrupt(15);
+      setupInterrupt(A8);
+      setupInterrupt(MISO);
+      enabledToggle=1;
+    }
+    disableCounter=0;
+  }
   PORTE &= nebits;
   PORTJ &= njbits;
   //*out &= njbits;
@@ -148,7 +174,7 @@ void loop() {
   delay(1000);                          // Every second,
   updateOn(SS);
   updateOn(SCK);
-  updateOn(MOSI);
+  updateOn(MOSI)
   updateOn(MISO);
   updateOn(10);
   updateOn(11);
@@ -183,5 +209,6 @@ void loop() {
   printIt("XXX", anyInterruptCounter);
   if (externalInterruptCounter > 0) { printPSTR(" ext: "); Serial.println(externalInterruptCounter); }; \
   externalInterruptCounter=0;
+  disableCounter++;
 }
 
