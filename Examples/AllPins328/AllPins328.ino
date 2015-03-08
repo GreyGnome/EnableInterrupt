@@ -140,9 +140,9 @@ void loop() {
     else {
       if (otherToggle == 1) {
         enableInterrupt(3, otherInterrupt3Function, CHANGE); // make sure we can switch functions.
-        otherToggle=1;
-      } else {
         otherToggle=0;
+      } else {
+        otherToggle=1;
       	setupInterrupt(3);
       }
       setupPCInterrupt(2);
