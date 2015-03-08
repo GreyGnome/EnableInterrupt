@@ -59,8 +59,9 @@ define disableInterrupt(pin) detachInterrupt(pin)
  * interruptDesignator: Essentially this is an Arduino pin, and if that's all you want to give
  * the function, it will work just fine. Why is it called an "interruptDesignator", then? Because
  * there's a twist: You can perform a bitwise "and" with the pin number and PINCHANGEINTERRUPT
- * to specify that you want to use a Pin Change Interrupt type of interrupt. Otherwise, the system
- * will choose whatever interrupt type (External, or Pin Change) normally applies to that pin,
+ * to specify that you want to use a Pin Change Interrupt type of interrupt on those pins that
+ * support both Pin Change and External Interrupts. Otherwise, the library will choose whatever
+ * interrupt type (External, or Pin Change) normally applies to that pin,
  * with priority to External Interrupt. 
  *
  * Believe it or not, the complexity is all because of pins 2 and 3 on the ATmega328-based
@@ -85,7 +86,7 @@ void disableInterrupt(uint8_t interruptDesignator);
 
 #ifndef LIBCALL_ENABLEINTERRUPT // LIBCALL_ENABLEINTERRUPT ****************************************
 // Example: printPSTR("This is a nice long string that takes no static ram");
-#define printPSTR(x) SerialPrint_P(PSTR(x))
+#define EI_printPSTR(x) SerialPrint_P(PSTR(x))
 void SerialPrint_P(PGM_P str) {
   for (uint8_t c; (c = pgm_read_byte(str)); str++) Serial.write(c);
 } 
@@ -336,33 +337,6 @@ static volatile uint8_t portSnapshotB;
 // END END END DATA STRUCTURES ===============================================================
 // ===========================================================================================
 
-// sexytime! The compiler uses the cbi and sbi instructions (which set/clear a numbered bit)!
-// That's awesome- only 1 instruction per each PORTB*= instruction, below, and no registers needed!
-// Cooooolll....
-void interruptSaysHello() {
-#ifdef ARDUINO_328
-#define PINSIGNAL 13
-  uint8_t led_on, led_off;         // DEBUG
-  led_on=0b00100000; led_off=~led_on;  // PB5 == Arduino pin 13.
-  PORTB&=led_off;
-  PORTB|=led_on;
-  PORTB&=led_off;
-  PORTB|=led_on;
-#elif defined ARDUINO_MEGA
-#define PINSIGNAL 22
-  uint8_t sign_on, sign_off;         // DEBUG
-  sign_on=0b00000001; sign_off=~sign_on;  // PA0 == Arduino pin 22.
-  PORTA&=sign_off;
-  PORTA|=sign_on;
-  PORTA&=sign_off;
-  PORTA|=sign_on;
-#endif
-}
-
-
-// current state of a port inside the interrupt handler.
-//volatile uint8_t current;
-
 // From /usr/share/arduino/hardware/arduino/cores/robot/Arduino.h
 // #define CHANGE 1
 // #define FALLING 2
@@ -380,7 +354,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 
   // *************************************************************************************
   // *************************************************************************************
-  // External Interrupts
+  // Pin Change Interrupts
   // *************************************************************************************
   // *************************************************************************************
 #if defined ARDUINO_328
@@ -405,13 +379,6 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
       portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
     }
-      ////
-    //printPSTR("portMask is 0x"); Serial.println(portMask, HEX);
-      ////
-
-      ////
-    //printPSTR("portNumber is 0x"); Serial.println(portNumber, HEX);  // OK-MIKE
-      ////
 
     // save the mode
     if ((mode == RISING) || (mode == CHANGE)) {
@@ -847,135 +814,6 @@ ISR(INT6_vect) {
 }
 #endif
 
-/*
-  : "I" (_SFR_IO_ADDR(PINC)) \
-*/
-
-#define EI_ASM_PUSHIT \
-   asm volatile( \
-  "push r1" "\n\t" \
-  "push r0" "\n\t" \
-  /* in 0x3f saves SREG... then it's pushed onto the stack.*/ \
-  "in r0, __SREG__" "\n\t" /* 0x3f */\
-  "push r0" "\n\t" \
-  "eor r1, r1" "\n\t" \
-  "push r19" "\n\t" \
-  "push r20" "\n\t" \
-  "push r21" "\n\t" \
-  "push r22" "\n\t" \
-  "push r23" "\n\t" \
-  "push r24" "\n\t" \
-  "push r25" "\n\t" \
-  "push r26" "\n\t" \
-  "push r27" "\n\t" \
-  "push r28" "\n\t" \
-  "push r29" "\n\t" \
-  "push r30" "\n\t" \
-  "push r31" "\n\t" \
-  : \
-  :)
-
-// We have defined "current" as "r18" in the ISR's. */
-#define EI_ASM_PREFIX(x) \
-  /* BEGASM This: \
-  current = PINC; // PortC Input. \
-  is the same as this: */ \
-  asm volatile("\t" \
-  "push %0" "\t\n\t" \
-  "in %0,%1" "\t\n\t" \
-  : "=&r" (current) \
-  : "I" (_SFR_IO_ADDR(x)) \
-  ); \
-  /* ENDASM ...End of the sameness.*/ \
- \
-  EI_ASM_PUSHIT
-
-// We have defined "current" as "r18" in the ISR's. */
-#define EI_ASM_PREFIX_JK(x) \
-  /* BEGASM This: \
-  current = PINK; // PortC Input. \
-  is the same as this: */ \
-  asm volatile("\t" \
-  "push %0" "\t\n\t" \
-  "lds %0,%1" "\t\n\t" \
-  : "=&r" (current) \
-  : "m" (x) \
-  ); \
-  /* ENDASM ...End of the sameness.*/ \
- \
-  EI_ASM_PUSHIT
-
-#define EI_ASM_SUFFIX \
- asm volatile( \
-  "pop r31" "\n\t" \
-  "pop r30" "\n\t" \
-  "pop r29" "\n\t" \
-  "pop r28" "\n\t" \
-  "pop r27" "\n\t" \
-  "pop r26" "\n\t" \
-  "pop r25" "\n\t" \
-  "pop r24" "\n\t" \
-  "pop r23" "\n\t" \
-  "pop r22" "\n\t" \
-  "pop r21" "\n\t" \
-  "pop r20" "\n\t" \
-  "pop r19" "\n\t" \
-  "pop r0" "\n\t" \
-  "out __SREG__, r0" "\t\n\t" \
-  "pop r0" "\t\n\t" \
-  "pop r1" "\t\n\t" \
-  "pop r18" "\n\t" \
-  "reti" "\t\n\t" \
-  : \
-  :)
-
-/*
- * We can save a register if we hand assemble (assembler uses 4 registers for figuring out changedPins)
- * TODO!
- * ...we can also reuse registers that I think the compiler does not want to touch.
-// If the compiler does not inline this, things break.
-// It's not enough to have just inline, we need the attribute.
-inline void __attribute__((always_inline)) inlineISRasm (uint8_t current,
-  volatile uint8_t *portSnapshot,
-  uint8_t risingPins, uint8_t fallingPins,
-  volatile uint8_t pcmsk,
-  interruptFunctionType functionPointerArray[]) {
-
-  uint8_t i;
-  uint8_t interruptMask;
-  register uint8_t changedPins asm("r19");
-  register uint8_t tmp1 asm("r20");
-  register uint8_t tmp2 asm("r21");
-
-  tmp1=risingPins;
-  tmp1=risingPins & current;
-  tmp2=fallingPins;
-  tmp3=~current;
-  tmp2=fallingPins & ~current;
-  tmp2=tmp2 | tmp1;
-  tmp3=*portSnapshot;
-  tmp3=tmp3 ^ current;
-  tmp3=tmp3 & tmp2;
-  // changedPins=(*portSnapshot ^ current) & ((risingPins & current) | (fallingPins & ~current));
-
-  *portSnapshot =  current;
-  if (changedPins == 0) goto exitISR; // get out quickly if not interested.
-
-  interruptMask = pcmsk & changedPins;
-  if (interruptMask == 0) goto exitISR;
-  i=0;
-  while (1) {
-    if (interruptMask & 0x01) {
-      (*functionPointerArray[i])();
-    }
-    interruptMask=interruptMask >> 1;
-    if (interruptMask == 0) goto exitISR;
-    i++;
-  }
-  exitISR: return;
-}
-*/
-
 // If the compiler does not inline this, things break.
 // It's not enough to have just inline, we need the attribute.
 inline void __attribute__((always_inline)) inlineISR (uint8_t current,
@@ -988,7 +826,6 @@ inline void __attribute__((always_inline)) inlineISR (uint8_t current,
   uint8_t interruptMask;
   uint8_t changedPins;
 
-  //interruptSaysHello();
   changedPins=(*portSnapshot ^ current) & ((risingPins & current) | (fallingPins & ~current));
   *portSnapshot =  current;
   if (changedPins == 0) goto exitISR; // get out quickly if not interested.
@@ -1008,11 +845,7 @@ inline void __attribute__((always_inline)) inlineISR (uint8_t current,
 }
 
 ISR(PORTB_VECT) {
-//ISR(PORTB_VECT, ISR_NAKED) {
   uint8_t current; current=PINB;
-  //register uint8_t current asm("r18");
-
-  //EI_ASM_PREFIX(PINB);
 
   inlineISR(current,
       &portSnapshotB,
@@ -1020,17 +853,11 @@ ISR(PORTB_VECT) {
       fallingPinsPORTB,
       PCMSK0,
       functionPointerArrayPORTB );
-
-  //EI_ASM_SUFFIX;
 }
 
 #if defined ARDUINO_328
 ISR(PORTC_VECT) {
-//ISR(PORTC_VECT, ISR_NAKED) {
   uint8_t current; current=PINC;
-  //register uint8_t current asm("r18");
-
-  //EI_ASM_PREFIX(PINC);
 
   inlineISR(current,
       &portSnapshotC,
@@ -1038,16 +865,10 @@ ISR(PORTC_VECT) {
       fallingPinsPORTC,
       PCMSK1,
       functionPointerArrayPORTC );
-
-  //EI_ASM_SUFFIX;
 }
 
 ISR(PORTD_VECT) {
-//ISR(PORTD_VECT, ISR_NAKED) {
   uint8_t current; current=PIND;
-  //register uint8_t current asm("r18");
-
-  //EI_ASM_PREFIX(PIND);
 
   inlineISR(current,
       &portSnapshotD,
@@ -1055,17 +876,11 @@ ISR(PORTD_VECT) {
       fallingPinsPORTD,
       PCMSK2,
       functionPointerArrayPORTD );
-
-  //EI_ASM_SUFFIX;
 }
 
 #elif defined ARDUINO_MEGA
 ISR(PORTJ_VECT) {
-//ISR(PORTJ_VECT, ISR_NAKED) {
   uint8_t current; current=PINJ;
-  //register uint8_t current asm("r18");
-
-  //EI_ASM_PREFIX_JK(PINJ);
 
   inlineISR(current,
       &portSnapshotJ,
@@ -1073,16 +888,10 @@ ISR(PORTJ_VECT) {
       fallingPinsPORTJ,
       PCMSK1 >> 1, // handle PCMSK1/PORTJ weirdness...
       functionPointerArrayPORTJ );
-
-  //EI_ASM_SUFFIX;
 }
 
 ISR(PORTK_VECT) {
-//ISR(PORTK_VECT, ISR_NAKED) {
   uint8_t current; current=PINK;
-  //register uint8_t current asm("r18");
-
-  //EI_ASM_PREFIX_JK(PINK);
 
   inlineISR(current,
       &portSnapshotK,
@@ -1090,8 +899,6 @@ ISR(PORTK_VECT) {
       fallingPinsPORTK,
       PCMSK2,
       functionPointerArrayPORTK );
-
-  //EI_ASM_SUFFIX;
 }
 #elif defined ARDUINO_LEONARDO
   // No other Pin Change Interrupt ports than B on Leonardo
