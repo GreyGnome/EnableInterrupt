@@ -61,14 +61,15 @@ define disableInterrupt(pin) detachInterrupt(pin)
  * there's a twist: You can perform a bitwise "and" with the pin number and PINCHANGEINTERRUPT
  * to specify that you want to use a Pin Change Interrupt type of interrupt on those pins that
  * support both Pin Change and External Interrupts. Otherwise, the library will choose whatever
- * interrupt type (External, or Pin Change) normally applies to that pin,
- * with priority to External Interrupt. 
+ * interrupt type (External, or Pin Change) normally applies to that pin, with priority to
+ * External Interrupt. 
  *
- * Believe it or not, the complexity is all because of pins 2 and 3 on the ATmega328-based
+ * Believe it or not, that complexity is all because of pins 2 and 3 on the ATmega328-based
  * Arduinos. Those are the only pins in the Arduino line that can share External or Pin Change
  * Interrupt types. Otherwise, each pin only supports a single type of interrupt and the
  * PINCHANGEINTERRUPT scheme changes nothing. This means you can ignore this whole discussion
- * for ATmega2560- or ATmega32U4-based Arduinos.
+ * for ATmega2560- or ATmega32U4-based Arduinos. You can probably safely ignore it for
+ * ATmega328-based Arduinos, too.
  */
 void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
 
@@ -79,10 +80,8 @@ void disableInterrupt(uint8_t interruptDesignator);
 // *************************************************************************************
 
 #undef PINCHANGEINTERRUPT
-#undef SLOWINTERRUPT
 
 #define PINCHANGEINTERRUPT 0x80
-#define SLOWINTERRUPT      0x80 // same thing
 
 #ifndef LIBCALL_ENABLEINTERRUPT // LIBCALL_ENABLEINTERRUPT ****************************************
 // Example: printPSTR("This is a nice long string that takes no static ram");
