@@ -25,14 +25,13 @@ volatile uint8_t anyInterruptCounter=0;
   volatile uint8_t PINCOUNT(x); \
   void interruptFunction ##x () { \
     anyInterruptCounter++; \
-    interruptSaysHello(); \
     PINCOUNT(x)++; \
   }
 
 #define updateOn(x) \
   if (PINCOUNT(x) != 0) { \
     printIt((char *) #x, PINCOUNT(x)); \
-    if (externalInterruptCounter > 0) { printPSTR(" ext: "); Serial.println(externalInterruptCounter); }; \
+    if (externalInterruptCounter > 0) { EI_printPSTR(" ext: "); Serial.println(externalInterruptCounter); }; \
     PINCOUNT(x)=0; \
   }
 
@@ -77,9 +76,9 @@ void otherInterrupt3Function(void) { // Must appear after interruptFunction(3)
 #endif
 
 void printIt(char *pinNumber, uint8_t count) {
-    printPSTR(" Pin ");
+    EI_printPSTR(" Pin ");
     Serial.print(pinNumber);
-    printPSTR(" was interrupted: ");
+    EI_printPSTR(" was interrupted: ");
     Serial.println(count, DEC);
 }
 
@@ -129,7 +128,7 @@ void loop() {
   Serial.println("---------------------------------------");
   delay(1000);                          // Every second,
   if (disableCounter & 0x08) {
-    printPSTR("Toggle 2, 3, 8, A0...");
+    EI_printPSTR("Toggle 2, 3, 8, A0...");
     delay(1000);
     if (enabledToggle==1) {
       disablePCInterrupt(2);
