@@ -73,26 +73,20 @@ determining exactly which pin and what change caused it. For a review of this
 issue see https://github.com/GreyGnome/EnableInterrupt/blob/master/Interrupt%20Timing.pdf
 
 # USAGE:
-======
-enableInterrupt- Enables interrupt on a selected Arduino pin.  
+*enableInterrupt*- Enables interrupt on a selected Arduino pin.  
 ```C
 enableInterrupt(uint8_t pinNumber, void (*userFunction)(void), uint8_t mode);
-```
 or
-```C
 enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
 ```
 
-disableInterrupt- Disables interrupt on a selected Arduino pin.  
+*disableInterrupt*- Disables interrupt on a selected Arduino pin.  
 
 ```C
 disableInterrupt(uint8_t pinNumber);
 or
 disableInterrupt(uint8_t interruptDesignator);
 ```
-
-It is possible to change the user function after enabling the interrupt (if you
-want), by disabling the interrupt and enabling it with a different function.
 
 Each pin supports only 1 function and 1 mode at a time.
 
@@ -110,11 +104,15 @@ support both Pin Change and External Interrupts. Otherwise, the library will cho
 interrupt type (External, or Pin Change) normally applies to that pin,
 with priority to External Interrupt. 
 
-Believe it or not, the complexity is all because of pins 2 and 3 on the ATmega328-based
+* Believe it or not, the complexity is all because of pins 2 and 3 on the ATmega328-based
 Arduinos. Those are the only pins in the Arduino line that can share External or Pin Change
 Interrupt types. Otherwise, each pin only supports a single type of interrupt and the
 PINCHANGEINTERRUPT scheme changes nothing. This means you can ignore this whole discussion
 for ATmega2560- or ATmega32U4-based Arduinos.
+
+It is possible to change the user function after enabling the interrupt (if you
+want), by disabling the interrupt and enabling it with a different function.
+
 
 # PIN / PORT BESTIARY
 =======
