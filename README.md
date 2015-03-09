@@ -12,14 +12,16 @@ disableInterrupt - Disables interrupt on the selected Arduino pin.
 
 See more details below under USAGE.  
 
-*NOTICE*: Many of the interrupt pins on the ATmega processor used in the Uno,
+_NOTICE_: Many of the interrupt pins on the ATmega processor used in the Uno,
 Leonardo, and ATmega2560 are "Pin Change Interrupt pins". This means that under
 the sheets, the pins *only* trigger on CHANGE, and a number of pins share a
-single interrupt subroutine. There is a significant time between when the
-interrupt triggers and when the pins are read to determine what actually
-happened (rising or falling) and which pin changed. Therefore, these pins are
-*not* suitable for fast changing signals, and under the right conditions such
-events as a bouncing switch may actually be missed. Caveat Programmer.
+single interrupt subroutine. The library enables these interrupt types to appear
+normal, so that each pin can support RISING, FALLING, or CHANGE, and each pin
+can support its own user-defined interrupt subroutine. But there is a *significant*
+time between when the interrupt triggers and when the pins are read to determine
+what actually happened (rising or falling) and which pin changed. Therefore, these
+pins are *not* suitable for fast changing signals, and under the right conditions
+such events as a bouncing switch may actually be missed. Caveat Programmer.
 
 ---------------------------------------------------------------------------------------
 
