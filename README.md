@@ -153,8 +153,8 @@ Pin Change     | 8-11 and SCK, MOSI, MISO
 Interrupt Pins:
 Arduino	External		Arduino	Pin Change	Arduino	Pin Change
 Pin     Interrupt               Pin     Interrupt       Pin     Interrupt
-		Port				Port			Port
-2       INT0    PD2             2	PCINT18 PD2	A0	PCINT8	PC0
+                Port                           Port                     Port
+2       INT0    PD2             2       PCINT18 PD2	A0	PCINT8	PC0
 3       INT1    PD3             3	PCINT19 PD3	A1	PCINT9	PC1
                                 4	PCINT20	PD4	A2	PCINT10	PC2
                                 5	PCINT21	PD5	A3	PCINT11	PC3
