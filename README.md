@@ -154,18 +154,18 @@ Interrupt Pins:
 Arduino	External		Arduino	Pin Change	Arduino	Pin Change
 Pin	Interrupt		Pin	Interrupt	Pin	Interrupt
 		Port				Port			Port
-2	INT0	PD2		2	PCINT18 PD2	A0	PCINT8	PC0
-3	INT1	PD3		3	PCINT19 PD3	A1	PCINT9	PC1
-				4	PCINT20	PD4	A2	PCINT10	PC2
-				5	PCINT21	PD5	A3	PCINT11	PC3
-				6	PCINT22 PD6	A4	PCINT12	PC4
-				7	PCINT23	PD7	A5	PCINT13	PC5
-				8	PCINT0	PB0
-				9	PCINT1	PB1
-				10	PCINT2	PB2
-				11	PCINT3	PB3
-				12	PCINT4	PB4
-				13	PCINT5	PB5
+2       INT0    PD2             2	PCINT18 PD2	A0	PCINT8	PC0
+3       INT1    PD3             3	PCINT19 PD3	A1	PCINT9	PC1
+                                4	PCINT20	PD4	A2	PCINT10	PC2
+                                5	PCINT21	PD5	A3	PCINT11	PC3
+                                6	PCINT22 PD6	A4	PCINT12	PC4
+                                7	PCINT23	PD7	A5	PCINT13	PC5
+                                8	PCINT0	PB0
+                                9	PCINT1	PB1
+                                10	PCINT2	PB2
+                                11	PCINT3	PB3
+                                12	PCINT4	PB4
+                                13	PCINT5	PB5
 </pre>
 
 ### Leonardo Pins LEONARDO
@@ -183,7 +183,7 @@ Pin	External          	Pin	Pin Change
 				MOSI/16	PCINT2    PB2
 				MISO/14	PCINT3    PB3
 on ICSP:
-SCK/15: PCINT1 (PB1)
+SCK/15:  PCINT1 (PB1)
 MOSI/16: PCINT2 (PB2)
 MISO/14: PCINT3 (PB3)
 
