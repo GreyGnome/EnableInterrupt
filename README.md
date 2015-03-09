@@ -115,7 +115,6 @@ want), by disabling the interrupt and enabling it with a different function.
 
 
 # PIN / PORT BESTIARY
-=======
 Theoretically pins 0 and 1 (RX and TX) are supported but as these pins have
 a special purpose on the Arduino, their use in this library has not been tested.
 
@@ -137,11 +136,7 @@ External       | 0-3 and 7
 Pin Change     | 8-11 and SCK, MOSI, MISO
 
 ## Details
-================================================================================
-================================================================================
 ### Arduino Uno
-================================================================================
-================================================================================
 
 <pre>
 Interrupt Pins:
@@ -162,11 +157,7 @@ Pin	Interrupt		Pin	Interrupt	Pin	Interrupt
 				13	PCINT5	PB5
 </pre>
 
-================================================================================
-================================================================================
 ### Leonardo Pins LEONARDO
-================================================================================
-================================================================================
 
 <pre>
 Interrupt pins:
@@ -194,11 +185,7 @@ static const uint8_t SCK  = 15;
 
 </pre>
 
-================================================================================
-================================================================================
 ### ATmega2560 Support
-================================================================================
-================================================================================
 
 <pre>
 External Interrupts ------------------------------------------------------------
@@ -228,12 +215,14 @@ Arduino              Arduino              Arduino
  A13     PK5  21       15     PJ0   9
  A14     PK6  22        0     PE0   8 - this one is a little odd. *
  A15     PK7  23
+</pre>
 
 The library supports all interrupt pins, even though not all pins to the
 ATmega-2560 processor are exposed on the Arduino board. These pins are
 supported as "fake pins", and begin with pin 70 (there are 70 pins on the
 ATmega 2560 board). The fake pins are as follows:
 
+<pre>
 pin: fake70 PJ2 this is Pin Change Interrupt PCINT11
 pin: fake71 PJ3 this is Pin Change Interrupt PCINT12
 pin: fake72 PJ4 this is Pin Change Interrupt PCINT13
@@ -241,10 +230,10 @@ pin: fake73 PJ5 this is Pin Change Interrupt PCINT14
 pin: fake74 PJ6 this is Pin Change Interrupt PCINT15
 pin: fake75 PE6 this is External Interrupt INT6
 pin: fake76 PE7 this is External Interrupt INT7
+</pre>
 
 * Note: Arduino Pin 0 is PE0 (PCINT8), which is RX0. Also, it is the only other
 pin on another port on PCI1. This would make it very costly to integrate with
 the library's code and thus is not supported by this library.  It is the same
 pin the Arduino uses to upload sketches, and it is connected to the FT232RL
 USB-to-Serial chip (ATmega16U2 on the R3).
-</pre>
