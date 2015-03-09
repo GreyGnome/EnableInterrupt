@@ -1,18 +1,16 @@
 # EnableInterrupt
-======
-
 New Arduino interrupt library, designed for all versions of the Arduino.
 Functions:
 
 ```
 enableInterrupt- Enables interrupt on a selected Arduino pin.
-
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
 
-See more details below under USAGE.  
+See more details below under USAGE. See the Examples subdirectory in the
+distribution for examples of the library in action.
 
-_NOTICE_: Many of the interrupt pins on the ATmega processor used in the Uno,
+**NOTICE** Many of the interrupt pins on the ATmega processor used in the Uno,
 Leonardo, and ATmega2560 are "Pin Change Interrupt pins". This means that under
 the sheets, the pins *only* trigger on CHANGE, and a number of pins share a
 single interrupt subroutine. The library enables these interrupt types to appear
@@ -23,13 +21,9 @@ what actually happened (rising or falling) and which pin changed. Therefore, the
 pins are *not* suitable for fast changing signals, and under the right conditions
 such events as a bouncing switch may actually be missed. Caveat Programmer.
 
----------------------------------------------------------------------------------------
-
 For a tutorial on interrupts, see
 http://www.engblaze.com/we-interrupt-this-program-to-bring-you-a-tutorial-on-arduino-interrupts/
 The posting gets into low-level details on interrupts.
-
----------------------------------------------------------------------------------------
 
 ## ATmega Processor Interrupt Types
 Note that the ATmega processor at the heart of the Arduino Uno/Mega2560/Leonardo
