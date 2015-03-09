@@ -36,18 +36,20 @@ There are a varying number of external interrupt pins on the different
 processors. The Uno supports only 2 and they are mapped to Arduino pins 2 and 3.
 The 2560 supports 6 usable, and the Leonardo supports 5. These interrupts can be
 set to trigger on RISING, or FALLING, or both ("CHANGE") signal levels, or on
-LOW level. The triggers are interpreted by hardware, so you know exactly which
-pin interrupted at the time of the event. On the other hand as mentioned there
-are a limited number of these pins, especially on the Arduino Uno (and others
-like it which use the ATmega328p processor).
+LOW level. The triggers are interpreted by hardware, so by the time your user
+function is running, you know exactly which pin interrupted at the time of the
+event, and how it changed. On the other hand, as mentioned there are a limited
+number of these pins, especially on the Arduino Uno (and others like it which
+use the ATmega328p processor).
 
 ### Pin Change Interrupts
-On the Arduino Uno (and again, all 328p-based boards) the pin change interrupts
-can be enabled on any or all of the pins. The two pins 2 and 3 support *either*
-pin change or external interrupts. On 2560-based Arduinos, there are 18 pin
-change interrupt pins in addition to the 6 external interrupt pins. On the 
-Leonardo there are 7 pin change interrupt pins in addition to the 5 external
-interrupt pins. See PIN BESTIARY below for the pin numbers and other details.
+On the Arduino Uno (and again, all 328p-based boards) *only*, the pin change
+interrupts can be enabled on any or all of the pins. The two pins 2 and 3
+support *either* pin change or external interrupts. On 2560-based Arduinos,
+there are 18 pin change interrupt pins in addition to the 6 external interrupt
+pins. On the Leonardo there are 7 pin change interrupt pins in addition to the
+5 external interrupt pins. See PIN BESTIARY below for the pin numbers and other
+details.
 
 Pin Change interrupts trigger on all RISING and FALLING signal edges.
 Furthermore, the processor's pins, and pin change interrupts, are grouped into
@@ -65,15 +67,36 @@ if it rose?), then to call the programmer's chosen subroutine. This makes the
 job of resolving the action on a single pin somewhat complicated. There is a
 modest slowdown in the interrupt routine because of this complication. Perhaps
 more importantly, there is some latency between the interrupt and the system
-determining exactly which pin and what change caused it. For a review of this
-issue see https://github.com/GreyGnome/EnableInterrupt/blob/master/Interrupt%20Timing.pdf
+determining exactly which pin and what change caused it. So the signal could
+have changed by the time the pin's status is read, returning a false reading
+back to your sketch. For a review of this issue see
+https://github.com/GreyGnome/EnableInterrupt/blob/master/Interrupt%20Timing.pdf
 
 # USAGE:
-*enableInterrupt*- Enables interrupt on a selected Arduino pin.  
+*enableInterrupt*- Enables interrupt on a selected Arduino pin.
 ```C
 enableInterrupt(uint8_t pinNumber, void (*userFunction)(void), uint8_t mode);
 or
 enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
+
+The arguments are:
+* pinNumber - The number of the Arduino pin, such as 3, or A0, or SCK. Note that
+these are *not* strings, so when you use A0 for example, do not use quotes.
+* interruptDesignator- very much like a pin. See below.
+* userFunction - The name of the function you want the interrupt to run. Do not
+use a pointer here, just give it the name of your function. See the example code
+in the Examples directory.
+* mode - What you want the interrupt to interrupt on. For Pin Change Interrupt
+pins, the modes supported are RISING, FALLING, or CHANGE.
+** RISING - The signal went from "0", or zero volts, to "1", or 5 volts.
+** FALLING - The signal went from "1" to "0".
+** CHANGE - The signal either rose or fell.
+
+For External Interrupts, the same modes are supported plus the additional mode
+of LOW signal level.
+** LOW - The signal is at a low level for some time.
+
+Each pin supports only 1 function and 1 mode at a time.
 ```
 
 *disableInterrupt*- Disables interrupt on a selected Arduino pin.  
@@ -83,14 +106,6 @@ disableInterrupt(uint8_t pinNumber);
 or
 disableInterrupt(uint8_t interruptDesignator);
 ```
-
-Each pin supports only 1 function and 1 mode at a time.
-
-For Pin Change Interrupt pins, the modes supported are RISING, FALLING, or
-CHANGE.
-
-For External Interrupts, the same modes are supported plus the additional mode
-of LOW signal level.
 
 * interruptDesignator: Essentially this is an Arduino pin, and if that's all you want to give
 the function, it will work just fine. Why is it called an "interruptDesignator", then? Because
