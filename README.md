@@ -1,36 +1,41 @@
-EnableInterrupt
-===============
+# EnableInterrupt
+======
 
 New Arduino interrupt library, designed for all versions of the Arduino.
 Functions:
 
+```
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 
 disableInterrupt - Disables interrupt on the selected Arduino pin.
+```
 
-See more details below under USAGE.
+See more details below under USAGE.  
+
+*NOTICE*: Many of the interrupt pins on the ATmega processor used in the Uno,
+Leonardo, and ATmega2560 are "Pin Change Interrupt pins". This means that under
+the sheets, the pins *only* trigger on CHANGE, and a number of pins share a
+single interrupt subroutine. There is a significant time between when the
+interrupt triggers and when the pins are read to determine what actually
+happened (rising or falling) and which pin changed. Therefore, these pins are
+*not* suitable for fast changing signals, and under the right conditions such
+events as a bouncing switch may actually be missed. Caveat Programmer.
 
 ---------------------------------------------------------------------------------------
 
 For a tutorial on interrupts, see
 http://www.engblaze.com/we-interrupt-this-program-to-bring-you-a-tutorial-on-arduino-interrupts/
-The posting gets into low-level details on interrupts, so if you're interested
-in this library to handle the gory details for you, you can ignore the section
-entitled "Implementing an interrupt in a program" up until "Putting it all
-together".  Also, some details such as "if more interrupt events occur before
-your ISR has completed, your program won’t catch them" aren't entirely
-correct... don't worry too much about it at this time, just be wary of the 
-inaccuracies. The basics about what interrupts do are well presented, however.
+The posting gets into low-level details on interrupts.
 
 ---------------------------------------------------------------------------------------
 
-ATmega Processor Interrupt Types
+## ATmega Processor Interrupt Types
 Note that the ATmega processor at the heart of the Arduino Uno/Mega2560/Leonardo
 has two different kinds of interrupts: “external”, and “pin change”.
 For the list of available interrupt pins and their interrupt types, see the
 PORT / PIN BESTIARY, below.
 
-* External Interrupts
+### External Interrupts
 There are a varying number of external interrupt pins on the different
 processors. The Uno supports only 2 and they are mapped to Arduino pins 2 and 3.
 The 2560 supports 6 usable, and the Leonardo supports 5. These interrupts can be
@@ -40,7 +45,7 @@ pin interrupted at the time of the event. On the other hand as mentioned there
 are a limited number of these pins, especially on the Arduino Uno (and others
 like it which use the ATmega328p processor).
 
-* Pin Change Interrupts
+### Pin Change Interrupts
 On the Arduino Uno (and again, all 328p-based boards) the pin change interrupts
 can be enabled on any or all of the pins. The two pins 2 and 3 support *either*
 pin change or external interrupts. On 2560-based Arduinos, there are 18 pin
@@ -54,7 +59,7 @@ Furthermore, the processor's pins, and pin change interrupts, are grouped into
 only 3 interrupt vectors (subroutines) available for the entire body of 20 pin
 change interrupt pins.
 
-* The Library and Pin Change Interrupts
+### The Library and Pin Change Interrupts
 When an event triggers an interrupt on any interrupt-enabled pin on a port, a
 subroutine attached to that pin's port is triggered. It is up to the interrupt
 library to set the proper port to receive interrupts for a pin, to determine
@@ -67,9 +72,9 @@ more importantly, there is some latency between the interrupt and the system
 determining exactly which pin and what change caused it. For a review of this
 issue see https://github.com/GreyGnome/EnableInterrupt/blob/master/Interrupt%20Timing.pdf
 
----------------------------------------------------------------------------------------
-USAGE:
-enableInterrupt- Enables interrupt on a selected Arduino pin.
+# USAGE:
+======
+enableInterrupt- Enables interrupt on a selected Arduino pin.  
 ```C
 enableInterrupt(uint8_t pinNumber, void (*userFunction)(void), uint8_t mode);
 ```
@@ -78,25 +83,26 @@ or
 enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
 ```
 
-disableInterrupt- Disables interrupt on a selected Arduino pin.
+disableInterrupt- Disables interrupt on a selected Arduino pin.  
 
+```C
 disableInterrupt(uint8_t pinNumber);
 or
 disableInterrupt(uint8_t interruptDesignator);
+```
 
 It is possible to change the user function after enabling the interrupt (if you
 want), by disabling the interrupt and enabling it with a different function.
 
 Each pin supports only 1 function and 1 mode at a time.
 
-For Pin Change Interrupt pins, 
+For Pin Change Interrupt pins, the modes supported are RISING, FALLING, or
+CHANGE.
 
 For External Interrupts, the same modes are supported plus the additional mode
 of LOW signal level.
 
-----------
-
-interruptDesignator: Essentially this is an Arduino pin, and if that's all you want to give
+* interruptDesignator: Essentially this is an Arduino pin, and if that's all you want to give
 the function, it will work just fine. Why is it called an "interruptDesignator", then? Because
 there's a twist: You can perform a bitwise "and" with the pin number and PINCHANGEINTERRUPT
 to specify that you want to use a Pin Change Interrupt type of interrupt on those pins that
@@ -110,16 +116,36 @@ Interrupt types. Otherwise, each pin only supports a single type of interrupt an
 PINCHANGEINTERRUPT scheme changes nothing. This means you can ignore this whole discussion
 for ATmega2560- or ATmega32U4-based Arduinos.
 
-PIN / PORT BESTIARY
+# PIN / PORT BESTIARY
+=======
 Theoretically pins 0 and 1 (RX and TX) are supported but as these pins have
 a special purpose on the Arduino, their use in this library has not been tested.
 
+## Summary
+### Arduino Uno/Duemilanove/etc.
+Interrupt Type | Pins
+-------------- | --------------
+External       | 2 3
+Pin Change     | 2-13 and A0-A5
+### Arduino Mega2560
+Interrupt Type | Pins
+-------------- | --------------
+External       | 2 3 and 18-21
+Pin Change     | 10-15 and A8-A15 and SS, SCK, MOSI, MISO
+### Arduino Leonardo
+Interrupt Type | Pins
+-------------- | --------------
+External       | 0-3 and 7
+Pin Change     | 8-11 and SCK, MOSI, MISO
+
+## Details
 ================================================================================
 ================================================================================
-Arduino Uno
+### Arduino Uno
 ================================================================================
 ================================================================================
 
+<pre>
 Interrupt Pins:
 Arduino	External		Arduino	Pin Change	Arduino	Pin Change
 Pin	Interrupt		Pin	Interrupt	Pin	Interrupt
@@ -136,13 +162,15 @@ Pin	Interrupt		Pin	Interrupt	Pin	Interrupt
 				11	PCINT3	PB3
 				12	PCINT4	PB4
 				13	PCINT5	PB5
+</pre>
 
 ================================================================================
 ================================================================================
-Leonardo Pins LEONARDO
+### Leonardo Pins LEONARDO
 ================================================================================
 ================================================================================
 
+<pre>
 Interrupt pins:
 Arduino	      	Port		Arduino 	  Port
 Pin	External          	Pin	Pin Change
@@ -166,13 +194,15 @@ static const uint8_t MISO = 14;
 static const uint8_t SCK  = 15;
 // A0 starts at 18
 
+</pre>
 
 ================================================================================
 ================================================================================
-ATmega2560 Support
+### ATmega2560 Support
 ================================================================================
 ================================================================================
 
+<pre>
 External Interrupts ------------------------------------------------------------
 The following External Interrupts are available on the Arduino:
 Arduino           
@@ -219,3 +249,4 @@ pin on another port on PCI1. This would make it very costly to integrate with
 the library's code and thus is not supported by this library.  It is the same
 pin the Arduino uses to upload sketches, and it is connected to the FT232RL
 USB-to-Serial chip (ATmega16U2 on the R3).
+</pre>
