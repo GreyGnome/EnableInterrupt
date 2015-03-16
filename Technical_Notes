@@ -523,3 +523,55 @@ MISCELLANEOUS:
 STORING FUNCTION POINTERS IN PROGMEM:
 http://stackoverflow.com/questions/28261595/put-progmem-function-pointer-array-into-another-progmem-array
 
+
+Calling the function pointers by checking each pin's bitmask individually:
+
+  if (interruptMask & _BV(0)) functionPointerB0();	Cycles
+     8b8:       c0 ff           sbrs    r28, 0		1 if move on, 2 if skip (to 8bc)
+     8ba:       05 c0           rjmp    .+10            2 (move on)
+     8bc:       e0 91 60 02     lds     r30, 0x0260	2
+     8c0:       f0 91 61 02     lds     r31, 0x0261	2
+     8c4:       19 95           eicall			4
+     8c6:    (move on)					TOTAL: 10 if matches, 3 if not
+							== 21 cycles till get to last function call,
+							then 10 cycles to execute it: 31 cycles
+
+							If an interrupt on third pin:
+							2 x 3 (not matched) + 10 == 16, plus
+							4 x 3 (not matched) = 28 total.
+
+Calling the function pointers referred to in an array, using while loop:
+
+     8c6:       d0 e0           ldi     r29, 0x00       ; 0 this is the "i" variable
+
+  while (1) {
+    if (interruptMask & 0x01) {
+     8c8:       c0 ff           sbrs    r28, 0		1 if it's not set, 2 if skip 
+     8ca:       0a c0           rjmp    .+20            2 (move on to try next bit at 0x8e0)
+      (*functionPointerArray[i])();
+     8cc:       ed 2f           mov     r30, r29	1 (it's set, execute the function)
+     8ce:       f0 e0           ldi     r31, 0x00       1 ; loads 0
+     8d0:       ee 0f           add     r30, r30	1
+     8d2:       ff 1f           adc     r31, r31	1
+     8d4:       e7 57           subi    r30, 0x77       1 ; 119
+     8d6:       fd 4f           sbci    r31, 0xFD       1 ; 253
+     8d8:       01 90           ld      r0, Z+		1 load from data memory
+     8da:       f0 81           ld      r31, Z		1
+     8dc:       e0 2d           mov     r30, r0		1
+     8de:       19 95           eicall			4
+    }
+    interruptMask=interruptMask >> 1;
+     8e0:       c6 95           lsr     r28		1
+    if (interruptMask == 0) goto exitISR;
+     8e2:       11 f0           breq    .+4             1 if not zero, 2 if zero (jumps out...) ; 0x8e8 <__vector_9+0x86>
+    i++;
+     8e4:       df 5f           subi    r29, 0xFF       1 ; 255
+     8e6:       f0 cf           rjmp    .-32            2 ; 0x8c8 <__vector_9+0x66>
+
+							TOTAL: 14 if matches, 9 if not
+							== 63 cycles to get to last function call,
+							then 14 cycles to execute it: 77 cycles
+
+							If an interrupt on third pin:
+							2 x 7 (not matched) == 14 + 14 == 28 total.
+							Then a couple of cycles to get out.
