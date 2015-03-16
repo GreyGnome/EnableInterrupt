@@ -1,4 +1,3 @@
-#include <Arduino.h>
 // in vim, :set ts=2 sts=2 sw=2 et
 
 // EnableInterrupt, a library by GreyGnome.  Copyright 2014-2015 by Michael Anthony Schwager.
@@ -149,6 +148,21 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
 
 interruptFunctionType functionPointerArrayEXTERNAL[2];
 interruptFunctionType functionPointerArrayPORTB[6]; // 2 of the interrupts are unsupported on Arduino UNO.
+
+struct functionPointersPortB {
+  interruptFunctionType pinZero;
+  interruptFunctionType pinOne;
+  interruptFunctionType pinTwo;
+  interruptFunctionType pinThree;
+  interruptFunctionType pinFour;
+  interruptFunctionType pinFive;
+};
+typedef struct functionPointersPortB functionPointersPortB;
+
+functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL };
+
+
+
 interruptFunctionType functionPointerArrayPORTC[6]; // 1 of the interrupts are used as RESET on Arduino UNO.
 interruptFunctionType functionPointerArrayPORTD[8];
 
@@ -336,6 +350,7 @@ static volatile uint8_t portSnapshotB;
 // END END END DATA STRUCTURES ===============================================================
 // ===========================================================================================
 
+volatile uint16_t storage=0;
 // From /usr/share/arduino/hardware/arduino/cores/robot/Arduino.h
 // #define CHANGE 1
 // #define FALLING 2
@@ -459,7 +474,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       // No other Pin Change Interrupt ports than B on Leonardo
 #endif
     if (portNumber==PB) {
-      functionPointerArrayPORTB[portBitNumber] = userFunction;
+      interruptFunctionType *calculatedPointer=&portBFunctions.pinZero + portBitNumber;
+      *calculatedPointer = userFunction;
+
       portSnapshotB=*portInputRegister(portNumber);
       pcmsk=&PCMSK0;
       PCICR |= _BV(0);
@@ -844,14 +861,31 @@ inline void __attribute__((always_inline)) inlineISR (uint8_t current,
 }
 
 ISR(PORTB_VECT) {
-  uint8_t current; current=PINB;
+  uint8_t current;
+  uint8_t interruptMask;
+  uint8_t changedPins;
+  uint8_t tmp;
 
-  inlineISR(current,
-      &portSnapshotB,
-      risingPinsPORTB,
-      fallingPinsPORTB,
-      PCMSK0,
-      functionPointerArrayPORTB );
+  current=PINB;
+//  changedPins=(portSnapshotB ^ current) &
+//                                       ((risingPinsPORTB & current) | (fallingPinsPORTB & ~current));
+  changedPins=portSnapshotB ^ current;
+  tmp=risingPinsPORTB & current;
+  interruptMask=fallingPinsPORTB & ~current; // steal interruptMask as a temp variable
+  interruptMask=interruptMask | tmp;
+  interruptMask=changedPins & interruptMask;
+  interruptMask=PCMSK0 & interruptMask;
+
+
+  portSnapshotB = current;
+  if (interruptMask == 0) goto exitPORTBISR; // get out quickly if not interested.
+  if (interruptMask & _BV(0)) portBFunctions.pinZero();
+  if (interruptMask & _BV(1)) portBFunctions.pinOne();
+  if (interruptMask & _BV(2)) portBFunctions.pinTwo();
+  if (interruptMask & _BV(3)) portBFunctions.pinThree();
+  if (interruptMask & _BV(4)) portBFunctions.pinFour();
+  if (interruptMask & _BV(5)) portBFunctions.pinFive();
+  exitPORTBISR: return;
 }
 
 #if defined ARDUINO_328
