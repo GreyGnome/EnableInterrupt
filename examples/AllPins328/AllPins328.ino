@@ -2,13 +2,12 @@
 // See the Wiki at http://code.google.com/p/arduino-pinchangeint/wiki for more information.
 
 // This example demonstrates the use of the EnableInterrupt library on all pins.
-// This has only been tested on an Arduino Duemilanove and Mega ADK.
-// To use:
+// The library has only been tested on an Arduino Duemilanove and Mega ADK.
 
 #include <EnableInterrupt.h>
 
+volatile uint8_t externalInterruptCounter=0;
 volatile uint8_t anyInterruptCounter=0;
-volatile uint8_t wasExternalInterrupt=0;
 
 #ifdef ARDUINO_328
 #define PINCOUNT(x) pin ##x ##Count
@@ -26,7 +25,7 @@ volatile uint8_t wasExternalInterrupt=0;
 #define interruptExFunction(x) \
   volatile uint8_t PINCOUNT(x); \
   void interruptExFunction ##x () { \
-    wasExternalInterrupt++; \
+    externalInterruptCounter++; \
     anyInterruptCounter++; \
     PINCOUNT(x)++; \
   }
@@ -34,12 +33,15 @@ volatile uint8_t wasExternalInterrupt=0;
 #define updateOn(x) \
   if (PINCOUNT(x) != 0) { \
     printIt((char *) #x, PINCOUNT(x)); \
+    if (externalInterruptCounter > 0) { \
+	    EI_printPSTR(" ext: "); Serial.println(externalInterruptCounter); \
+	    externalInterruptCounter=0; \
+    }; \
     PINCOUNT(x)=0; \
   }
 
-#define setupExInterrupt(x) \
-  pinMode( x, INPUT_PULLUP); \
-  enableInterrupt( x , interruptExFunction##x, CHANGE)
+#define disablePCInterrupt(x) \
+  disableInterrupt( x | PINCHANGEINTERRUPT)
 
 #define setupPCInterrupt(x) \
   pinMode( x, INPUT_PULLUP); \
@@ -47,7 +49,11 @@ volatile uint8_t wasExternalInterrupt=0;
 
 #define setupInterrupt(x) \
   pinMode( x, INPUT_PULLUP); \
-  enableInterrupt( x , interruptFunction##x, CHANGE)
+  enableInterrupt( x, interruptFunction##x, CHANGE)
+
+#define setupExInterrupt(x) \
+  pinMode( x, INPUT_PULLUP); \
+  enableInterrupt( x , interruptExFunction##x, CHANGE)
 
 interruptFunction(2);
 interruptExFunction(3);
@@ -67,6 +73,12 @@ interruptFunction(A2);
 interruptFunction(A3);
 interruptFunction(A4);
 interruptFunction(A5);
+
+volatile uint8_t otherCounter=0;
+void otherInterrupt3Function(void) { // Must appear after interruptFunction(3)
+  pin3Count++;
+  otherCounter++;
+}
 #else
 #error This sketch supports 328-based Arduinos only.
 #endif
@@ -82,17 +94,13 @@ void printIt(char *pinNumber, uint8_t count) {
 // NOTE: PORTJ2-6 (aka, "Pin '70', '71', '72', '73', '74'" are turned on as OUTPUT.
 // These are not true pins on the Arduino Mega series!
 void setup() {
-  //uint8_t pind, pink;
   Serial.begin(115200);
   Serial.println("---------------------------------------");
-  //PORTD=pind;
-  //PORTK=pink;
 #ifdef DEBUG
   pinMode(PINSIGNAL, OUTPUT);
 #endif
   // PINS 0 and 1 NOT USED BECAUSE OF Serial.print()
-  setupInterrupt(2); // by default, will be External Interrupt
-  //setupPCInterrupt(3);
+  setupPCInterrupt(2); // by default, will be External Interrupt
   setupExInterrupt(3);
   setupInterrupt(4);
   setupInterrupt(5);
@@ -108,7 +116,7 @@ void setup() {
   // it to the pin, Voltage at the pin should be hovering between 1-3 volts. 'nearly' ground. So
   // a wire to ground will not trip an interrupt, even though we have INPUT_PULLUP. A wire to PWR
   // will trigger an interrupt. The Uno has a op-amp buffer/driver to the LED, so will not have
-  // this problem.
+  // this problem; it will behave like the other pins.
   setupInterrupt(13);
 #endif
   setupInterrupt(A0);
@@ -119,11 +127,39 @@ void setup() {
   setupInterrupt(A5);
 }
 
-// In the loop, we just check to see where the interrupt count is at. The value gets updated by the
-// interrupt routine.
+uint8_t otherToggle=1;
+uint8_t enabledToggle=1;
+uint8_t disableCounter=0;
+// In the loop, we just check to see where the interrupt count is at. The value gets updated by
+// the interrupt routine.
 void loop() {
   Serial.println("---------------------------------------");
   delay(1000);                          // Every second,
+  if (disableCounter & 0x08) {
+    EI_printPSTR("Toggle 2, 3, 8, A0...");
+    delay(1000);
+    if (enabledToggle==1) {
+      disablePCInterrupt(2);
+      disableInterrupt(3);
+      disableInterrupt(8);
+      disableInterrupt(A0);
+      enabledToggle=0;
+    }
+    else {
+      if (otherToggle == 1) {
+        enableInterrupt(3, otherInterrupt3Function, CHANGE); // make sure we can switch functions.
+        otherToggle=0;
+      } else {
+        otherToggle=1;
+      	setupExInterrupt(3);
+      }
+      setupPCInterrupt(2);
+      setupInterrupt(8);
+      setupInterrupt(A0);
+      enabledToggle=1;
+    }
+    disableCounter=0;
+  }
   updateOn(2);
   updateOn(3);
   updateOn(4);
@@ -142,8 +178,12 @@ void loop() {
   updateOn(A3);
   updateOn(A4);
   updateOn(A5);
-  printIt((char *) "eee", wasExternalInterrupt);
   printIt((char *) "XXX", anyInterruptCounter);
-  wasExternalInterrupt=0;
+  if (otherCounter) {
+	  printIt((char *) "OTHER3", otherCounter);
+    otherCounter=0;
+  }
+  externalInterruptCounter=0;
+  disableCounter++;
 }
 
