@@ -147,8 +147,7 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
 };
 
 interruptFunctionType functionPointerArrayEXTERNAL[2];
-interruptFunctionType functionPointerArrayPORTB[6]; // 2 of the interrupts are unsupported on Arduino UNO.
-
+// 2 of the interrupts are unsupported on Arduino UNO.
 struct functionPointersPortB {
   interruptFunctionType pinZero;
   interruptFunctionType pinOne;
@@ -161,10 +160,34 @@ typedef struct functionPointersPortB functionPointersPortB;
 
 functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL };
 
+// 1 of the interrupts are used as RESET on Arduino UNO.
+struct functionPointersPortC {
+  interruptFunctionType pinZero;
+  interruptFunctionType pinOne;
+  interruptFunctionType pinTwo;
+  interruptFunctionType pinThree;
+  interruptFunctionType pinFour;
+  interruptFunctionType pinFive;
+};
+typedef struct functionPointersPortC functionPointersPortC;
 
+functionPointersPortC portCFunctions = { NULL, NULL, NULL, NULL, NULL, NULL };
 
-interruptFunctionType functionPointerArrayPORTC[6]; // 1 of the interrupts are used as RESET on Arduino UNO.
-interruptFunctionType functionPointerArrayPORTD[8];
+// 1 of the interrupts are used as RESET on Arduino UNO.
+struct functionPointersPortD {
+  interruptFunctionType pinZero;
+  interruptFunctionType pinOne;
+  interruptFunctionType pinTwo;
+  interruptFunctionType pinThree;
+  interruptFunctionType pinFour;
+  interruptFunctionType pinFive;
+  interruptFunctionType pinSix;
+  interruptFunctionType pinSeven;
+};
+typedef struct functionPointersPortD functionPointersPortD;
+
+functionPointersPortD portDFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+
 
 // For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
 // we have to know how we were defined.
@@ -273,14 +296,53 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
 };
 
 interruptFunctionType functionPointerArrayEXTERNAL[8];
-interruptFunctionType functionPointerArrayPORTB[8];
+
+struct functionPointersPortB {
+  interruptFunctionType pinZero;
+  interruptFunctionType pinOne;
+  interruptFunctionType pinTwo;
+  interruptFunctionType pinThree;
+  interruptFunctionType pinFour;
+  interruptFunctionType pinFive;
+  interruptFunctionType pinSix;
+  interruptFunctionType pinSeven;
+};
+typedef struct functionPointersPortB functionPointersPortB;
+
+functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+
 // only 7 pins total of port J are supported as interrupts on the ATmega2560,
 // and only PJ1 and 2 are supported on the Arduino MEGA.
 // For PCI1 the 0th bit is PE0.   PJ2-6 are not exposed on the Arduino pins, but
 // we will support them anyway. There are clones that provide them, and users may
 // solder in their own connections (...go, Makers!)
-interruptFunctionType functionPointerArrayPORTJ[7];
-interruptFunctionType functionPointerArrayPORTK[8];
+struct functionPointersPortJ {
+  interruptFunctionType pinZero;
+  interruptFunctionType pinOne;
+  interruptFunctionType pinTwo;
+  interruptFunctionType pinThree;
+  interruptFunctionType pinFour;
+  interruptFunctionType pinFive;
+  interruptFunctionType pinSix;
+  interruptFunctionType pinSeven;
+};
+typedef struct functionPointersPortJ functionPointersPortJ;
+
+functionPointersPortJ portJFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+
+struct functionPointersPortK {
+  interruptFunctionType pinZero;
+  interruptFunctionType pinOne;
+  interruptFunctionType pinTwo;
+  interruptFunctionType pinThree;
+  interruptFunctionType pinFour;
+  interruptFunctionType pinFive;
+  interruptFunctionType pinSix;
+  interruptFunctionType pinSeven;
+};
+typedef struct functionPointersPortK functionPointersPortK;
+
+functionPointersPortK portKFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 // For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
 // we have to know how we were defined.
@@ -334,7 +396,19 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
 };
 
 interruptFunctionType functionPointerArrayEXTERNAL[5];
-interruptFunctionType functionPointerArrayPORTB[8];
+struct functionPointersPortB {
+  interruptFunctionType pinZero;
+  interruptFunctionType pinOne;
+  interruptFunctionType pinTwo;
+  interruptFunctionType pinThree;
+  interruptFunctionType pinFour;
+  interruptFunctionType pinFive;
+  interruptFunctionType pinSix;
+  interruptFunctionType pinSeven;
+};
+typedef struct functionPointersPortB functionPointersPortB;
+
+functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 // For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
 // we have to know how we were defined.
@@ -363,6 +437,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
   uint8_t portNumber=0;
   uint8_t portMask=0;
   uint8_t portBitNumber; // when an interrupted pin is found, this will be used to choose the function.
+  interruptFunctionType *calculatedPointer;
 
   arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
 
@@ -445,27 +520,35 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     portBitNumber=pgm_read_byte(&digital_pin_to_port_bit_number_PGM[arduinoPin]);
 #if defined ARDUINO_328
     if (portNumber==PC) {
-      functionPointerArrayPORTC[portBitNumber] = userFunction;
+      calculatedPointer=&portCFunctions.pinZero + portBitNumber;
+      *calculatedPointer = userFunction;
+
       portSnapshotC=*portInputRegister(portNumber); // OK-MIKE
       pcmsk=&PCMSK1;
       PCICR |= _BV(1);
     }
     if (portNumber==PD) {
-      functionPointerArrayPORTD[portBitNumber] = userFunction;
+      calculatedPointer=&portDFunctions.pinZero + portBitNumber;
+      *calculatedPointer = userFunction;
+
       portSnapshotD=*portInputRegister(portNumber); // OK-MIKE
       pcmsk=&PCMSK2;
       PCICR |= _BV(2);
     }
 #elif defined ARDUINO_MEGA
     if (portNumber==PJ) {
-      functionPointerArrayPORTJ[portBitNumber] = userFunction;
+      *calculatedPointer=&portJFunctions.pinZero + portBitNumber;
+      *calculatedPointer = userFunction;
+
       portSnapshotJ=*portInputRegister(portNumber); // OK-MIKE
       pcmsk=&PCMSK1;
       PCICR |= _BV(1);
       portMask <<= 1; // Handle port J's oddness. PJ0 is actually 1 on PCMSK1.
     }
     if (portNumber==PK) {
-      functionPointerArrayPORTK[portBitNumber] = userFunction;
+      *calculatedPointer=&portJFunctions.pinZero + portBitNumber;
+      *calculatedPointer = userFunction;
+
       portSnapshotK=*portInputRegister(portNumber); // OK-MIKE
       pcmsk=&PCMSK2;
       PCICR |= _BV(2);
@@ -474,7 +557,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       // No other Pin Change Interrupt ports than B on Leonardo
 #endif
     if (portNumber==PB) {
-      interruptFunctionType *calculatedPointer=&portBFunctions.pinZero + portBitNumber;
+      calculatedPointer=&portBFunctions.pinZero + portBitNumber;
       *calculatedPointer = userFunction;
 
       portSnapshotB=*portInputRegister(portNumber);
@@ -869,12 +952,12 @@ ISR(PORTB_VECT) {
   current=PINB;
 //  changedPins=(portSnapshotB ^ current) &
 //                                       ((risingPinsPORTB & current) | (fallingPinsPORTB & ~current));
-  changedPins=portSnapshotB ^ current;
-  tmp=risingPinsPORTB & current;
-  interruptMask=fallingPinsPORTB & ~current; // steal interruptMask as a temp variable
-  interruptMask=interruptMask | tmp;
-  interruptMask=changedPins & interruptMask;
-  interruptMask=PCMSK0 & interruptMask;
+  changedPins   = portSnapshotB ^ current;
+  tmp           = risingPinsPORTB & current;
+  interruptMask = fallingPinsPORTB & ~current; // steal interruptMask as a temp variable
+  interruptMask = interruptMask | tmp;
+  interruptMask = changedPins & interruptMask;
+  interruptMask = PCMSK0 & interruptMask;
 
 
   portSnapshotB = current;
@@ -890,40 +973,117 @@ ISR(PORTB_VECT) {
 
 #if defined ARDUINO_328
 ISR(PORTC_VECT) {
-  uint8_t current; current=PINC;
+  uint8_t current;
+  uint8_t interruptMask;
+  uint8_t changedPins;
+  uint8_t tmp;
 
-  inlineISR(current,
-      &portSnapshotC,
-      risingPinsPORTC,
-      fallingPinsPORTC,
-      PCMSK1,
-      functionPointerArrayPORTC );
+  current=PINC;
+//  changedPins=(portSnapshotB ^ current) &
+//                                       ((risingPinsPORTB & current) | (fallingPinsPORTB & ~current));
+  changedPins   = portSnapshotC ^ current;
+  tmp           = risingPinsPORTC & current;
+  interruptMask = fallingPinsPORTC & ~current; // steal interruptMask as a temp variable
+  interruptMask = interruptMask | tmp;
+  interruptMask = changedPins & interruptMask;
+  interruptMask = PCMSK0 & interruptMask;
+
+
+  portSnapshotC = current;
+  if (interruptMask == 0) goto exitPORTCISR; // get out quickly if not interested.
+  if (interruptMask & _BV(0)) portCFunctions.pinZero();
+  if (interruptMask & _BV(1)) portCFunctions.pinOne();
+  if (interruptMask & _BV(2)) portCFunctions.pinTwo();
+  if (interruptMask & _BV(3)) portCFunctions.pinThree();
+  if (interruptMask & _BV(4)) portCFunctions.pinFour();
+  if (interruptMask & _BV(5)) portCFunctions.pinFive();
+  exitPORTCISR: return;
 }
 
 ISR(PORTD_VECT) {
-  uint8_t current; current=PIND;
+  uint8_t current;
+  uint8_t interruptMask;
+  uint8_t changedPins;
+  uint8_t tmp;
 
-  inlineISR(current,
-      &portSnapshotD,
-      risingPinsPORTD,
-      fallingPinsPORTD,
-      PCMSK2,
-      functionPointerArrayPORTD );
+  current=PIND;
+//  changedPins=(portSnapshotB ^ current) &
+//                                       ((risingPinsPORTB & current) | (fallingPinsPORTB & ~current));
+  changedPins   = portSnapshotD ^ current;
+  tmp           = risingPinsPORTD & current;
+  interruptMask = fallingPinsPORTD & ~current; // steal interruptMask as a temp variable
+  interruptMask = interruptMask | tmp;
+  interruptMask = changedPins & interruptMask;
+  interruptMask = PCMSK0 & interruptMask;
+
+
+  portSnapshotD = current;
+  if (interruptMask == 0) goto exitPORTDISR; // get out quickly if not interested.
+  if (interruptMask & _BV(0)) portDFunctions.pinZero();
+  if (interruptMask & _BV(1)) portDFunctions.pinOne();
+  if (interruptMask & _BV(2)) portDFunctions.pinTwo();
+  if (interruptMask & _BV(3)) portDFunctions.pinThree();
+  if (interruptMask & _BV(4)) portDFunctions.pinFour();
+  if (interruptMask & _BV(5)) portDFunctions.pinFive();
+  exitPORTDISR: return;
 }
 
 #elif defined ARDUINO_MEGA
 ISR(PORTJ_VECT) {
-  uint8_t current; current=PINJ;
+  uint8_t current;
+  uint8_t interruptMask;
+  uint8_t changedPins;
+  uint8_t tmp;
 
-  inlineISR(current,
-      &portSnapshotJ,
-      risingPinsPORTJ,
-      fallingPinsPORTJ,
-      PCMSK1 >> 1, // handle PCMSK1/PORTJ weirdness...
-      functionPointerArrayPORTJ );
+  current=PINJ;
+//  changedPins=(portSnapshotB ^ current) &
+//                                       ((risingPinsPORTB & current) | (fallingPinsPORTB & ~current));
+  changedPins   = portSnapshotJ ^ current;
+  tmp           = risingPinsPORTJ & current;
+  interruptMask = fallingPinsPORTJ & ~current; // steal interruptMask as a temp variable
+  interruptMask = interruptMask | tmp;
+  interruptMask = changedPins & interruptMask;
+  interruptMask = PCMSK0 & interruptMask;
+
+
+  portSnapshotJ = current;
+  if (interruptMask == 0) goto exitPORTJISR; // get out quickly if not interested.
+  if (interruptMask & _BV(0)) portJFunctions.pinZero();
+  if (interruptMask & _BV(1)) portJFunctions.pinOne();
+  if (interruptMask & _BV(2)) portJFunctions.pinTwo();
+  if (interruptMask & _BV(3)) portJFunctions.pinThree();
+  if (interruptMask & _BV(4)) portJFunctions.pinFour();
+  if (interruptMask & _BV(5)) portJFunctions.pinFive();
+  exitPORTJISR: return;
 }
 
 ISR(PORTK_VECT) {
+  uint8_t current;
+  uint8_t interruptMask;
+  uint8_t changedPins;
+  uint8_t tmp;
+
+  current=PINK;
+//  changedPins=(portSnapshotB ^ current) &
+//                                       ((risingPinsPORTB & current) | (fallingPinsPORTB & ~current));
+  changedPins   = portSnapshotK ^ current;
+  tmp           = risingPinsPORTK & current;
+  interruptMask = fallingPinsPORTK & ~current; // steal interruptMask as a temp variable
+  interruptMask = interruptMask | tmp;
+  interruptMask = changedPins & interruptMask;
+  interruptMask = PCMSK0 & interruptMask;
+
+
+  portSnapshotK = current;
+  if (interruptMask == 0) goto exitPORTKISR; // get out quickly if not interested.
+  if (interruptMask & _BV(0)) portKFunctions.pinZero();
+  if (interruptMask & _BV(1)) portKFunctions.pinOne();
+  if (interruptMask & _BV(2)) portKFunctions.pinTwo();
+  if (interruptMask & _BV(3)) portKFunctions.pinThree();
+  if (interruptMask & _BV(4)) portKFunctions.pinFour();
+  if (interruptMask & _BV(5)) portKFunctions.pinFive();
+  exitPORTKISR: return;
+/* //was:
   uint8_t current; current=PINK;
 
   inlineISR(current,
@@ -932,6 +1092,7 @@ ISR(PORTK_VECT) {
       fallingPinsPORTK,
       PCMSK2,
       functionPointerArrayPORTK );
+*/l
 }
 #elif defined ARDUINO_LEONARDO
   // No other Pin Change Interrupt ports than B on Leonardo
