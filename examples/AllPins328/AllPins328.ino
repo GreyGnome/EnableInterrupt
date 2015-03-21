@@ -44,14 +44,23 @@ volatile uint8_t anyInterruptCounter=0;
   disableInterrupt( x | PINCHANGEINTERRUPT)
 
 #define setupPCInterrupt(x) \
+  EI_printPSTR("Add PinChange pin: "); \
+  EI_printPSTR(#x); \
+  EI_printPSTR("\r\n"); \
   pinMode( x, INPUT_PULLUP); \
   enableInterrupt( x | PINCHANGEINTERRUPT, interruptFunction##x, CHANGE)
 
 #define setupInterrupt(x) \
+  EI_printPSTR("Add pin: "); \
+  EI_printPSTR(#x); \
+  EI_printPSTR("\r\n"); \
   pinMode( x, INPUT_PULLUP); \
   enableInterrupt( x, interruptFunction##x, CHANGE)
 
 #define setupExInterrupt(x) \
+  EI_printPSTR("Add External pin: "); \
+  EI_printPSTR(#x); \
+  EI_printPSTR("\r\n"); \
   pinMode( x, INPUT_PULLUP); \
   enableInterrupt( x , interruptExFunction##x, CHANGE)
 
@@ -95,7 +104,7 @@ void printIt(char *pinNumber, uint8_t count) {
 // These are not true pins on the Arduino Mega series!
 void setup() {
   Serial.begin(115200);
-  Serial.println("---------------------------------------");
+  EI_printPSTR("--- START ------------------------------------\r\n");
 #ifdef DEBUG
   pinMode(PINSIGNAL, OUTPUT);
 #endif
@@ -133,7 +142,7 @@ uint8_t disableCounter=0;
 // In the loop, we just check to see where the interrupt count is at. The value gets updated by
 // the interrupt routine.
 void loop() {
-  Serial.println("---------------------------------------");
+  EI_printPSTR("------\r\n");
   delay(1000);                          // Every second,
   if (disableCounter & 0x08) {
     EI_printPSTR("Toggle 2, 3, 8, A0...");
@@ -147,9 +156,11 @@ void loop() {
     }
     else {
       if (otherToggle == 1) {
+        EI_printPSTR("3 is now a Pin Change Interrupt.\r\n");
         enableInterrupt(3, otherInterrupt3Function, CHANGE); // make sure we can switch functions.
         otherToggle=0;
       } else {
+        EI_printPSTR("3 is now an External Interrupt.\r\n");
         otherToggle=1;
       	setupExInterrupt(3);
       }
@@ -178,7 +189,7 @@ void loop() {
   updateOn(A3);
   updateOn(A4);
   updateOn(A5);
-  printIt((char *) "XXX", anyInterruptCounter);
+  EI_printPSTR("Consolidated interrupt count: "); Serial.println(anyInterruptCounter);
   if (otherCounter) {
 	  printIt((char *) "OTHER3", otherCounter);
     otherCounter=0;
