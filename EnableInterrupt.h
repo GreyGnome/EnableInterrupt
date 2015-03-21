@@ -83,9 +83,9 @@ void disableInterrupt(uint8_t interruptDesignator);
 #define PINCHANGEINTERRUPT 0x80
 
 #ifndef LIBCALL_ENABLEINTERRUPT // LIBCALL_ENABLEINTERRUPT ****************************************
-// Example: printPSTR("This is a nice long string that takes no static ram");
+// Example: EI_printPSTR("This is a nice long string that takes no static ram");
 #define EI_printPSTR(x) SerialPrint_P(PSTR(x))
-void SerialPrint_P(PGM_P str) {
+void SerialPrint_P(const char *str) {
   for (uint8_t c; (c = pgm_read_byte(str)); str++) Serial.write(c);
 } 
 
@@ -1014,7 +1014,7 @@ ISR(PORTD_VECT) {
   interruptMask = fallingPinsPORTD & ~current; // steal interruptMask as a temp variable
   interruptMask = interruptMask | tmp;
   interruptMask = changedPins & interruptMask;
-  interruptMask = PCMSK0 & interruptMask;
+  interruptMask = PCMSK2 & interruptMask;
 
 
   portSnapshotD = current;
@@ -1025,6 +1025,8 @@ ISR(PORTD_VECT) {
   if (interruptMask & _BV(3)) portDFunctions.pinThree();
   if (interruptMask & _BV(4)) portDFunctions.pinFour();
   if (interruptMask & _BV(5)) portDFunctions.pinFive();
+  if (interruptMask & _BV(6)) portDFunctions.pinSix();
+  if (interruptMask & _BV(7)) portDFunctions.pinSeven();
   exitPORTDISR: return;
 }
 
@@ -1043,7 +1045,7 @@ ISR(PORTJ_VECT) {
   interruptMask = fallingPinsPORTJ & ~current; // steal interruptMask as a temp variable
   interruptMask = interruptMask | tmp;
   interruptMask = changedPins & interruptMask;
-  interruptMask = PCMSK0 & interruptMask;
+  interruptMask = PCMSK1 & interruptMask;
 
 
   portSnapshotJ = current;
@@ -1071,7 +1073,7 @@ ISR(PORTK_VECT) {
   interruptMask = fallingPinsPORTK & ~current; // steal interruptMask as a temp variable
   interruptMask = interruptMask | tmp;
   interruptMask = changedPins & interruptMask;
-  interruptMask = PCMSK0 & interruptMask;
+  interruptMask = PCMSK2 & interruptMask;
 
 
   portSnapshotK = current;
