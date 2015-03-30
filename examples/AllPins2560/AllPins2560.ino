@@ -15,7 +15,6 @@ volatile uint8_t anyInterruptCounter=0;
   volatile uint8_t PINCOUNT(x); \
   void interruptFunction ##x () { \
     anyInterruptCounter++; \
-    interruptSaysHello(); \
     PINCOUNT(x)++; \
   }
 
@@ -70,9 +69,9 @@ interruptFunction(76); // fake 76. PE7
 #endif
 
 void printIt(char *pinNumber, uint8_t count) {
-    printPSTR("Pin ");
+    EI_printPSTR("Pin ");
     Serial.print(pinNumber);
-    printPSTR(" was interrupted: ");
+    EI_printPSTR(" was interrupted: ");
     Serial.println(count, DEC);
 }
 
@@ -83,12 +82,6 @@ void setup() {
   //uint8_t pind, pink;
   Serial.begin(115200);
   Serial.println("---------------------------------------");
-  //PORTD=pind;
-  //PORTK=pink;
-  pinMode(PINSIGNAL, OUTPUT);
-  //pinMode(ARDUINOPIN, INPUT_PULLUP);  // Configure the pin as an input, and turn on the pullup resistor.
-                                      // See http://arduino.cc/en/Tutorial/DigitalPins
-  //PORTC=0x01;
   setupInterrupt(SS);
   setupInterrupt(SCK);
   setupInterrupt(MOSI);
@@ -140,7 +133,7 @@ void loop() {
   uint8_t nebits=0b00111111; // PE6/7
 
   if (disableCounter & 0x08) {
-    printPSTR("Toggle 20, 71, 75, A8, 15, MISO...");
+    EI_printPSTR("Toggle 20, 71, 75, A8, 15, MISO...");
     delay(1000);
     if (enabledToggle==1) {
       disableInterrupt(20);
@@ -207,7 +200,7 @@ void loop() {
   updateOn(75);
   updateOn(76);
   printIt("XXX", anyInterruptCounter);
-  if (externalInterruptCounter > 0) { printPSTR(" ext: "); Serial.println(externalInterruptCounter); }; \
+  if (externalInterruptCounter > 0) { EI_printPSTR(" ext: "); Serial.println(externalInterruptCounter); }; \
   externalInterruptCounter=0;
   disableCounter++;
 }
