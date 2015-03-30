@@ -71,7 +71,6 @@ define disableInterrupt(pin) detachInterrupt(pin)
  * ATmega328-based Arduinos, too.
  */
 void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
-
 void disableInterrupt(uint8_t interruptDesignator);
 
 // *************************************************************************************
@@ -81,6 +80,11 @@ void disableInterrupt(uint8_t interruptDesignator);
 #undef PINCHANGEINTERRUPT
 
 #define PINCHANGEINTERRUPT 0x80
+#undef attachPinChangeInterrupt
+#undef detachPinChangeInterrupt
+
+#define detachPinChangeInterrupt(pin)                   disableInterrupt(pin)
+#define attachPinChangeInterrupt(pin,userFunc,mode)     enableInterrupt(pin , userFunc,mode)
 
 #ifndef LIBCALL_ENABLEINTERRUPT // LIBCALL_ENABLEINTERRUPT ****************************************
 // Example: EI_printPSTR("This is a nice long string that takes no static ram");
@@ -986,7 +990,7 @@ ISR(PORTC_VECT) {
   interruptMask = fallingPinsPORTC & ~current; // steal interruptMask as a temp variable
   interruptMask = interruptMask | tmp;
   interruptMask = changedPins & interruptMask;
-  interruptMask = PCMSK0 & interruptMask;
+  interruptMask = PCMSK1 & interruptMask;
 
 
   portSnapshotC = current;
@@ -1085,16 +1089,6 @@ ISR(PORTK_VECT) {
   if (interruptMask & _BV(4)) portKFunctions.pinFour();
   if (interruptMask & _BV(5)) portKFunctions.pinFive();
   exitPORTKISR: return;
-/* //was:
-  uint8_t current; current=PINK;
-
-  inlineISR(current,
-      &portSnapshotK,
-      risingPinsPORTK,
-      fallingPinsPORTK,
-      PCMSK2,
-      functionPointerArrayPORTK );
-*/l
 }
 #elif defined ARDUINO_LEONARDO
   // No other Pin Change Interrupt ports than B on Leonardo
