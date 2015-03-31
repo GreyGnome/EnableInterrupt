@@ -7,7 +7,9 @@ enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
 
-See more details below under USAGE. See the Examples subdirectory in the
+For detailed usage information see the wiki page at
+https://github.com/GreyGnome/EnableInterrupt/wiki/Usage
+See the examples subdirectory in the
 distribution for examples of the library in action.
 
 **NOTICE** Many of the interrupt pins on the ATmega processor used in the Uno,
