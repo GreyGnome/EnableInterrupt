@@ -315,8 +315,9 @@ typedef struct functionPointersPortB functionPointersPortB;
 
 functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
+volatile uint8_t portJPCMSK=0;
 // only 7 pins total of port J are supported as interrupts on the ATmega2560,
-// and only PJ1 and 2 are supported on the Arduino MEGA.
+// and only PJ0 and 1 are supported on the Arduino MEGA.
 // For PCI1 the 0th bit is PE0.   PJ2-6 are not exposed on the Arduino pins, but
 // we will support them anyway. There are clones that provide them, and users may
 // solder in their own connections (...go, Makers!)
@@ -328,7 +329,6 @@ struct functionPointersPortJ {
   interruptFunctionType pinFour;
   interruptFunctionType pinFive;
   interruptFunctionType pinSix;
-  interruptFunctionType pinSeven;
 };
 typedef struct functionPointersPortJ functionPointersPortJ;
 
@@ -527,7 +527,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       calculatedPointer=&portCFunctions.pinZero + portBitNumber;
       *calculatedPointer = userFunction;
 
-      portSnapshotC=*portInputRegister(portNumber); // OK-MIKE
+      portSnapshotC=*portInputRegister(portNumber);
       pcmsk=&PCMSK1;
       PCICR |= _BV(1);
     }
@@ -535,25 +535,26 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       calculatedPointer=&portDFunctions.pinZero + portBitNumber;
       *calculatedPointer = userFunction;
 
-      portSnapshotD=*portInputRegister(portNumber); // OK-MIKE
+      portSnapshotD=*portInputRegister(portNumber);
       pcmsk=&PCMSK2;
       PCICR |= _BV(2);
     }
 #elif defined ARDUINO_MEGA
     if (portNumber==PJ) {
-      *calculatedPointer=&portJFunctions.pinZero + portBitNumber;
+      calculatedPointer=&portJFunctions.pinZero + portBitNumber;
       *calculatedPointer = userFunction;
 
-      portSnapshotJ=*portInputRegister(portNumber); // OK-MIKE
+      portSnapshotJ=*portInputRegister(portNumber);
       pcmsk=&PCMSK1;
       PCICR |= _BV(1);
+      portJPCMSK|=portMask; // because PCMSK1 is shifted wrt. PortJ.
       portMask <<= 1; // Handle port J's oddness. PJ0 is actually 1 on PCMSK1.
     }
     if (portNumber==PK) {
-      *calculatedPointer=&portJFunctions.pinZero + portBitNumber;
+      calculatedPointer=&portKFunctions.pinZero + portBitNumber;
       *calculatedPointer = userFunction;
 
-      portSnapshotK=*portInputRegister(portNumber); // OK-MIKE
+      portSnapshotK=*portInputRegister(portNumber);
       pcmsk=&PCMSK2;
       PCICR |= _BV(2);
     }
@@ -972,6 +973,8 @@ ISR(PORTB_VECT) {
   if (interruptMask & _BV(3)) portBFunctions.pinThree();
   if (interruptMask & _BV(4)) portBFunctions.pinFour();
   if (interruptMask & _BV(5)) portBFunctions.pinFive();
+  if (interruptMask & _BV(6)) portBFunctions.pinSix();
+  if (interruptMask & _BV(7)) portBFunctions.pinSeven();
   exitPORTBISR: return;
 }
 
@@ -991,7 +994,6 @@ ISR(PORTC_VECT) {
   interruptMask = interruptMask | tmp;
   interruptMask = changedPins & interruptMask;
   interruptMask = PCMSK1 & interruptMask;
-
 
   portSnapshotC = current;
   if (interruptMask == 0) goto exitPORTCISR; // get out quickly if not interested.
@@ -1049,7 +1051,8 @@ ISR(PORTJ_VECT) {
   interruptMask = fallingPinsPORTJ & ~current; // steal interruptMask as a temp variable
   interruptMask = interruptMask | tmp;
   interruptMask = changedPins & interruptMask;
-  interruptMask = PCMSK1 & interruptMask;
+  interruptMask = portJPCMSK & interruptMask; // because PCMSK1 is shifted wrt. PortJ.
+
 
 
   portSnapshotJ = current;
@@ -1060,6 +1063,7 @@ ISR(PORTJ_VECT) {
   if (interruptMask & _BV(3)) portJFunctions.pinThree();
   if (interruptMask & _BV(4)) portJFunctions.pinFour();
   if (interruptMask & _BV(5)) portJFunctions.pinFive();
+  if (interruptMask & _BV(6)) portJFunctions.pinSix();
   exitPORTJISR: return;
 }
 
@@ -1088,6 +1092,8 @@ ISR(PORTK_VECT) {
   if (interruptMask & _BV(3)) portKFunctions.pinThree();
   if (interruptMask & _BV(4)) portKFunctions.pinFour();
   if (interruptMask & _BV(5)) portKFunctions.pinFive();
+  if (interruptMask & _BV(6)) portKFunctions.pinSix();
+  if (interruptMask & _BV(7)) portKFunctions.pinSeven();
   exitPORTKISR: return;
 }
 #elif defined ARDUINO_LEONARDO

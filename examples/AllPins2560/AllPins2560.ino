@@ -1,19 +1,28 @@
 // EnableInterrupt Simple example sketch
 // See the Wiki at http://code.google.com/p/arduino-pinchangeint/wiki for more information.
 
-#define COUNTEXTERNAL
-volatile uint8_t externalInterruptCounter=0;
 #include <EnableInterrupt.h>
 
+volatile uint8_t externalInterruptCounter=0;
 volatile uint8_t anyInterruptCounter=0;
 
 #ifdef ARDUINO_MEGA
-
 #define PINCOUNT(x) pin ##x ##Count
 
+// Do not use any Serial.print() in interrupt subroutines. Serial.print() uses interrupts,
+// and by default interrupts are off in interrupt subroutines. Interrupt routines should also
+// be as fast as possible. Here we just increment counters.
 #define interruptFunction(x) \
   volatile uint8_t PINCOUNT(x); \
   void interruptFunction ##x () { \
+    anyInterruptCounter++; \
+    PINCOUNT(x)++; \
+  }
+
+#define interruptExFunction(x) \
+  volatile uint8_t PINCOUNT(x); \
+  void interruptExFunction ##x () { \
+    externalInterruptCounter++; \
     anyInterruptCounter++; \
     PINCOUNT(x)++; \
   }
@@ -24,13 +33,22 @@ volatile uint8_t anyInterruptCounter=0;
     PINCOUNT(x)=0; \
   }
 
-#define setupPCInterrupt(x) \
-  pinMode( x, INPUT_PULLUP); \
-  enableInterrupt( x | PINCHANGEINTERRUPT, interruptFunction##x, CHANGE)
+#define disablePCInterrupt(x) \
+  disableInterrupt( x | PINCHANGEINTERRUPT)
 
 #define setupInterrupt(x) \
+  EI_printPSTR("Add pin: "); \
+  EI_printPSTR(#x); \
+  EI_printPSTR("\r\n"); \
   pinMode( x, INPUT_PULLUP); \
   enableInterrupt( x, interruptFunction##x, CHANGE)
+
+#define setupExInterrupt(x) \
+  EI_printPSTR("Add External pin: "); \
+  EI_printPSTR(#x); \
+  EI_printPSTR("\r\n"); \
+  pinMode( x, INPUT_PULLUP); \
+  enableInterrupt( x, interruptExFunction##x, CHANGE)
 
 interruptFunction(SS);
 interruptFunction(SCK);
@@ -56,14 +74,14 @@ interruptFunction(72); // fake 72. PJ4
 interruptFunction(73); // fake 73. PJ5
 interruptFunction(74); // fake 74. PJ6
 // External Interrupts
-interruptFunction(21);
-interruptFunction(20);
-interruptFunction(19);
-interruptFunction(18);
-interruptFunction(2);
-interruptFunction(3);
-interruptFunction(75); // fake 75. PE6
-interruptFunction(76); // fake 76. PE7
+interruptExFunction(21);
+interruptExFunction(20);
+interruptExFunction(19);
+interruptExFunction(18);
+interruptExFunction(2);
+interruptExFunction(3);
+interruptExFunction(75); // fake 75. PE6
+interruptExFunction(76); // fake 76. PE7
 #else
 #error This sketch supports 2560-based Arduinos only.
 #endif
@@ -81,7 +99,8 @@ void printIt(char *pinNumber, uint8_t count) {
 void setup() {
   //uint8_t pind, pink;
   Serial.begin(115200);
-  Serial.println("---------------------------------------");
+  EI_printPSTR("---------------------------------------");
+  // PINS 0 and 1 NOT USED BECAUSE OF Serial.print()
   setupInterrupt(SS);
   setupInterrupt(SCK);
   setupInterrupt(MOSI);
@@ -109,19 +128,20 @@ void setup() {
   enableInterrupt(73, interruptFunction73, CHANGE);
   enableInterrupt(74, interruptFunction74, CHANGE);
   // External Interrupts
-  setupInterrupt(21);
-  setupInterrupt(20);
-  setupInterrupt(19);
-  setupInterrupt(18);
-  setupInterrupt(2);
-  setupInterrupt(3);
+  setupExInterrupt(21);
+  setupExInterrupt(20);
+  setupExInterrupt(19);
+  setupExInterrupt(18);
+  setupExInterrupt(2);
+  setupExInterrupt(3);
   ////
   DDRE |=0b11000000; // Non-Arduino Port E pins all become output.
   PORTE|=0b11000000; // Turn them all high.
-  enableInterrupt(75, interruptFunction75, CHANGE);
-  enableInterrupt(76, interruptFunction76, CHANGE);
+  enableInterrupt(75, interruptExFunction75, CHANGE);
+  enableInterrupt(76, interruptExFunction76, CHANGE);
 }
 
+uint8_t otherToggle=1;
 uint8_t enabledToggle=1;
 uint8_t disableCounter=0;
 // In the loop, we just check to see where the interrupt count is at. The value gets updated by the
@@ -132,10 +152,13 @@ void loop() {
   uint8_t ebits =0b11000000; // PE6/7
   uint8_t nebits=0b00111111; // PE6/7
 
+  EI_printPSTR("------\r\n");
+  delay(1000);                          // Every second,
   if (disableCounter & 0x08) {
     EI_printPSTR("Toggle 20, 71, 75, A8, 15, MISO...");
     delay(1000);
     if (enabledToggle==1) {
+      EI_printPSTR("---OFF---");
       disableInterrupt(20);
       disableInterrupt(71);
       disableInterrupt(75);
@@ -145,9 +168,10 @@ void loop() {
       enabledToggle=0;
     }
     else {
-      setupInterrupt(20);
+      EI_printPSTR("***ON***");
+      setupExInterrupt(20);
       setupInterrupt(71);
-      setupInterrupt(75);
+      setupExInterrupt(75);
       setupInterrupt(15);
       setupInterrupt(A8);
       setupInterrupt(MISO);
@@ -157,14 +181,12 @@ void loop() {
   }
   PORTE &= nebits;
   PORTJ &= njbits;
-  //*out &= njbits;
+  // *out &= njbits;
   delay(1);
   PORTE |= ebits;
   PORTJ |= jbits;
-  //*out |= jbits;
+  // *out |= jbits;
   delay(1);
-  Serial.println("---------------------------------------");
-  delay(1000);                          // Every second,
   updateOn(SS);
   updateOn(SCK);
   updateOn(MOSI)
@@ -199,7 +221,6 @@ void loop() {
   // External Interrupts
   updateOn(75);
   updateOn(76);
-  printIt("XXX", anyInterruptCounter);
   if (externalInterruptCounter > 0) { EI_printPSTR(" ext: "); Serial.println(externalInterruptCounter); }; \
   externalInterruptCounter=0;
   disableCounter++;
