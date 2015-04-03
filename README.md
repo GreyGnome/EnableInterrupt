@@ -14,7 +14,7 @@ Micro), and Mega2560 (and other ATmega2560-based boards, like the MegaADK).
 It enables you to assign an interrupt to pins on your chip that support them,
 and presents a common interface to all supported chips. This means that on
 the Arduino Uno and Mega you don't give it an interrupt number, as per
-http://arduino.cc/en/Reference/attachInterrupt attachInterrupt. Rather, your
+http://arduino.cc/en/Reference/attachInterrupt. Rather, your
 first argument is a pin number of a pin that's supported on that chip (see
 https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#pin--port-bestiary ).
 
