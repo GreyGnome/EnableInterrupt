@@ -1,0 +1,57 @@
+= Welcome to the EnableInterrupt wiki! =
+
+The EnableInterrupt library is a new Arduino interrupt library, designed for
+all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
+boards, like the mini), Due, Leonardo (and other ATmega32u4-based boards, like the
+Micro), and Mega2560 (and other ATmega2560-based boards, like the MegaADK).
+It enables you to assign an interrupt to pins on your chip that support them,
+and presents a common interface to all supported chips. This means that on
+the Arduino Uno and Mega you don't give it an interrupt number, as per
+[[see http://arduino.cc/en/Reference/attachInterrupt attachInterrupt]]. Rather, your
+first argument is a pin number of a pin that's supported on that chip (see the
+[[https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#pin--port-bestiary bestiary]]
+on the [[Usage]] wiki page).
+
+See the [[Installation]] and [[Usage]] wiki pages for information on how to use the library.
+See the [[Download]] page to download the library, or simply go to bintray at
+https://bintray.com/greygnome/generic/EnableInterrupt/view#files .
+
+See more details below under USAGE. See the examples subdirectory in the
+distribution for examples of the library in action.
+
+'''Make sure to read the [[https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#important-interrupt-types Important: Interrupt Types]] wiki page.'''
+
+= Interrupts =
+== Description ==
+What are Interrupts? For a tutorial, see
+http://www.engblaze.com/we-interrupt-this-program-to-bring-you-a-tutorial-on-arduino-interrupts/
+The posting gets into low-level details on interrupts. Take it slow and bit by bit you
+will understand. In short, interrupts are designed to handle something that needs to
+take place right '''now''', no matter what your main program is doing at the moment.
+If this sounds like something your sketch needs to do then you're in the right place.
+
+What do interrupts do, technically? They listen to a signal on a '''digital''' pin, and
+they make your sketch stop what it's doing. Almost immediately they
+run a subroutine that you created called an Interrupt Sub-Routine, or ISR.  So for example
+if your sketch needs to know when someone pushes a button that changes a pin's voltage
+from HIGH to LOW, then you'll want to create an interrupt that calls your subroutine
+based on a FALLING signal. If the button makes the signal go from LOW to HIGH, then
+you'll want to call a subroutine based on a RISING signal. If you want to know both,
+then you're interested in a CHANGE of signal.
+
+== Available Pins ==
+On many of the Arduino boards only a certain number of pins support interrupts. For a
+list, see the wiki Usage page.
+
+= How Do I Use It? =
+There are more details to be learned about interrupts, but those are the bare essentials.
+With the above background information you are ready to get started and utilize interrupts
+in a sketch.
+
+See the [[Usage]] wiki page for the details of how to use library.
+
+= LICENSE =
+Licensed under the Apache2.0 license. See the source files for the license
+boilerplate, the LICENSE file for the full text, and the NOTICE file which is
+required by the Apache2.0 license to be distributed with any code that you distribute
+that uses this library. The copyright holder for this code is Michael Schwager.
