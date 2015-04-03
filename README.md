@@ -7,10 +7,27 @@ enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
 
-For detailed usage information see the wiki page at
-https://github.com/GreyGnome/EnableInterrupt/wiki/Usage
-See the examples subdirectory in the
-distribution for examples of the library in action.
+The EnableInterrupt library is a new Arduino interrupt library, designed for
+all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
+boards, like the mini), Due, Leonardo (and other ATmega32u4-based boards, like the
+Micro), and Mega2560 (and other ATmega2560-based boards, like the MegaADK).
+It enables you to assign an interrupt to pins on your chip that support them,
+and presents a common interface to all supported chips. This means that on
+the Arduino Uno and Mega you don't give it an interrupt number, as per
+http://arduino.cc/en/Reference/attachInterrupt attachInterrupt. Rather, your
+first argument is a pin number of a pin that's supported on that chip (see
+https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#pin--port-bestiary ).
+
+See the Wiki at https://github.com/GreyGnome/EnableInterrupt/wiki/Home .
+For detailed usage information see https://github.com/GreyGnome/EnableInterrupt/wiki/Usage .
+See the https://github.com/GreyGnome/EnableInterrupt/wiki/Download page to
+download the library.
+
+See the examples subdirectory in the distribution or in this Git site for code examples.
+
+For a tutorial on interrupts, see
+http://www.engblaze.com/we-interrupt-this-program-to-bring-you-a-tutorial-on-arduino-interrupts/
+The posting gets into low-level details on interrupts.
 
 **NOTICE** Many of the interrupt pins on the ATmega processor used in the Uno,
 Leonardo, and ATmega2560 are "Pin Change Interrupt pins". This means that under
@@ -22,10 +39,6 @@ time between when the interrupt triggers and when the pins are read to determine
 what actually happened (rising or falling) and which pin changed. Therefore, these
 pins are *not* suitable for fast changing signals, and under the right conditions
 such events as a bouncing switch may actually be missed. Caveat Programmer.
-
-For a tutorial on interrupts, see
-http://www.engblaze.com/we-interrupt-this-program-to-bring-you-a-tutorial-on-arduino-interrupts/
-The posting gets into low-level details on interrupts.
 
 ## ATmega Processor Interrupt Types
 Note that the ATmega processor at the heart of the Arduino Uno/Mega2560/Leonardo
