@@ -6,6 +6,9 @@ Functions:
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
+*_What's New?_ Mon Apr 13 12:10:28 CDT 2015 Version 0.3 (Alpha) of the 
+library has been released. This release includes a bugfix which made it
+impossible to compile on the Arduino Uno.*
 
 The EnableInterrupt library is a new Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
@@ -18,10 +21,13 @@ http://arduino.cc/en/Reference/attachInterrupt. Rather, your
 first argument is a pin number of a pin that's supported on that chip (see
 https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#pin--port-bestiary ).
 
-See the Wiki at https://github.com/GreyGnome/EnableInterrupt/wiki/Home .
-For detailed usage information see https://github.com/GreyGnome/EnableInterrupt/wiki/Usage .
+## Download
 See the https://github.com/GreyGnome/EnableInterrupt/wiki/Download page to
 download the library.
+
+## More Information
+See the Wiki at https://github.com/GreyGnome/EnableInterrupt/wiki/Home .
+For detailed usage information see https://github.com/GreyGnome/EnableInterrupt/wiki/Usage .
 
 See the examples subdirectory in the distribution or in this Git site for code examples.
 
@@ -39,6 +45,8 @@ time between when the interrupt triggers and when the pins are read to determine
 what actually happened (rising or falling) and which pin changed. Therefore, these
 pins are *not* suitable for fast changing signals, and under the right conditions
 such events as a bouncing switch may actually be missed. Caveat Programmer.
+If you're concerned about this, continue to read the following information and
+make sure to read the wiki pages; especially see https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#atmega-processor-interrupt-types .
 
 ## ATmega Processor Interrupt Types
 Note that the ATmega processor at the heart of the Arduino Uno/Mega2560/Leonardo
