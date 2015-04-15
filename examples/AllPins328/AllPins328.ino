@@ -143,7 +143,7 @@ uint8_t disableCounter=0;
 // the interrupt routine.
 void loop() {
   EI_printPSTR("------\r\n");
-  delay(1000);                          // Every second,
+  delay(1000);                          // Perform the loop every second.
   if (disableCounter & 0x08) {
     EI_printPSTR("Toggle 2, 3, 8, A0...");
     delay(1000);
