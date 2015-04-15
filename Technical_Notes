@@ -1,6 +1,30 @@
 // in vim, :set ts=2 sts=2 sw=2 et
 
-// My Enable Interrupts
+// Enable Interrupts
+
+=====================================================================================================
+=====================================================================================================
+ATmega328 Support
+=====================================================================================================
+=====================================================================================================
+
+Interrupt pins:
+Pin External           Pin  Pin Change       Pin  Pin Change
+    Interrupt               Interrupt             Interrupt 
+ 3 INT0      PD3        0   PCINT16   PD0     A0  PCINT8    PC0
+ 2 INT0      PD2        1   PCINT17   PD1     A1  PCINT9    PC1
+                        2   PCINT18   PD2     A2  PCINT10   PC2
+                        3   PCINT19   PD3     A3  PCINT11   PC3
+                        4   PCINT20   PD4     A4  PCINT12   PC4
+                        5   PCINT21   PD5     A5  PCINT13   PC5
+                        6   PCINT22   PD6
+                        7   PCINT23   PD7
+                        8   PCINT0    PB0
+                        9   PCINT1    PB1
+                        10  PCINT2    PB2
+                        11  PCINT3    PB3
+                        12  PCINT4    PB4
+                        13  PCINT5    PB5
 
 // The External Interrupts are triggered by the INT0 and INT1 pins or any of the PCINT23...0 pins.
 
