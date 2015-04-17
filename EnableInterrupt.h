@@ -32,6 +32,9 @@
 
 // Arduino Due (not Duemilanove) macros. Easy-peasy.
 #if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__
+#ifdef NEEDFORSPEED
+#error The NEEDFORSPEED definition does not make sense on the Due platform.
+#endif
 define enableInterrupt(pin,userFunc,mode) attachInterrupt(pin, userFunc,mode)
 define disableInterrupt(pin) detachInterrupt(pin)
 #else
@@ -127,6 +130,8 @@ typedef void (*interruptFunctionType)(void);
   __AVR_ATmega328__ || __AVR_ATmega328P__
 
 #define ARDUINO_328
+
+#ifndef NEEDFORSPEED
 const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   0, // 0 == port D, 0
   1,
@@ -191,10 +196,10 @@ struct functionPointersPortD {
 typedef struct functionPointersPortD functionPointersPortD;
 
 functionPointersPortD portDFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-
+#endif // NEEDFORSPEED
 
 // For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
-// we have to know how we were defined.
+// we have to know how the ports were defined.
 volatile uint8_t risingPinsPORTB=0;
 volatile uint8_t fallingPinsPORTB=0;
 volatile uint8_t risingPinsPORTC=0;
@@ -219,6 +224,10 @@ static volatile uint8_t portSnapshotD;
   defined __AVR_ATmega1281__ || defined __AVR_ATmega2561__
 #define ARDUINO_MEGA
 
+volatile uint8_t portJPCMSK=0; // This is a shifted version of PCMSK for PortJ, so I
+			                         //	don't have to perform a shift in the IRQ.
+
+#ifdef NEEDFORSPEED
 const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   0, // PE0  pin: 0
   1, // PE1  pin: 1
@@ -315,7 +324,6 @@ typedef struct functionPointersPortB functionPointersPortB;
 
 functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
-volatile uint8_t portJPCMSK=0;
 // only 7 pins total of port J are supported as interrupts on the ATmega2560,
 // and only PJ0 and 1 are supported on the Arduino MEGA.
 // For PCI1 the 0th bit is PE0.   PJ2-6 are not exposed on the Arduino pins, but
@@ -361,6 +369,7 @@ volatile uint8_t fallingPinsPORTK=0;
 static volatile uint8_t portSnapshotB;
 static volatile uint8_t portSnapshotJ;
 static volatile uint8_t portSnapshotK;
+#endif // NEEDFORSPEED
 
 #define PORTB_VECT PCINT0_vect
 #define PORTJ_VECT PCINT1_vect
@@ -378,6 +387,8 @@ static volatile uint8_t portSnapshotK;
        awk '{print "  ", $5 ", // " $5 "  pin: " $3}'
    ...then massage the output as necessary to create the below:
 */
+
+#ifndef NEEDFORSPEED
 const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   2, // PD2  pin: D0
   3, // PD3  pin: D1
@@ -421,9 +432,11 @@ volatile uint8_t fallingPinsPORTB=0;
 
 // for the saved state of the ports
 static volatile uint8_t portSnapshotB;
+#endif // NEEDFOR SPEED
 
 #define PORTB_VECT PCINT0_vect
-#endif
+#endif // #if defined __AVR_ATmega168__ || defined __AVR_ATmega168A__ ...
+
 // ===========================================================================================
 // END END END DATA STRUCTURES ===============================================================
 // ===========================================================================================
@@ -434,14 +447,23 @@ volatile uint16_t storage=0;
 // #define FALLING 2
 // #define RISING 3
 
+#ifdef NEEDFORSPEED
+void bogusFunctionPlaceholder(void) {
+}
+#define enableInterruptFast(x, y) enableInterrupt(x, bogusFunctionPlaceholder, y)
+#include "speedpindefs.h"
+#endif
+
 // "interruptDesignator" is simply the Arduino pin optionally OR'ed with
 // PINCHANGEINTERRUPT (== 0x80)
 void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunction, uint8_t mode) {
   uint8_t arduinoPin;
   uint8_t portNumber=0;
   uint8_t portMask=0;
+#ifndef NEEDFORSPEED
   uint8_t portBitNumber; // when an interrupted pin is found, this will be used to choose the function.
   interruptFunctionType *calculatedPointer;
+#endif
 
   arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
 
@@ -519,21 +541,27 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #endif
     }
 
+#ifndef NEEDFORSPEED
     // assign the function to be run in the ISR
     // save the initial value of the port
     portBitNumber=pgm_read_byte(&digital_pin_to_port_bit_number_PGM[arduinoPin]);
+#endif
 #if defined ARDUINO_328
     if (portNumber==PC) {
+#ifndef NEEDFORSPEED
       calculatedPointer=&portCFunctions.pinZero + portBitNumber;
       *calculatedPointer = userFunction;
+#endif
 
       portSnapshotC=*portInputRegister(portNumber);
       pcmsk=&PCMSK1;
       PCICR |= _BV(1);
     }
     if (portNumber==PD) {
+#ifndef NEEDFORSPEED
       calculatedPointer=&portDFunctions.pinZero + portBitNumber;
       *calculatedPointer = userFunction;
+#endif
 
       portSnapshotD=*portInputRegister(portNumber);
       pcmsk=&PCMSK2;
@@ -541,8 +569,10 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     }
 #elif defined ARDUINO_MEGA
     if (portNumber==PJ) {
+#ifndef NEEDFORSPEED
       calculatedPointer=&portJFunctions.pinZero + portBitNumber;
       *calculatedPointer = userFunction;
+#endif
 
       portSnapshotJ=*portInputRegister(portNumber);
       pcmsk=&PCMSK1;
@@ -551,8 +581,10 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       portMask <<= 1; // Handle port J's oddness. PJ0 is actually 1 on PCMSK1.
     }
     if (portNumber==PK) {
+#ifndef NEEDFORSPEED
       calculatedPointer=&portKFunctions.pinZero + portBitNumber;
       *calculatedPointer = userFunction;
+#endif
 
       portSnapshotK=*portInputRegister(portNumber);
       pcmsk=&PCMSK2;
@@ -560,10 +592,12 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     }
 #elif defined ARDUINO_LEONARDO
       // No other Pin Change Interrupt ports than B on Leonardo
-#endif
+#endif // defined ARDUION_328
     if (portNumber==PB) {
+#ifndef NEEDFORSPEED
       calculatedPointer=&portBFunctions.pinZero + portBitNumber;
       *calculatedPointer = userFunction;
+#endif
 
       portSnapshotB=*portInputRegister(portNumber);
       pcmsk=&PCMSK0;
@@ -586,14 +620,18 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     cli(); // no interrupts while we're setting up an interrupt.
 #if defined ARDUINO_328
     if (arduinoPin == 3) {
+#ifndef NEEDFORSPEED
       functionPointerArrayEXTERNAL[1] = userFunction;
+#endif
       EIMSK &= ~_BV(1);
       EICRA &= (~_BV(2) & ~_BV(3));
       EICRA |= mode << 2;
       EIFR  |= _BV(1); // using a clue from the ATmega2560 datasheet.
       EIMSK |= _BV(1);
     } else {
+#ifndef NEEDFORSPEED
       functionPointerArrayEXTERNAL[0] = userFunction;
+#endif
       EIMSK &= ~_BV(0);
       EICRA &= (~_BV(0) & ~_BV(1));
       EICRA |= mode;
@@ -603,7 +641,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #elif defined ARDUINO_MEGA
     switch (arduinoPin) {
       case 21 : // INT0
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[0] = userFunction;
+#endif
         EIMSK &= ~_BV(0);
         EICRA &= (~_BV(0) & ~_BV(1));
         EICRA |= mode;
@@ -611,7 +651,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
         EIMSK |= _BV(0);
         break;
       case 20 : // INT1
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[1] = userFunction;
+#endif
         EIMSK &= ~_BV(1);
         EICRA &= (~_BV(2) & ~_BV(3));
         EICRA |= (mode << 2);
@@ -619,7 +661,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
         EIMSK |= _BV(1);
         break;
       case 19 : // INT2
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[2] = userFunction;
+#endif
         EIMSK &= ~_BV(2);
         EICRA &= (~_BV(4) & ~_BV(5));
         EICRA |= (mode << 4);
@@ -627,7 +671,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
         EIMSK |= _BV(2);
         break;
       case 18 : // INT3
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[3] = userFunction;
+#endif
         EIMSK &= ~_BV(3);
         EICRA &= (~_BV(6) & ~_BV(7));
         EICRA |= (mode << 6);
@@ -635,7 +681,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
         EIMSK |= _BV(3);
         break;
       case  2 : // INT4
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[4] = userFunction;
+#endif
         EIMSK &= ~_BV(4);
         EICRB &= (~_BV(0) & ~_BV(1));
         EICRB |= mode;
@@ -643,7 +691,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
         EIMSK |= _BV(4);
         break;
       case  3 : // INT5
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[5] = userFunction;
+#endif
         EIMSK &= ~_BV(5);
         EICRB &= (~_BV(2) & ~_BV(3));
         EICRB |= (mode << 2);
@@ -651,7 +701,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
         EIMSK |= _BV(5);
         break;
       case 75 : // INT6- Fake Arduino Pin
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[6] = userFunction;
+#endif
         EIMSK &= ~_BV(6);
         EICRB &= (~_BV(4) & ~_BV(5));
         EICRB |= (mode << 4);
@@ -659,7 +711,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
         EIMSK |= _BV(6);
         break;
       case 76 : // INT7- Fake Arduino Pin
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[7] = userFunction;
+#endif
         EIMSK &= ~_BV(7);
         EICRB &= (~_BV(6) & ~_BV(7));
         EICRB |= (mode << 6);
@@ -670,7 +724,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #elif defined ARDUINO_LEONARDO
     switch (arduinoPin) {
       case 3 : // INT0
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[0] = userFunction;
+#endif
         EIMSK &= ~_BV(0);
         EICRA &= (~_BV(0) & ~_BV(1));
         EICRA |= mode;
@@ -678,7 +734,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
         EIMSK |= _BV(0);
         break;
       case 2 : // INT1
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[1] = userFunction;
+#endif
         EIMSK &= ~_BV(1);
         EICRA &= (~_BV(2) & ~_BV(3));
         EICRA |= (mode << 2);
@@ -686,7 +744,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
         EIMSK |= _BV(1);
         break;
       case 0 : // INT2
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[2] = userFunction;
+#endif
         EIMSK &= ~_BV(2);
         EICRA &= (~_BV(4) & ~_BV(5));
         EICRA |= (mode << 4);
@@ -694,7 +754,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
         EIMSK |= _BV(2);
         break;
       case 1 : // INT3
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[3] = userFunction;
+#endif
         EIMSK &= ~_BV(3);
         EICRA &= (~_BV(6) & ~_BV(7));
         EICRA |= (mode << 6);
@@ -702,7 +764,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
         EIMSK |= _BV(3);
         break;
       case 7 : // INT6
+#ifndef NEEDFORSPEED
         functionPointerArrayEXTERNAL[4] = userFunction;
+#endif
         EIMSK &= ~_BV(6);
         EICRB &= (~_BV(4) & ~_BV(5));
         EICRB |= (mode << 4);
@@ -877,76 +941,106 @@ void disableInterrupt (uint8_t interruptDesignator) {
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 ISR(INT0_vect) {
+#ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[0])();
+#else
+#if defined ARDUINO_MEGA
+  INTERRUPT_FLAG_PIN21++;
+#endif
+#if defined ARDUINO_LEONARDO
+  INTERRUPT_FLAG_PIN3++;
+#endif
+#if defined ARDUION_328
+  INTERRUPT_FLAG_PIN2++;
+#endif
+#endif // NEEDFORSPEED
 }
 
 ISR(INT1_vect) {
+#ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[1])();
+#else
+#if defined ARDUINO_MEGA
+  INTERRUPT_FLAG_PIN20++;
+#endif
+#if defined ARDUINO_LEONARDO
+  INTERRUPT_FLAG_PIN2++;
+#endif
+#if defined ARDUION_328
+  INTERRUPT_FLAG_PIN3++;
+#endif
+#endif // NEEDFORSPEED
 }
 
 #if defined ARDUINO_MEGA || defined ARDUINO_LEONARDO
 ISR(INT2_vect) {
+#ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[2])();
+#else
+#if defined ARDUINO_MEGA
+  INTERRUPT_FLAG_PIN19++;
+#else
+  INTERRUPT_FLAG_PIN0++;
+#endif
+#endif // NEEDFORSPEED
 }
 
 ISR(INT3_vect) {
+#ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[3])();
-}
+#else
+#if defined ARDUINO_MEGA
+  INTERRUPT_FLAG_PIN18++;
+#else
+  INTERRUPT_FLAG_PIN1++;
 #endif
+#endif // NEEDFORSPEED
+}
+#endif // ARDUINO_MEGA || ARDUINO_LEONARDO
 
 #if defined ARDUINO_MEGA
 ISR(INT4_vect) {
+#ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[4])();
+#else
+  INTERRUPT_FLAG_PIN2++;
+#endif // NEEDFORSPEED
 }
 
 ISR(INT5_vect) {
+#ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[5])();
+#else
+  INTERRUPT_FLAG_PIN3++;
+#endif // NEEDFORSPEED
 }
 
 ISR(INT6_vect) {
+#ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[6])();
+#else
+  INTERRUPT_FLAG_PIN75++;
+#endif // NEEDFORSPEED
 }
 
 ISR(INT7_vect) {
+#ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[7])();
+#else
+  INTERRUPT_FLAG_PIN76++;
+#endif // NEEDFORSPEED
 }
-#endif
+#endif // defined ARDUINO_MEGA
 
 #if defined ARDUINO_LEONARDO
 ISR(INT6_vect) {
+#ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[4])();
+#else
+  INTERRUPT_FLAG_PIN7++;
+#endif // NEEDFORSPEED
 }
-#endif
-
-// If the compiler does not inline this, things break.
-// It's not enough to have just inline, we need the attribute.
-inline void __attribute__((always_inline)) inlineISR (uint8_t current,
-  volatile uint8_t *portSnapshot,
-  uint8_t risingPins, uint8_t fallingPins,
-  volatile uint8_t pcmsk,
-  interruptFunctionType functionPointerArray[]) {
-
-  uint8_t i;
-  uint8_t interruptMask;
-  uint8_t changedPins;
-
-  changedPins=(*portSnapshot ^ current) & ((risingPins & current) | (fallingPins & ~current));
-  *portSnapshot =  current;
-  if (changedPins == 0) goto exitISR; // get out quickly if not interested.
-
-  interruptMask = pcmsk & changedPins;
-  if (interruptMask == 0) goto exitISR;
-  i=0;
-  while (1) {
-    if (interruptMask & 0x01) {
-      (*functionPointerArray[i])();
-    }
-    interruptMask=interruptMask >> 1;
-    if (interruptMask == 0) goto exitISR;
-    i++;
-  }
-  exitISR: return;
-}
+#endif // defined ARDUINO_LEONARDO
 
 ISR(PORTB_VECT) {
   uint8_t current;
@@ -966,6 +1060,9 @@ ISR(PORTB_VECT) {
 
 
   portSnapshotB = current;
+#ifdef NEEDFORSPEED
+#include "portb_speed.h"
+#else
   if (interruptMask == 0) goto exitPORTBISR; // get out quickly if not interested.
 #ifndef LEONARDO
   if (interruptMask & _BV(0)) portBFunctions.pinZero();
@@ -980,6 +1077,7 @@ ISR(PORTB_VECT) {
   if (interruptMask & _BV(7)) portBFunctions.pinSeven();
 #endif
   exitPORTBISR: return;
+#endif // NEEDFORSPEED
 }
 
 #if defined ARDUINO_328
@@ -1000,6 +1098,9 @@ ISR(PORTC_VECT) {
   interruptMask = PCMSK1 & interruptMask;
 
   portSnapshotC = current;
+#ifdef NEEDFORSPEED
+#include "portc_speed.h"
+#else
   if (interruptMask == 0) goto exitPORTCISR; // get out quickly if not interested.
   if (interruptMask & _BV(0)) portCFunctions.pinZero();
   if (interruptMask & _BV(1)) portCFunctions.pinOne();
@@ -1008,6 +1109,7 @@ ISR(PORTC_VECT) {
   if (interruptMask & _BV(4)) portCFunctions.pinFour();
   if (interruptMask & _BV(5)) portCFunctions.pinFive();
   exitPORTCISR: return;
+#endif // NEEDFORSPEED
 }
 
 ISR(PORTD_VECT) {
@@ -1028,6 +1130,9 @@ ISR(PORTD_VECT) {
 
 
   portSnapshotD = current;
+#ifdef NEEDFORSPEED
+#include "portd_speed.h"
+#else
   if (interruptMask == 0) goto exitPORTDISR; // get out quickly if not interested.
   if (interruptMask & _BV(0)) portDFunctions.pinZero();
   if (interruptMask & _BV(1)) portDFunctions.pinOne();
@@ -1038,6 +1143,7 @@ ISR(PORTD_VECT) {
   if (interruptMask & _BV(6)) portDFunctions.pinSix();
   if (interruptMask & _BV(7)) portDFunctions.pinSeven();
   exitPORTDISR: return;
+#endif // NEEDFORSPEED
 }
 
 #elif defined ARDUINO_MEGA
@@ -1057,9 +1163,10 @@ ISR(PORTJ_VECT) {
   interruptMask = changedPins & interruptMask;
   interruptMask = portJPCMSK & interruptMask; // because PCMSK1 is shifted wrt. PortJ.
 
-
-
   portSnapshotJ = current;
+#ifdef NEEDFORSPEED
+#include "portj_speed.h"
+#else
   if (interruptMask == 0) goto exitPORTJISR; // get out quickly if not interested.
   if (interruptMask & _BV(0)) portJFunctions.pinZero();
   if (interruptMask & _BV(1)) portJFunctions.pinOne();
@@ -1069,6 +1176,7 @@ ISR(PORTJ_VECT) {
   if (interruptMask & _BV(5)) portJFunctions.pinFive();
   if (interruptMask & _BV(6)) portJFunctions.pinSix();
   exitPORTJISR: return;
+#endif // NEEDFORSPEED
 }
 
 ISR(PORTK_VECT) {
@@ -1087,8 +1195,10 @@ ISR(PORTK_VECT) {
   interruptMask = changedPins & interruptMask;
   interruptMask = PCMSK2 & interruptMask;
 
-
   portSnapshotK = current;
+#ifdef NEEDFORSPEED
+#include "portk_speed.h"
+#else
   if (interruptMask == 0) goto exitPORTKISR; // get out quickly if not interested.
   if (interruptMask & _BV(0)) portKFunctions.pinZero();
   if (interruptMask & _BV(1)) portKFunctions.pinOne();
@@ -1099,10 +1209,12 @@ ISR(PORTK_VECT) {
   if (interruptMask & _BV(6)) portKFunctions.pinSix();
   if (interruptMask & _BV(7)) portKFunctions.pinSeven();
   exitPORTKISR: return;
+#endif // NEEDFORSPEED
 }
 #elif defined ARDUINO_LEONARDO
   // No other Pin Change Interrupt ports than B on Leonardo
-#endif
+#endif // defined ARDUINO_328
+
 #endif // #ifndef LIBCALL_ENABLEINTERRUPT *********************************************************
 #endif // #if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__
 #endif // #ifndef EnableInterrupt_h ***************************************************************

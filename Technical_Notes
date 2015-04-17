@@ -11,7 +11,7 @@ ATmega328 Support
 Interrupt pins:
 Pin External           Pin  Pin Change       Pin  Pin Change
     Interrupt               Interrupt             Interrupt 
- 3 INT0      PD3        0   PCINT16   PD0     A0  PCINT8    PC0
+ 3 INT1      PD3        0   PCINT16   PD0     A0  PCINT8    PC0
  2 INT0      PD2        1   PCINT17   PD1     A1  PCINT9    PC1
                         2   PCINT18   PD2     A2  PCINT10   PC2
                         3   PCINT19   PD3     A3  PCINT11   PC3
