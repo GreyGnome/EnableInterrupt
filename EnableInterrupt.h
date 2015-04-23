@@ -75,21 +75,35 @@ define disableInterrupt(pin) detachInterrupt(pin)
  */
 void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
 void disableInterrupt(uint8_t interruptDesignator);
+#ifdef NEEDFORSPEED
+#undef enableInterruptFast
+// enableInterruptFast(uint8_t interruptDesignator, uint8_t mode);
+#ifdef LIBCALL_ENABLEINTERRUPT
+extern void bogusFunctionPlaceholder(void);
+#endif
+#define enableInterruptFast(x, y) enableInterrupt(x, bogusFunctionPlaceholder, y)
+#endif
+
 
 // *************************************************************************************
 // End Function Prototypes *************************************************************
 // *************************************************************************************
 
 #undef PINCHANGEINTERRUPT
-
 #define PINCHANGEINTERRUPT 0x80
+
 #undef attachPinChangeInterrupt
 #undef detachPinChangeInterrupt
-
 #define detachPinChangeInterrupt(pin)                   disableInterrupt(pin)
 #define attachPinChangeInterrupt(pin,userFunc,mode)     enableInterrupt(pin , userFunc,mode)
 
 #ifndef LIBCALL_ENABLEINTERRUPT // LIBCALL_ENABLEINTERRUPT ****************************************
+#ifdef NEEDFORSPEED
+void bogusFunctionPlaceholder(void) {
+}
+#include "pindefs_speed.h"
+#endif
+
 // Example: EI_printPSTR("This is a nice long string that takes no static ram");
 #define EI_printPSTR(x) SerialPrint_P(PSTR(x))
 void SerialPrint_P(const char *str) {
@@ -447,13 +461,6 @@ volatile uint16_t storage=0;
 // #define FALLING 2
 // #define RISING 3
 
-#ifdef NEEDFORSPEED
-void bogusFunctionPlaceholder(void) {
-}
-#define enableInterruptFast(x, y) enableInterrupt(x, bogusFunctionPlaceholder, y)
-#include "speedpindefs.h"
-#endif
-
 // "interruptDesignator" is simply the Arduino pin optionally OR'ed with
 // PINCHANGEINTERRUPT (== 0x80)
 void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunction, uint8_t mode) {
@@ -592,7 +599,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     }
 #elif defined ARDUINO_LEONARDO
       // No other Pin Change Interrupt ports than B on Leonardo
-#endif // defined ARDUION_328
+#endif // defined ARDUINO_328
     if (portNumber==PB) {
 #ifndef NEEDFORSPEED
       calculatedPointer=&portBFunctions.pinZero + portBitNumber;
@@ -950,7 +957,7 @@ ISR(INT0_vect) {
 #if defined ARDUINO_LEONARDO
   INTERRUPT_FLAG_PIN3++;
 #endif
-#if defined ARDUION_328
+#if defined ARDUINO_328
   INTERRUPT_FLAG_PIN2++;
 #endif
 #endif // NEEDFORSPEED
@@ -966,7 +973,7 @@ ISR(INT1_vect) {
 #if defined ARDUINO_LEONARDO
   INTERRUPT_FLAG_PIN2++;
 #endif
-#if defined ARDUION_328
+#if defined ARDUINO_328
   INTERRUPT_FLAG_PIN3++;
 #endif
 #endif // NEEDFORSPEED
@@ -1048,6 +1055,9 @@ ISR(PORTB_VECT) {
   uint8_t changedPins;
   uint8_t tmp;
 
+  // FOR MEASUREMENT ONLY
+  // PORTC |= (1 << PC5); // SIGNAL THAT WE ENTERED THE INTERRUPT
+
   current=PINB;
 //  changedPins=(portSnapshotB ^ current) &
 //                                       ((risingPinsPORTB & current) | (fallingPinsPORTB & ~current));
@@ -1062,6 +1072,8 @@ ISR(PORTB_VECT) {
   portSnapshotB = current;
 #ifdef NEEDFORSPEED
 #include "portb_speed.h"
+  // FOR MEASUREMENT ONLY
+  // PORTC &= ~(1 << PC5); // SIGNAL THAT WE ARE LEAVING THE INTERRUPT
 #else
   if (interruptMask == 0) goto exitPORTBISR; // get out quickly if not interested.
 #ifndef LEONARDO
@@ -1077,6 +1089,8 @@ ISR(PORTB_VECT) {
   if (interruptMask & _BV(7)) portBFunctions.pinSeven();
 #endif
   exitPORTBISR: return;
+  // FOR MEASUREMENT ONLY
+  // exitPORTBISR: PORTC &= ~(1 << PC5); // SIGNAL THAT WE ARE LEAVING THE INTERRUPT
 #endif // NEEDFORSPEED
 }
 
