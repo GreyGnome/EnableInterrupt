@@ -75,12 +75,10 @@ define disableInterrupt(pin) detachInterrupt(pin)
  */
 void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
 void disableInterrupt(uint8_t interruptDesignator);
+void bogusFunctionPlaceholder(void);
 #ifdef NEEDFORSPEED
 #undef enableInterruptFast
 // enableInterruptFast(uint8_t interruptDesignator, uint8_t mode);
-#ifdef LIBCALL_ENABLEINTERRUPT
-extern void bogusFunctionPlaceholder(void);
-#endif
 #define enableInterruptFast(x, y) enableInterrupt(x, bogusFunctionPlaceholder, y)
 #endif
 
@@ -952,13 +950,19 @@ ISR(INT0_vect) {
   (*functionPointerArrayEXTERNAL[0])();
 #else
 #if defined ARDUINO_MEGA
+#ifdef INTERRUPT_FLAG_PIN21
   INTERRUPT_FLAG_PIN21++;
 #endif
+#endif
 #if defined ARDUINO_LEONARDO
+#ifdef INTERRUPT_FLAG_PIN3
   INTERRUPT_FLAG_PIN3++;
 #endif
+#endif
 #if defined ARDUINO_328
+#ifdef INTERRUPT_FLAG_PIN2
   INTERRUPT_FLAG_PIN2++;
+#endif
 #endif
 #endif // NEEDFORSPEED
 }
@@ -968,13 +972,19 @@ ISR(INT1_vect) {
   (*functionPointerArrayEXTERNAL[1])();
 #else
 #if defined ARDUINO_MEGA
+#ifdef INTERRUPT_FLAG_PIN20
   INTERRUPT_FLAG_PIN20++;
 #endif
+#endif
 #if defined ARDUINO_LEONARDO
+#ifdef INTERRUPT_FLAG_PIN2
   INTERRUPT_FLAG_PIN2++;
 #endif
+#endif
 #if defined ARDUINO_328
+#ifdef INTERRUPT_FLAG_PIN3
   INTERRUPT_FLAG_PIN3++;
+#endif
 #endif
 #endif // NEEDFORSPEED
 }
@@ -985,9 +995,13 @@ ISR(INT2_vect) {
   (*functionPointerArrayEXTERNAL[2])();
 #else
 #if defined ARDUINO_MEGA
+#ifdef INTERRUPT_FLAG_PIN19
   INTERRUPT_FLAG_PIN19++;
+#endif
 #else
+#ifdef INTERRUPT_FLAG_PIN0
   INTERRUPT_FLAG_PIN0++;
+#endif
 #endif
 #endif // NEEDFORSPEED
 }
@@ -997,9 +1011,13 @@ ISR(INT3_vect) {
   (*functionPointerArrayEXTERNAL[3])();
 #else
 #if defined ARDUINO_MEGA
+#ifdef INTERRUPT_FLAG_PIN18
   INTERRUPT_FLAG_PIN18++;
+#endif
 #else
+#ifdef INTERRUPT_FLAG_PIN1
   INTERRUPT_FLAG_PIN1++;
+#endif
 #endif
 #endif // NEEDFORSPEED
 }
@@ -1010,7 +1028,9 @@ ISR(INT4_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[4])();
 #else
+#ifdef INTERRUPT_FLAG_PIN2
   INTERRUPT_FLAG_PIN2++;
+#endif
 #endif // NEEDFORSPEED
 }
 
@@ -1018,7 +1038,9 @@ ISR(INT5_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[5])();
 #else
+#ifdef INTERRUPT_FLAG_PIN3
   INTERRUPT_FLAG_PIN3++;
+#endif
 #endif // NEEDFORSPEED
 }
 
@@ -1026,7 +1048,9 @@ ISR(INT6_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[6])();
 #else
+#ifdef INTERRUPT_FLAG_PIN75
   INTERRUPT_FLAG_PIN75++;
+#endif
 #endif // NEEDFORSPEED
 }
 
@@ -1034,7 +1058,9 @@ ISR(INT7_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[7])();
 #else
+#ifdef INTERRUPT_FLAG_PIN76
   INTERRUPT_FLAG_PIN76++;
+#endif
 #endif // NEEDFORSPEED
 }
 #endif // defined ARDUINO_MEGA
@@ -1044,7 +1070,9 @@ ISR(INT6_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[4])();
 #else
+#ifdef INTERRUPT_FLAG_PIN7
   INTERRUPT_FLAG_PIN7++;
+#endif
 #endif // NEEDFORSPEED
 }
 #endif // defined ARDUINO_LEONARDO
@@ -1054,9 +1082,6 @@ ISR(PORTB_VECT) {
   uint8_t interruptMask;
   uint8_t changedPins;
   uint8_t tmp;
-
-  // FOR MEASUREMENT ONLY
-  // PORTC |= (1 << PC5); // SIGNAL THAT WE ENTERED THE INTERRUPT
 
   current=PINB;
 //  changedPins=(portSnapshotB ^ current) &
@@ -1072,8 +1097,6 @@ ISR(PORTB_VECT) {
   portSnapshotB = current;
 #ifdef NEEDFORSPEED
 #include "portb_speed.h"
-  // FOR MEASUREMENT ONLY
-  // PORTC &= ~(1 << PC5); // SIGNAL THAT WE ARE LEAVING THE INTERRUPT
 #else
   if (interruptMask == 0) goto exitPORTBISR; // get out quickly if not interested.
 #ifndef LEONARDO
