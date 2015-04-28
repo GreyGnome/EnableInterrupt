@@ -6,9 +6,12 @@ Functions:
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
-*_What's New?_ Mon Apr 13 12:10:28 CDT 2015 Version 0.3 (Alpha) of the 
-library has been released. This release includes a bugfix which made it
-impossible to compile on the Arduino Uno.*
+*_What's New?_ Mon Apr 27 07:37:40 CDT 2015 Version 0.4 (Alpha) of the
+library has been released. This release includes code that greatly speeds
+up the speed of an interrupt, as long as the programmer is willing to
+accept a restrictive set of rules. Speed details to be made available in an
+upcoming report. For now, see the Wiki page
+https://github.com/GreyGnome/EnableInterrupt/wiki/HiSpeed .*
 
 The EnableInterrupt library is a new Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
