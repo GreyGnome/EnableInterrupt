@@ -239,7 +239,7 @@ static volatile uint8_t portSnapshotD;
 volatile uint8_t portJPCMSK=0; // This is a shifted version of PCMSK for PortJ, so I
 			                         //	don't have to perform a shift in the IRQ.
 
-#ifdef NEEDFORSPEED
+#ifndef NEEDFORSPEED
 const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   0, // PE0  pin: 0
   1, // PE1  pin: 1
@@ -367,6 +367,7 @@ struct functionPointersPortK {
 typedef struct functionPointersPortK functionPointersPortK;
 
 functionPointersPortK portKFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+#endif // NEEDFORSPEED
 
 // For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
 // we have to know how we were defined.
@@ -381,7 +382,6 @@ volatile uint8_t fallingPinsPORTK=0;
 static volatile uint8_t portSnapshotB;
 static volatile uint8_t portSnapshotJ;
 static volatile uint8_t portSnapshotK;
-#endif // NEEDFORSPEED
 
 #define PORTB_VECT PCINT0_vect
 #define PORTJ_VECT PCINT1_vect
@@ -412,14 +412,15 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   6, // PE6  pin: D7
   4, // PB4  pin: D8  // we really only care about Port B, but I don't know that
   5, // PB5  pin: D9  // shortening this array and doing array index arithmetic
-  6, // PB6  pin: D10 // the code any shorter.
+  6, // PB6  pin: D10 // would make the code any shorter.
   7, // PB7  pin: D11
   6, // PD6  pin: D12
   7, // PC7  pin: D13
   3, // PB3  pin: D14 MISO
   1, // PB1  pin: D15 SCK
   2, // PB2  pin: D16 MOSI
-// There are no ports we care about after pin 16.
+  0, // PB0  pin: D17 SS (RXLED). Available on non-Leonardo 32u4 boards, at least (exposed on the Leonardo??)
+// There are no ports we care about after pin 17.
 };
 
 interruptFunctionType functionPointerArrayEXTERNAL[5];
@@ -453,7 +454,6 @@ static volatile uint8_t portSnapshotB;
 // END END END DATA STRUCTURES ===============================================================
 // ===========================================================================================
 
-volatile uint16_t storage=0;
 // From /usr/share/arduino/hardware/arduino/cores/robot/Arduino.h
 // #define CHANGE 1
 // #define FALLING 2

@@ -1,4 +1,7 @@
 #if defined LEONARDO
+#ifdef INTERRUPT_FLAG_PINSS
+  if (interruptMask & _BV(0)) INTERRUPT_FLAG_PINSS++;
+#endif
 #ifdef INTERRUPT_FLAG_PINSCK
   if (interruptMask & _BV(1)) INTERRUPT_FLAG_PINSCK++;
 #endif
