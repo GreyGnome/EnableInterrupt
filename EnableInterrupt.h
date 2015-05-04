@@ -1099,9 +1099,7 @@ ISR(PORTB_VECT) {
 #include "portb_speed.h"
 #else
   if (interruptMask == 0) goto exitPORTBISR; // get out quickly if not interested.
-#ifndef LEONARDO
   if (interruptMask & _BV(0)) portBFunctions.pinZero();
-#endif
   if (interruptMask & _BV(1)) portBFunctions.pinOne();
   if (interruptMask & _BV(2)) portBFunctions.pinTwo();
   if (interruptMask & _BV(3)) portBFunctions.pinThree();
