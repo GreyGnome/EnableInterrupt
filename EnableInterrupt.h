@@ -40,11 +40,18 @@ define disableInterrupt(pin) detachInterrupt(pin)
 #else
 /* 
  * enableInterrupt- Sets up an interrupt on a selected Arduino pin.
+ * or
+ * enableInterruptFast- When used with the NEEDFORSPEED macro, sets up an interrupt on a selected Arduino pin.
  * 
  * Usage:
  * enableInterrupt(uint8_t pinNumber, void (*userFunction)(void), uint8_t mode);
  * or
  * enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
+ *
+ * For HiSpeed mode,
+ * enableInterruptFast(uint8_t pinNumber, uint8_t mode);
+ * or
+ * enableInterruptFast(uint8_t interruptDesignator, uint8_t mode);
  *
  * ---------------------------------------------------------------------------------------
  *
