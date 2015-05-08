@@ -203,6 +203,7 @@ Pin	External          	Pin	Pin Change
  7	INT6  PE6		SCK/15	PCINT1     PB1
 				MOSI/16	PCINT2     PB2
 				MISO/14	PCINT3     PB3
+				SS/17	PCINT0     PB0 (on 3rd party boards)
 
 on ICSP:
 SCK/15: PCINT1 (PB1)
