@@ -1,9 +1,8 @@
-Mon Apr 27 07:37:40 CDT 2015
+Fri May  8 07:33:26 CDT 2015
 Version 0.4 - New high speed ("HiSpeed") mode. In this mode, the interrupt routine is predefined:
 it ONLY updates a variable. This knocks a couple of microseconds off of the interrupt
 routine times; it greatly reduces the number of registers needed to be pushed/popped, and
-of course does not require a function call. See the wiki for details. Speed measurements
-in an upcoming PDF report.
+of course does not require a function call. See the wiki for details, including speed measurements.
 
 Mon Apr 13 07:49:05 CDT 2015
 Version 0.3 - Arjun reported a bug on the Uno platform:
