@@ -33,7 +33,6 @@
 
 #define NEEDFORSPEED
 
-#define PIN8 8
 #define INTERRUPT_FLAG_PIN8 myvariable_pin8 // NOTICE: NO semicolon!!!
 
 #include <EnableInterrupt.h>
@@ -43,9 +42,9 @@ void setup() {
   //uint8_t pind, pink;
   Serial.begin(115200);
   EI_printPSTR("---------------------------------------\r\n");
-  pinMode(PIN8, INPUT_PULLUP);  // Configure the pin as an input, and turn on the pullup resistor.
+  pinMode(8, INPUT_PULLUP);  // Configure the pin as an input, and turn on the pullup resistor.
                                       // See http://arduino.cc/en/Tutorial/DigitalPins
-  enableInterruptFast(PIN8, CHANGE);
+  enableInterruptFast(8, CHANGE);
 }
 
 // In the loop, we just check to see where the interrupt count is at. The value gets updated by the
@@ -54,7 +53,7 @@ void loop() {
   EI_printPSTR("---------------------------------------\r\n");
   delay(1000);                          // Every second,
   if (myvariable_pin8) {
-    EI_printPSTR("Pin was interrupted: ");
+    EI_printPSTR("Pin 8 was interrupted: ");
     Serial.print(myvariable_pin8, DEC);      // print the interrupt count.
     EI_printPSTR(" times so far.\r\n");
     myvariable_pin8=0;
