@@ -6,7 +6,7 @@ Functions:
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
-*_What's New?_ Mon Apr 27 07:37:40 CDT 2015 Version 0.5 (Alpha) of the
+*_What's New?_ Mon Apr 27 07:37:40 CDT 2015 Version 0.4 (Alpha) of the
 library has been released. This release includes code that greatly speeds
 up the speed of an interrupt, as long as the programmer is willing to
 accept a restrictive set of rules. See see the Wiki pages
