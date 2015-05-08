@@ -21,3 +21,4 @@
   if (interruptMask & _BV(6)) INTERRUPT_FLAG_PIN74++;
 #endif
 #endif
+// NOTE: 75 and 76 are "fake" External interrupt pins.
