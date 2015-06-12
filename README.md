@@ -1,28 +1,28 @@
 # EnableInterrupt
 New Arduino interrupt library, designed for all versions of the Arduino.
+NEW: 644/1284 support, using the Mighty1284 as the basis. See https://github.com/maniacbug/mighty-1284p.
 Functions:
 
 ```
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
-*_What's New?_ Mon Apr 27 07:37:40 CDT 2015 Version 0.4 (Alpha) of the
-library has been released. This release includes code that greatly speeds
-up the speed of an interrupt, as long as the programmer is willing to
-accept a restrictive set of rules. See see the Wiki pages
-https://github.com/GreyGnome/EnableInterrupt/wiki/Usage-HiSpeed .
-and
-https://github.com/GreyGnome/EnableInterrupt/wiki/HiSpeed .*
+*_What's New?_ Wed Jun  3 06:45:19 CDT 2015 Version 0.5 (Alpha) of the
+library has been released. This release includes support for the ATmega1284p
+line of processors (includes ATmega644). The Mighty 1284 is used as the basis.
+As I don't have a 1284-based processor, this code compiles but has not been
+tested. Bug reports encouraged and welcomed!*
 
 The EnableInterrupt library is a new Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
 boards, like the mini), Due, Leonardo (and other ATmega32u4-based boards, like the
-Micro), and Mega2560 (and other ATmega2560-based boards, like the MegaADK).
-It enables you to assign an interrupt to pins on your chip that support them,
-and presents a common interface to all supported chips. This means that on
-the Arduino Uno and Mega you don't give it an interrupt number, as per
-http://arduino.cc/en/Reference/attachInterrupt. Rather, your
-first argument is a pin number of a pin that's supported on that chip (see
+Micro), the Mega2560 (and other ATmega2560-based boards, like the MegaADK),
+and for non-Arduino 644/1284p-based projects (using the Mighty1284 for support files
+and pin numbering).  It enables you to assign an interrupt to pins on your chip
+that support them, and presents a common interface to all supported chips. This
+means that on the Arduino Uno and Mega you don't give it an interrupt number, as per
+http://arduino.cc/en/Reference/attachInterrupt. Rather, your first argument is a
+pin number of a pin that's supported on that chip (see
 https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#pin--port-bestiary ).
 
 ## Download
@@ -40,8 +40,8 @@ http://www.engblaze.com/we-interrupt-this-program-to-bring-you-a-tutorial-on-ard
 The posting gets into low-level details on interrupts.
 
 **NOTICE** Many of the interrupt pins on the ATmega processor used in the Uno,
-Leonardo, and ATmega2560 are "Pin Change Interrupt pins". This means that under
-the sheets, the pins *only* trigger on CHANGE, and a number of pins share a
+Leonardo, ATmega2560, and ATmega644/1284p are "Pin Change Interrupt pins". This means
+that under the sheets, the pins *only* trigger on CHANGE, and a number of pins share a
 single interrupt subroutine. The library enables these interrupt types to appear
 normal, so that each pin can support RISING, FALLING, or CHANGE, and each pin
 can support its own user-defined interrupt subroutine. But there is a *significant*
@@ -53,7 +53,7 @@ If you're concerned about this, continue to read the following information and
 make sure to read the wiki pages; especially see https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#atmega-processor-interrupt-types .
 
 ## ATmega Processor Interrupt Types
-Note that the ATmega processor at the heart of the Arduino Uno/Mega2560/Leonardo
+Note that the ATmega processor at the heart of the Arduino Uno/Mega2560/Leonardo/ATmega1284
 has two different kinds of interrupts: “external”, and “pin change”.
 For the list of available interrupt pins and their interrupt types, see the
 PORT / PIN BESTIARY, below.
@@ -61,22 +61,22 @@ PORT / PIN BESTIARY, below.
 ### External Interrupts
 There are a varying number of external interrupt pins on the different
 processors. The Uno supports only 2 and they are mapped to Arduino pins 2 and 3.
-The 2560 supports 6 usable, and the Leonardo supports 5. These interrupts can be
-set to trigger on RISING, or FALLING, or both ("CHANGE") signal levels, or on
-LOW level. The triggers are interpreted by hardware, so by the time your user
-function is running, you know exactly which pin interrupted at the time of the
-event, and how it changed. On the other hand, as mentioned there are a limited
-number of these pins, especially on the Arduino Uno (and others like it which
-use the ATmega328p processor).
+The 2560 supports 6 usable, the Leonardo supports 5, and the ATmega1284p supports 3.
+These interrupts can be set to trigger on RISING, or FALLING, or both ("CHANGE")
+signal levels, or on LOW level. The triggers are interpreted by hardware, so by
+the time your user function is running, you know exactly which pin interrupted at
+the time of the event, and how it changed. On the other hand, as mentioned there
+are a limited number of these pins.
 
 ### Pin Change Interrupts
-On the Arduino Uno (and again, all 328p-based boards) *only*, the pin change
-interrupts can be enabled on any or all of the pins. The two pins 2 and 3
-support *either* pin change or external interrupts. On 2560-based Arduinos,
-there are 18 pin change interrupt pins in addition to the 6 external interrupt
-pins. On the Leonardo there are 7 pin change interrupt pins in addition to the
-5 external interrupt pins. See PIN BESTIARY below for the pin numbers and other
-details.
+On the Arduino Uno (and again, all 328p-based boards) and 644/1284-based boards,
+the pin change interrupts can be enabled on any or all of the pins. The two
+pins 2 and 3 on 328p-based boards, or three pins (2, 10, and 11) on the
+1284-based boards support *either* pin change or external interrupts. On 2560-based
+Arduinos, there are 18 pin change interrupt pins in addition to the 6 external
+interrupt pins. On the Leonardo there are 7 pin change interrupt pins in addition
+to the 5 external interrupt pins. See PIN BESTIARY below for the pin numbers and
+other details.
 
 Pin Change interrupts trigger on all RISING and FALLING signal edges.
 Furthermore, the processor's pins, and pin change interrupts, are grouped into
@@ -142,15 +142,14 @@ support both Pin Change and External Interrupts. Otherwise, the library will cho
 interrupt type (External, or Pin Change) normally applies to that pin,
 with priority to External Interrupt. 
 
-* Believe it or not, the complexity is all because of pins 2 and 3 on the ATmega328-based
-Arduinos. Those are the only pins in the Arduino line that can share External or Pin Change
-Interrupt types. Otherwise, each pin only supports a single type of interrupt and the
-PINCHANGEINTERRUPT scheme changes nothing. This means you can ignore this whole discussion
-for ATmega2560- or ATmega32U4-based Arduinos.
+* The complexity is because of pins 2 and 3 on the ATmega328-based Arduinos, and pins 2, 10,
+and 11 on 1284-based boards. Those are the only pins on the processors supported by this
+library that can share External or Pin Change Interrupt types. Otherwise, each pin only supports
+a single type of interrupt and the PINCHANGEINTERRUPT scheme changes nothing. This means you can
+ignore this whole discussion for ATmega2560, ATmega32U4, or SAM3X8E (Due)-based Arduinos.
 
-It is possible to change the user function after enabling the interrupt (if you
-want), by disabling the interrupt and enabling it with a different function.
-
+It is possible to change the user function assigned to an interrupt after enabling it (if you
+want). Later in your code simply disable the interrupt and enable it with a different function.
 
 # PIN / PORT BESTIARY
 Theoretically pins 0 and 1 (RX and TX) are supported but as these pins have
@@ -172,6 +171,11 @@ Interrupt Type | Pins
 -------------- | --------------
 External       | 0-3 and 7
 Pin Change     | 8-11 and SCK, MOSI, MISO
+### Mighty 1284
+Interrupt Type | Pins
+-------------- | --------------
+External       | 2 10 11
+Pin Change     | 0-31 (aka: 0-23 and A0-A7)
 
 ## Details
 ### Arduino Uno
@@ -277,3 +281,31 @@ pin on another port on PCI1. This would make it very costly to integrate with
 the library's code and thus is not supported by this library.  It is the same
 pin the Arduino uses to upload sketches, and it is connected to the FT232RL
 USB-to-Serial chip (ATmega16U2 on the R3).
+
+### Mighty 1284 Support
+The ATmega 1284p shares pinout with the 644; the only difference is in memory
+size. We use the "Mighty 1284" platform as our model, because the needed files are
+mature and complete.
+
+<pre>
+Interrupt Pins:
+Mighty  External                Mighty                                 Mighty           
+Pin     Interrupt               Pin*  PORT PCINT ATmega644/1284 pin    Pin*  PORT PCINT ATmega644/1284 pin
+                Port            0     PB0   8         1                15    PD7  31        21
+2       INT2    PB2             1     PB1   9         2                16    PC0  16        22
+10      INT1    PD2             2     PB2   2         3                17    PC1  17        23
+11      INT0    PD3             3     PB3  11         4                18    PC2  18        24
+                                4     PB4  12         5                19    PC3  19        25
+                                5     PB5  13         6                20    PC4  20        26
+                                6     PB6  14         7                21    PC5  21        27
+                                7     PB7  15         8                22    PC6  22        28
+                                8     PD0  24        14                23    PC7  23        29
+                                9     PD1  25        15             31/A7    PA7   7        33
+                               10     PD2  26        16             30/A6    PA6   6        34
+                               11     PD3  27        17             29/A5    PA5   5        35
+                               12     PD4  28        18             28/A4    PA4   4        36
+                               13     PD5  29        19             27/A3    PA3   3        37
+                               14     PD6  30        20             26/A2    PA2   2        38
+                                                                    25/A1    PA1   1        39
+                                                                    24/A0    PA0   0        40
+</pre>

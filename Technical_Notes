@@ -362,12 +362,126 @@ PCMSK1:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is e
      PJ6 PJ5 PJ4 PJ3 PJ2 PJ1 PJ0 PE0   =PORTJ/E Note pin PE0 is the Arduino's RX pin for programming.
                            +   +   +   
 
-PCMSK0:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT7:0
+PCMSK0:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled o2560n PCINT7:0
   PCINT7            ...       PCINT0   If PCIE0 in PCICR and this bit is set, it is enabled on that
       rw  rw  rw  rw  rw  rw  rw  rw   pin.)
      PB7 PB6 PB5 PB4 PB3 PB2 PB1 PB0   =PORTB
        +   +   +   +   +   +   +   +
 
+=====================================================================================================
+=====================================================================================================
+ATmega644 / 1284 Support (MIGHTY1284 used as a reference, NOT Sanguino)
+=====================================================================================================
+=====================================================================================================
+// Sanguino, Mosquino uino bobino bonanafannafofino, me my momino...
+#if defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega1284__) || defined(__AVR_ATmega1284P__)
+
+// Here I use the might-1284p pinout from https://maniacbug.wordpress.com/2011/11/27/arduino-on-atmega1284p-4/
+                    +---\/---+
+          (D 0) PB0 |1     40| PA0 (AI 0 / D24)
+          (D 1) PB1 |2     39| PA1 (AI 1 / D25)
+     INT2 (D 2) PB2 |3     38| PA2 (AI 2 / D26)
+      PWM (D 3) PB3 |4     37| PA3 (AI 3 / D27)
+ PWM   SS (D 4) PB4 |5     36| PA4 (AI 4 / D28)
+     MOSI (D 5) PB5 |6     35| PA5 (AI 5 / D29)
+ PWM MISO (D 6) PB6 |7     34| PA6 (AI 6 / D30)
+ PWM  SCK (D 7) PB7 |8     33| PA7 (AI 7 / D31)
+                RST |9     32| AREF
+                VCC |10    31| GND
+                GND |11    30| AVCC
+              XTAL2 |12    29| PC7 (D 23)
+              XTAL1 |13    28| PC6 (D 22)
+      RX0 (D 8) PD0 |14    27| PC5 (D 21) TDI
+      TX0 (D 9) PD1 |15    26| PC4 (D 20) TDO
+INT0 RX1 (D 10) PD2 |16    25| PC3 (D 19) TMS
+INT1 TX1 (D 11) PD3 |17    24| PC2 (D 18) TCK
+     PWM (D 12) PD4 |18    23| PC1 (D 17) SDA
+     PWM (D 13) PD5 |19    22| PC0 (D 16) SDL
+     PWM (D 14) PD6 |20    21| PD7 (D 15) PWM
+                    +--------+
+
+External Interrupts ------------------------------------------------------------------------------
+The following External Interrupts are available on the Sanguino:
+Sanguino           
+  Pin*  PORT INT  ATmega644/1284 pin
+   2    PB2   2      3
+  10    PD2   0     16
+  11    PD3   1     17
+
+The following Pin Change Interrupts are available on the ATmega1284p:
+Mighty                                 Mighty           
+  Pin*  PORT PCINT ATmega644/1284 pin    Pin*  PORT PCINT ATmega644/1284 pin
+   0     PB0   8         1                15    PD7  31        21
+   1     PB1   9         2                16    PC0  16        22
+   2     PB2   2         3                17    PC1  17        23
+   3     PB3  11         4                18    PC2  18        24
+   4     PB4  12         5                19    PC3  19        25
+   5     PB5  13         6                20    PC4  20        26
+   6     PB6  14         7                21    PC5  21        27
+   7     PB7  15         8                22    PC6  22        28
+   8     PD0  24        14                23    PC7  23        29
+   9     PD1  25        15             31/A7    PA7   7        33
+  10     PD2  26        16             30/A6    PA6   6        34
+  11     PD3  27        17             29/A5    PA5   5        35
+  12     PD4  28        18             28/A4    PA4   4        36
+  13     PD5  29        19             27/A3    PA3   3        37
+  14     PD6  30        20             26/A2    PA2   2        38
+                                       25/A1    PA1   1        39
+                                       24/A0    PA0   0        40
+
+EICRA: 7   6   5   4   3   2   1   0  (External Interrupt Control Register A)
+ ISC:  -   -  21  20  11  10  01  00  Interrupt Sense Control Bits (ISCxx)
+       r   r  rw  rw  rw  rw  rw  rw
+
+EIMSK:  7   6   5   4   3   2   1   0  (External Interrupt Mask Register)
+        -   -   -   -   -   n   n   n  NOTE:  NO CONNECTION FOR  INT6 and INT7 on ATmega2560**
+        r   r   r   r   r  rw  rw  rw
+n= INTn number
+
+EIFR: External Interrupt Flag Register is set to 1 when a signal generates an IRQ.
+Cleared upon entering the ISR. Can be cleared by writing a 1 to it.
+EIFR:   7   6   5   4   3   2   1   0  (External Interrupt Flag Register)
+        -   -   -   -   -   n   n   n  NOTE:  NO CONNECTION FOR  INT6 and INT7 on ATmega2560**
+       rw   r   r   r  rw  rw  rw  rw
+n= INTn number
+
+PCICR: 7   6   5   4   3   2   1   0  (When PCIE2 is set and GIE is set, PCI2 is enabled)
+                   PCIE3   2   1   0   Likewise for 1 and 0.
+       r   r   r   r  rw  rw  rw  rw
+
+PCIFR: 7   6   5   4   3   2   1   0  (When logic change triggers IRQ, bececomes set. Cleared when
+                   PCIF3   2   1   0   IRQ is executed. PCIF2 == PCIE2, etc.)
+       r   r   r   r  rw  rw  rw  rw
+
+0x73
+PCMSK3:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT23:16
+  PCINT31           ...      PCINT24   If PCIE2 in PCICR and this bit is set, it is enabled on that
+      rw  rw  rw  rw  rw  rw  rw  rw   pin.)
+     PD7 PD6 PD5 PD4 PD3 PD2 PD1 PD0   =PORTD
+      15  14  13  12  11  10  09  08   -->Sanguino Pins, DIP40 package
+
+0x6D
+PCMSK2:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT23:16
+  PCINT23           ...      PCINT16   If PCIE2 in PCICR and this bit is set, it is enabled on that
+      rw  rw  rw  rw  rw  rw  rw  rw   pin.)
+     PC7 PC6 PC5 PC4 PC3 PC2 PC1 PC0   =PORTC
+      23  22  21  20  19  18  17  16   -->Sanguino Pins, DIP40 package
+
+PCMSK1:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT15:8
+  PCINT15           ...       PCINT8   If PCIE1 in PCICR and this bit is set, it is enabled on that
+      rw  rw  rw  rw  rw  rw  rw  rw   pin.)
+     PB7 PB6 PB5 PB4 PB3 PB2 PB1 PB0   =PORTB
+       7   6   5   4   3   2   1   0   -->Sanguino Pins, DIP40 package
+
+PCMSK0:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled o2560n PCINT7:0
+  PCINT7            ...       PCINT0   If PCIE0 in PCICR and this bit is set, it is enabled on that
+      rw  rw  rw  rw  rw  rw  rw  rw   pin.)
+     PA7 PA6 PA5 PA4 PA3 PA2 PA1 PA0   =PORTB
+      24  25  26  27  28 29   30  31   -->Sanguino Pins, DIP40 package
+ 
+
+
+=================================================================================================================
 From http://www.atmel.com/Images/doc8468.pdf:
 
 External interrupts can be sensed and registered either synchronously or asynchronously. Synchronous sensing
@@ -600,3 +714,5 @@ Calling the function pointers referred to in an array, using while loop:
 							If an interrupt on third pin:
 							2 x 7 (not matched) == 14 + 14 == 28 total.
 							Then a couple of cycles to get out.
+
+

@@ -1,3 +1,8 @@
+Fri Jun 12 06:33:20 CDT 2015
+Version 0.5 (Alpha) of the library has been released. This release includes support for the ATmega1284p line of processors (includes ATmega644). The Mighty 1284 is used as the basis.  As I don't have a 1284-based processor, this code compiles but has not been tested (see examples/Might1284p). Bug reports encouraged and welcomed! It would be great if a 644/1284 owner could upload the Might1284p.ino sketch and interrupt every pin and let me know the results.
+
+Code was refactored so that a lot of utility routines were moved into individual .h files. Now there's a lot of files, which appears ugly, but the old way was a lot uglier to my mind and looked like a big bowl of spaghetti with so many #ifdefs strewn about to handle the different chips. It was getting hard to wade through the code.
+
 Fri May  8 07:33:26 CDT 2015
 Version 0.4 - New high speed ("HiSpeed") mode. In this mode, the interrupt routine is predefined:
 it ONLY updates a variable. This knocks a couple of microseconds off of the interrupt
