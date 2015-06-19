@@ -1,4 +1,9 @@
 Fri Jun 12 06:33:20 CDT 2015
+Version 0.6.1 of the library has been released. This version is designed to meet the requirements of the 1.5.x Arduino library spec. No code logic was modified; only files were moved and library.properties and keywords.txt files added.
+
+Version 0.6.0 did not include an update to these release notes.
+
+Fri Jun 12 06:33:20 CDT 2015
 Version 0.5 (Alpha) of the library has been released. This release includes support for the ATmega1284p line of processors (includes ATmega644). The Mighty 1284 is used as the basis.  As I don't have a 1284-based processor, this code compiles but has not been tested (see examples/Might1284p). Bug reports encouraged and welcomed! It would be great if a 644/1284 owner could upload the Might1284p.ino sketch and interrupt every pin and let me know the results.
 
 Code was refactored so that a lot of utility routines were moved into individual .h files. Now there's a lot of files, which appears ugly, but the old way was a lot uglier to my mind and looked like a big bowl of spaghetti with so many #ifdefs strewn about to handle the different chips. It was getting hard to wade through the code.
