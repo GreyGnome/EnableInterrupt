@@ -7,8 +7,9 @@ Functions:
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
-*_What's New?_ Wed Jun  3 06:45:19 CDT 2015 Version 0.5 (Alpha) of the
-library has been released. This release includes support for the ATmega1284p
+*_What's New?_ Fri Jun 19 09:37:57 CDT 2015 Version 0.6.2 of the
+library has been released. This release meets the requirements of the Arduino
+1.5.x library specification. Also includes support for the ATmega1284p
 line of processors (includes ATmega644). The Mighty 1284 is used as the basis.
 As I don't have a 1284-based processor, this code compiles but has not been
 tested. Bug reports encouraged and welcomed!*
