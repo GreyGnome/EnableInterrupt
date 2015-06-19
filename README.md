@@ -35,6 +35,8 @@ For detailed usage information see https://github.com/GreyGnome/EnableInterrupt/
 
 See the examples subdirectory in the distribution or in this Git site for code examples.
 
+See the extras subdirectory in the distribution or in this Git site for License and Release Notes.
+
 For a tutorial on interrupts, see
 http://www.engblaze.com/we-interrupt-this-program-to-bring-you-a-tutorial-on-arduino-interrupts/
 The posting gets into low-level details on interrupts.

@@ -106,7 +106,7 @@ void bogusFunctionPlaceholder(void);
 #ifdef NEEDFORSPEED
 void bogusFunctionPlaceholder(void) {
 }
-#include "ei_pindefs_speed.h"
+#include "utility/ei_pindefs_speed.h"
 #endif
 
 // Example: EI_printPSTR("This is a nice long string that takes no static ram");
@@ -619,13 +619,13 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #define EI_SECTION_RISING
 
 #if defined MIGHTY1284
-#include "ei_PinChange1284.h"
+#include "utility/ei_PinChange1284.h"
 #elif defined ARDUINO_328
-#include "ei_PinChange328.h"
+#include "utility/ei_PinChange328.h"
 #elif defined ARDUINO_MEGA
-#include "ei_PinChange2560.h"
+#include "utility/ei_PinChange2560.h"
 #elif defined ARDUINO_LEONARDO
-#include "ei_PinChangeLeonardo.h"
+#include "utility/ei_PinChangeLeonardo.h"
 #endif
 #undef EI_SECTION_RISING
     }
@@ -633,13 +633,13 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     if ((mode == FALLING) || (mode == CHANGE)) {
 #define EI_SECTION_FALLING
 #if defined MIGHTY1284
-#include "ei_PinChange1284.h"
+#include "utility/ei_PinChange1284.h"
 #elif defined ARDUINO_328
-#include "ei_PinChange328.h"
+#include "utility/ei_PinChange328.h"
 #elif defined ARDUINO_MEGA
-#include "ei_PinChange2560.h"
+#include "utility/ei_PinChange2560.h"
 #elif defined ARDUINO_LEONARDO
-#include "ei_PinChangeLeonardo.h"
+#include "utility/ei_PinChangeLeonardo.h"
 #endif
 #undef EI_SECTION_FALLING
     }
@@ -656,13 +656,13 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 
 #define EI_SECTION_ASSIGNFUNCTIONSREGISTERS
 #if defined MIGHTY1284
-#include "ei_PinChange1284.h"
+#include "utility/ei_PinChange1284.h"
 #elif defined ARDUINO_328
-#include "ei_PinChange328.h"
+#include "utility/ei_PinChange328.h"
 #elif defined ARDUINO_MEGA
-#include "ei_PinChange2560.h"
+#include "utility/ei_PinChange2560.h"
 #elif defined ARDUINO_LEONARDO
-#include "ei_PinChangeLeonardo.h"
+#include "utility/ei_PinChangeLeonardo.h"
 #endif
 #undef EI_SECTION_ASSIGNFUNCTIONSREGISTERS
 
@@ -684,13 +684,13 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 
 #define EI_SECTION_ENABLEEXTERNAL
 #if defined MIGHTY1284
-#include "ei_External1284.h"
+#include "utility/ei_External1284.h"
 #elif defined ARDUINO_328
-#include "ei_External328.h"
+#include "utility/ei_External328.h"
 #elif defined ARDUINO_MEGA
-#include "ei_External2560.h"
+#include "utility/ei_External2560.h"
 #elif defined ARDUINO_LEONARDO
-#include "ei_ExternalLeonardo.h"
+#include "utility/ei_ExternalLeonardo.h"
 #endif
 #undef EI_SECTION_ENABLEEXTERNAL
 
@@ -741,25 +741,25 @@ void disableInterrupt (uint8_t interruptDesignator) {
     }
 #define EI_SECTION_DISABLEPINCHANGE
 #if defined MIGHTY1284
-#include "ei_PinChange1284.h"
+#include "utility/ei_PinChange1284.h"
 #elif defined ARDUINO_328
-#include "ei_PinChange328.h"
+#include "utility/ei_PinChange328.h"
 #elif defined ARDUINO_MEGA
-#include "ei_PinChange2560.h"
+#include "utility/ei_PinChange2560.h"
 #elif defined LEONARDO
-#include "ei_PinChangeLeonardo.h"
+#include "utility/ei_PinChangeLeonardo.h"
 #endif
 #undef EI_SECTION_DISABLEPINCHANGE
   } else {
 #define EI_SECTION_DISABLEEXTERNAL
 #if defined MIGHTY1284
-#include "ei_External1284.h"
+#include "utility/ei_External1284.h"
 #elif defined ARDUINO_328
-#include "ei_External328.h"
+#include "utility/ei_External328.h"
 #elif defined ARDUINO_MEGA
-#include "ei_External2560.h"
+#include "utility/ei_External2560.h"
 #elif defined ARDUINO_LEONARDO
-#include "ei_ExternalLeonardo.h"
+#include "utility/ei_ExternalLeonardo.h"
 #endif
 #undef EI_SECTION_DISABLEEXTERNAL
   }
@@ -936,7 +936,7 @@ ISR(PORTA_VECT) {
 
   portSnapshotA = current;
 #ifdef NEEDFORSPEED
-#include "ei_porta_speed.h"
+#include "utility/ei_porta_speed.h"
 #else
   if (interruptMask == 0) goto exitPORTAISR; // get out quickly if not interested.
   if (interruptMask & _BV(0)) portAFunctions.pinZero();
@@ -979,7 +979,7 @@ ISR(PORTB_VECT) {
 
   portSnapshotB = current;
 #ifdef NEEDFORSPEED
-#include "ei_portb_speed.h"
+#include "utility/ei_portb_speed.h"
 #else
   if (interruptMask == 0) goto exitPORTBISR; // get out quickly if not interested.
   if (interruptMask & _BV(0)) portBFunctions.pinZero();
@@ -1019,7 +1019,7 @@ ISR(PORTC_VECT) {
 
   portSnapshotC = current;
 #ifdef NEEDFORSPEED
-#include "ei_portc_speed.h"
+#include "utility/ei_portc_speed.h"
 #else
   if (interruptMask == 0) goto exitPORTCISR; // get out quickly if not interested.
   if (interruptMask & _BV(0)) portCFunctions.pinZero();
@@ -1057,7 +1057,7 @@ ISR(PORTD_VECT) {
 
   portSnapshotD = current;
 #ifdef NEEDFORSPEED
-#include "ei_portd_speed.h"
+#include "utility/ei_portd_speed.h"
 #else
   if (interruptMask == 0) goto exitPORTDISR; // get out quickly if not interested.
   if (interruptMask & _BV(0)) portDFunctions.pinZero();
@@ -1093,7 +1093,7 @@ ISR(PORTJ_VECT) {
 
   portSnapshotJ = current;
 #ifdef NEEDFORSPEED
-#include "ei_portj_speed.h"
+#include "utility/ei_portj_speed.h"
 #else
   if (interruptMask == 0) goto exitPORTJISR; // get out quickly if not interested.
   if (interruptMask & _BV(0)) portJFunctions.pinZero();
@@ -1127,7 +1127,7 @@ ISR(PORTK_VECT) {
 
   portSnapshotK = current;
 #ifdef NEEDFORSPEED
-#include "ei_portk_speed.h"
+#include "utility/ei_portk_speed.h"
 #else
   if (interruptMask == 0) goto exitPORTKISR; // get out quickly if not interested.
   if (interruptMask & _BV(0)) portKFunctions.pinZero();
