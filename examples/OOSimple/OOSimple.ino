@@ -42,7 +42,7 @@
 // the variable.
 
 class Simple {
-  volatile uint8_t _sv;
+  volatile uint8_t _sv; // a simple variable
 
   public:
     Simple() {
@@ -78,9 +78,11 @@ extern "C" void updateSimpleVariable(void *anObject) {
   static_cast<Simple*>(anObject)->updateSimpleVariable();
 }
 
-void *simpleObject0;
+void *simpleObject0; // this is numbered 0. You can create more. 
 
-extern "C" void interruptFunction() {
+// If you create more objects, you need to create more interruptFunctionN()'s
+// that update their simple variables.
+extern "C" void interruptFunction0() {
   updateSimpleVariable(simpleObject0);
 }
 
@@ -91,7 +93,7 @@ void setup() {
   pinMode(ARDUINOPIN, INPUT_PULLUP);  // Configure the pin as an input, and turn on the pullup resistor.
                                       // See http://arduino.cc/en/Tutorial/DigitalPins
   simpleObject0 = createSimple();
-  enableInterrupt(ARDUINOPIN, interruptFunction, CHANGE);
+  enableInterrupt(ARDUINOPIN, interruptFunction0, CHANGE);
 }
 
 // In the loop, we just check to see where the interrupt count is at. The value gets updated by the
