@@ -1,7 +1,10 @@
-// EnableInterrupt Simple example sketch
+// EnableInterrupt OOSimple example sketch
 // See https://github.com/GreyGnome/EnableInterrupt and the README.md for more information.
 
 // This example demonstrates the use of the EnableInterrupt library on a single pin of your choice.
+// It demonstrates calling an object's method from an interrupt. Other objects can be created and called
+// by simply and creating more simpleObjectN's adding more interruptFunctionN()'s.
+//
 // This has only been tested on an Arduino Duemilanove and Mega ADK.
 // It is designed to work with the Arduino Duemilanove/Uno, Arduino Mega2560/ADK, the Arduino
 // Leonardo, and the Arduino Due. Please let me know how you fare on the Leonardo or Due.
@@ -78,10 +81,10 @@ extern "C" void updateSimpleVariable(void *anObject) {
   static_cast<Simple*>(anObject)->updateSimpleVariable();
 }
 
-void *simpleObject0; // this is numbered 0. You can create more. 
+void *simpleObject0; // this is numbered 0. You can create more, for example void *simpleObject1
 
 // If you create more objects, you need to create more interruptFunctionN()'s
-// that update their simple variables.
+// that update their simple variables, for example interruptFunction1() .
 extern "C" void interruptFunction0() {
   updateSimpleVariable(simpleObject0);
 }
@@ -90,6 +93,9 @@ extern "C" void interruptFunction0() {
 void setup() {
   Serial.begin(115200);
   Serial.println("---------------------------------------");
+
+  // If you want to enable more pins, you will need to recreate these 3 lines for
+  // your new pin, object, and function.
   pinMode(ARDUINOPIN, INPUT_PULLUP);  // Configure the pin as an input, and turn on the pullup resistor.
                                       // See http://arduino.cc/en/Tutorial/DigitalPins
   simpleObject0 = createSimple();
