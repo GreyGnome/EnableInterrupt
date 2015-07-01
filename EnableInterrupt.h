@@ -174,7 +174,13 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   5,
 };
 
+#if ! defined(EI_NOTEXTERNAL)
+#if ! defined(EI_NOTINT0) && ! defined (EI_NOTINT1)
 interruptFunctionType functionPointerArrayEXTERNAL[2];
+#endif
+#endif
+
+#ifndef EI_NOTPORTB
 // 2 of the interrupts are unsupported on Arduino UNO.
 struct functionPointersPortB {
   interruptFunctionType pinZero;
@@ -188,6 +194,16 @@ typedef struct functionPointersPortB functionPointersPortB;
 
 functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL };
 
+// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
+// we have to know how the ports were defined.
+volatile uint8_t risingPinsPORTB=0;
+volatile uint8_t fallingPinsPORTB=0;
+
+// for the saved state of the ports
+static volatile uint8_t portSnapshotB;
+#endif // EI_NOTPORTB
+
+#ifndef EI_NOTPORTC
 // 1 of the interrupts are used as RESET on Arduino UNO.
 struct functionPointersPortC {
   interruptFunctionType pinZero;
@@ -201,6 +217,16 @@ typedef struct functionPointersPortC functionPointersPortC;
 
 functionPointersPortC portCFunctions = { NULL, NULL, NULL, NULL, NULL, NULL };
 
+// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
+// we have to know how the ports were defined.
+volatile uint8_t risingPinsPORTC=0;
+volatile uint8_t fallingPinsPORTC=0;
+
+// for the saved state of the ports
+static volatile uint8_t portSnapshotC;
+#endif // EI_NOTPORTC
+
+#ifndef EI_NOTPORTD
 // 1 of the interrupts are used as RESET on Arduino UNO.
 struct functionPointersPortD {
   interruptFunctionType pinZero;
@@ -215,23 +241,18 @@ struct functionPointersPortD {
 typedef struct functionPointersPortD functionPointersPortD;
 
 functionPointersPortD portDFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-#endif // NEEDFORSPEED
 
 // For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
 // we have to know how the ports were defined.
-volatile uint8_t risingPinsPORTB=0;
-volatile uint8_t fallingPinsPORTB=0;
-volatile uint8_t risingPinsPORTC=0;
-volatile uint8_t fallingPinsPORTC=0;
 volatile uint8_t risingPinsPORTD=0;
 volatile uint8_t fallingPinsPORTD=0;
 
 // for the saved state of the ports
-static volatile uint8_t portSnapshotB;
-static volatile uint8_t portSnapshotC;
 static volatile uint8_t portSnapshotD;
+#endif // EI_NOTPORTD
+#endif // NEEDFORSPEED
 
-// these are defined in the avr.h files, like iom328p.h
+// the PCINT?_vect's are defined in the avr.h files, like iom328p.h
 #define PORTB_VECT PCINT0_vect
 #define PORTC_VECT PCINT1_vect
 #define PORTD_VECT PCINT2_vect
@@ -327,8 +348,13 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   7, // PE7  pin: fake76 PE7
 };
 
+#if ! defined(EI_NOTEXTERNAL)
+#if ! defined(EI_NOTINT0) && ! defined(EI_NOTINT1) && ! defined(EI_NOTINT2) && ! defined(EI_NOTINT3) && ! defined(EI_NOTINT4) && ! defined(EI_NOTINT5) && ! defined(EI_NOTINT6) && ! defined(EI_NOTINT7)
 interruptFunctionType functionPointerArrayEXTERNAL[8];
+#endif
+#endif
 
+#ifndef EI_NOTPORTB
 struct functionPointersPortB {
   interruptFunctionType pinZero;
   interruptFunctionType pinOne;
@@ -343,6 +369,14 @@ typedef struct functionPointersPortB functionPointersPortB;
 
 functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
+volatile uint8_t risingPinsPORTB=0;
+volatile uint8_t fallingPinsPORTB=0;
+
+// for the saved state of the ports
+static volatile uint8_t portSnapshotB;
+#endif
+
+#ifndef EI_NOTPORTJ
 // only 7 pins total of port J are supported as interrupts on the ATmega2560,
 // and only PJ0 and 1 are supported on the Arduino MEGA.
 // For PCI1 the 0th bit is PE0.   PJ2-6 are not exposed on the Arduino pins, but
@@ -361,6 +395,16 @@ typedef struct functionPointersPortJ functionPointersPortJ;
 
 functionPointersPortJ portJFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
+// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
+// we have to know how we were defined.
+volatile uint8_t risingPinsPORTJ=0;
+volatile uint8_t fallingPinsPORTJ=0;
+
+// for the saved state of the ports
+static volatile uint8_t portSnapshotJ;
+#endif
+
+#ifndef EI_NOTPORTK
 struct functionPointersPortK {
   interruptFunctionType pinZero;
   interruptFunctionType pinOne;
@@ -374,21 +418,16 @@ struct functionPointersPortK {
 typedef struct functionPointersPortK functionPointersPortK;
 
 functionPointersPortK portKFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-#endif // NEEDFORSPEED
 
-// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
-// we have to know how we were defined.
-volatile uint8_t risingPinsPORTB=0;
-volatile uint8_t fallingPinsPORTB=0;
-volatile uint8_t risingPinsPORTJ=0;
-volatile uint8_t fallingPinsPORTJ=0;
 volatile uint8_t risingPinsPORTK=0;
 volatile uint8_t fallingPinsPORTK=0;
 
 // for the saved state of the ports
-static volatile uint8_t portSnapshotB;
-static volatile uint8_t portSnapshotJ;
 static volatile uint8_t portSnapshotK;
+#endif
+#endif // NEEDFORSPEED
+
+
 
 #define PORTB_VECT PCINT0_vect
 #define PORTJ_VECT PCINT1_vect
@@ -430,7 +469,14 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
 // There are no ports we care about after pin 17.
 };
 
+
+#if ! defined(EI_NOTEXTERNAL)
+#if ! defined(EI_NOTINT0) && ! defined(EI_NOTINT1) && ! defined(EI_NOTINT2) && ! defined(EI_NOTINT3) && ! defined(EI_NOTINT6)
 interruptFunctionType functionPointerArrayEXTERNAL[5];
+#endif
+#endif
+
+#ifndef EI_NOTPORTB
 struct functionPointersPortB {
   interruptFunctionType pinZero;
   interruptFunctionType pinOne;
@@ -452,6 +498,7 @@ volatile uint8_t fallingPinsPORTB=0;
 
 // for the saved state of the ports
 static volatile uint8_t portSnapshotB;
+#endif
 #endif // NEEDFOR SPEED
 
 #define PORTB_VECT PCINT0_vect
@@ -502,7 +549,12 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   7,
 };
 
+
+#if ! defined(EI_NOTEXTERNAL)
+#if ! defined(EI_NOTINT0) && ! defined(EI_NOTINT1) && ! defined(EI_NOTINT2)
 interruptFunctionType functionPointerArrayEXTERNAL[3];
+#endif
+#endif
 
 struct functionPointers {
   interruptFunctionType pinZero;
@@ -514,35 +566,44 @@ struct functionPointers {
   interruptFunctionType pinSix;
   interruptFunctionType pinSeven;
 };
+
+#ifndef EI_NOTPORTA
 typedef struct functionPointers functionPointersPortA;
 functionPointers portAFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-
-typedef struct functionPointers functionPointersPortB;
-functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-
-typedef struct functionPointers functionPointersPortC;
-functionPointersPortC portCFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-
-typedef struct functionPointers functionPointersPortD;
-functionPointersPortD portDFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-#endif // NEEDFORSPEED
-
 // For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
 // we have to know how the ports were defined.
 volatile uint8_t risingPinsPORTA=0;
 volatile uint8_t fallingPinsPORTA=0;
-volatile uint8_t risingPinsPORTB=0;
-volatile uint8_t fallingPinsPORTB=0;
-volatile uint8_t risingPinsPORTC=0;
-volatile uint8_t fallingPinsPORTC=0;
-volatile uint8_t risingPinsPORTD=0;
-volatile uint8_t fallingPinsPORTD=0;
-
 // for the saved state of the ports
 static volatile uint8_t portSnapshotA;
+#endif
+
+#ifndef EI_NOTPORTB
+typedef struct functionPointers functionPointersPortB;
+functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+volatile uint8_t risingPinsPORTB=0;
+volatile uint8_t fallingPinsPORTB=0;
 static volatile uint8_t portSnapshotB;
+#endif
+
+#ifndef EI_NOTPORTC
+typedef struct functionPointers functionPointersPortC;
+functionPointersPortC portCFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+volatile uint8_t risingPinsPORTC=0;
+volatile uint8_t fallingPinsPORTC=0;
 static volatile uint8_t portSnapshotC;
+#endif
+
+#ifndef EI_NOTPORTD
+typedef struct functionPointers functionPointersPortD;
+functionPointersPortD portDFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+volatile uint8_t risingPinsPORTD=0;
+volatile uint8_t fallingPinsPORTD=0;
 static volatile uint8_t portSnapshotD;
+#endif
+#endif // NEEDFORSPEED
+
+
 
 // these are defined in the avr.h files, like iom1284p.h
 #define PORTA_VECT PCINT0_vect
@@ -590,6 +651,12 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #elif defined MIGHTY1284
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 10 &&
                                                       arduinoPin != 11) ) {
+#elif defined ARDUINO_LEONARDO
+  if ( (arduinoPin > 3) && (arduinoPin != 7) ) {
+#endif
+#if defined ARDUINO_328 || defined MIGHT1284 || defined ARDUINO_LEONARDO
+    portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
+    portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
 #elif defined ARDUINO_MEGA
   // NOTE: PJ2-6 and PE6 & 7 are not exposed on the Arduino, but they are supported here
   // for software interrupts and support of non-Arduino platforms which expose more pins.
@@ -600,16 +667,13 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     if (arduinoPin > 69) { // Dastardly tricks to support PortJ 2-7
       portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin-6]); // Steal from PK
       portNumber=PJ;
-    } else
-#elif defined ARDUINO_LEONARDO
-  if ( (arduinoPin > 3) && (arduinoPin != 7) ) {
-#else
-#error Unsupported Arduino platform
-#endif
-    {
+    } else {
       portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
       portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
     }
+#else
+#error Unsupported Arduino platform
+#endif
 
     // *************************************************************************************
     // Store the rising/falling pins
@@ -678,6 +742,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
   // *************************************************************************************
   // *************************************************************************************
   } else {
+#ifndef EI_NOTEXTERNAL
     uint8_t origSREG; // to save for interrupts
     origSREG = SREG;
     cli(); // no interrupts while we're setting up an interrupt.
@@ -695,6 +760,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #undef EI_SECTION_ENABLEEXTERNAL
 
     SREG=origSREG;
+#endif
   }
   SREG |= (1 << SREG_I); // GIE bit in SREG. From /usr/avr/include/avr/common.h
 }
@@ -719,6 +785,12 @@ void disableInterrupt (uint8_t interruptDesignator) {
 #elif defined MIGHTY1284
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 10 &&
                                                       arduinoPin != 11) ) {
+#elif defined ARDUINO_LEONARDO
+  if ( (arduinoPin > 3) && (arduinoPin != 7) ) {
+#endif
+#if defined ARDUINO_328 || defined MIGHT1284 || defined ARDUINO_LEONARDO
+    portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
+    portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
 #elif defined ARDUINO_MEGA
   // NOTE: PJ2-6 and PE6 & 7 are not exposed on the Arduino, but they are supported here
   // for software interrupts and support of non-Arduino platforms which expose more pins.
@@ -729,16 +801,14 @@ void disableInterrupt (uint8_t interruptDesignator) {
     if (arduinoPin > 69) { // Dastardly tricks to support PortJ 2-7
       portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin-6]); // Steal from PK
       portNumber=PJ;
-    } else
-#elif defined ARDUINO_LEONARDO
-  if ( (arduinoPin > 3) && (arduinoPin != 7) ) {
-#else
-#error Unsupported Arduino platform
-#endif
-    {
+    } else {
       portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
       portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
     }
+#else
+#error Unsupported Arduino platform
+#endif
+
 #define EI_SECTION_DISABLEPINCHANGE
 #if defined MIGHTY1284
 #include "utility/ei_PinChange1284.h"
@@ -751,6 +821,7 @@ void disableInterrupt (uint8_t interruptDesignator) {
 #endif
 #undef EI_SECTION_DISABLEPINCHANGE
   } else {
+#ifndef EI_NOTEXTERNAL
 #define EI_SECTION_DISABLEEXTERNAL
 #if defined MIGHTY1284
 #include "utility/ei_External1284.h"
@@ -762,6 +833,7 @@ void disableInterrupt (uint8_t interruptDesignator) {
 #include "utility/ei_ExternalLeonardo.h"
 #endif
 #undef EI_SECTION_DISABLEEXTERNAL
+#endif
   }
   SREG = origSREG;
 }
@@ -771,6 +843,9 @@ void disableInterrupt (uint8_t interruptDesignator) {
 ////////////////////// ISRs /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
+
+#ifndef EI_NOTEXTERNAL
+#ifndef EI_NOTINT0
 ISR(INT0_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[0])();
@@ -795,7 +870,9 @@ ISR(INT0_vect) {
 #endif
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTINT0
 
+#ifndef EI_NOTINT1
 ISR(INT1_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[1])();
@@ -820,8 +897,10 @@ ISR(INT1_vect) {
 #endif
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTINT1
 
 #if defined ARDUINO_MEGA || defined ARDUINO_LEONARDO || defined MIGHTY1284
+#ifndef EI_NOTINT2
 ISR(INT2_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[2])();
@@ -840,9 +919,11 @@ ISR(INT2_vect) {
 #endif
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTINT2
 #endif // ARDUINO_MEGA || ARDUINO_LEONARDO || MIGHTY1284
 
 #if defined ARDUINO_MEGA || defined ARDUINO_LEONARDO
+#ifndef EI_NOTINT3
 ISR(INT3_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[3])();
@@ -858,9 +939,11 @@ ISR(INT3_vect) {
 #endif
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTINT3
 #endif // ARDUINO_MEGA || ARDUINO_LEONARDO
 
 #if defined ARDUINO_MEGA
+#ifndef EI_NOTINT4
 ISR(INT4_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[4])();
@@ -870,7 +953,9 @@ ISR(INT4_vect) {
 #endif
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTINT4
 
+#ifndef EI_NOTINT5
 ISR(INT5_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[5])();
@@ -880,7 +965,9 @@ ISR(INT5_vect) {
 #endif
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTINT5
 
+#ifndef EI_NOTINT6
 ISR(INT6_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[6])();
@@ -890,7 +977,9 @@ ISR(INT6_vect) {
 #endif
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTINT6
 
+#ifndef EI_NOTINT7
 ISR(INT7_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[7])();
@@ -900,9 +989,11 @@ ISR(INT7_vect) {
 #endif
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTINT7
 #endif // defined ARDUINO_MEGA
 
 #if defined ARDUINO_LEONARDO
+#ifndef EI_NOTINT6
 ISR(INT6_vect) {
 #ifndef NEEDFORSPEED
   (*functionPointerArrayEXTERNAL[4])();
@@ -912,9 +1003,12 @@ ISR(INT6_vect) {
 #endif
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTINT6
 #endif // defined ARDUINO_LEONARDO
+#endif // EI_NOTEXTERNAL
 
 #if defined MIGHTY1284
+#ifndef EI_NOTPORTA
 ISR(PORTA_VECT) {
   uint8_t current;
   uint8_t interruptMask;
@@ -952,8 +1046,10 @@ ISR(PORTA_VECT) {
   // FOR MEASUREMENT ONLY
   // exitPORTBISR: PORTC &= ~(1 << PC5); // SIGNAL THAT WE ARE LEAVING THE INTERRUPT
 }
+#endif // EI_NOTPORTA
 #endif // MIGHTY1284
 
+#ifndef EI_NOTPORTB
 ISR(PORTB_VECT) {
   uint8_t current;
   uint8_t interruptMask;
@@ -997,8 +1093,10 @@ ISR(PORTB_VECT) {
   // exitPORTBISR: PORTC &= ~(1 << PC5); // SIGNAL THAT WE ARE LEAVING THE INTERRUPT
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTPORTB
 
 #if defined ARDUINO_328 || defined MIGHTY1284
+#ifndef EI_NOTPORTC
 ISR(PORTC_VECT) {
   uint8_t current;
   uint8_t interruptMask;
@@ -1035,7 +1133,9 @@ ISR(PORTC_VECT) {
   exitPORTCISR: return;
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTPORTC
 
+#ifndef EI_NOTPORTC
 ISR(PORTD_VECT) {
   uint8_t current;
   uint8_t interruptMask;
@@ -1071,8 +1171,10 @@ ISR(PORTD_VECT) {
   exitPORTDISR: return;
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTPORTD
 
 #elif defined ARDUINO_MEGA
+#ifndef EI_NOTPORTJ
 ISR(PORTJ_VECT) {
   uint8_t current;
   uint8_t interruptMask;
@@ -1106,7 +1208,9 @@ ISR(PORTJ_VECT) {
   exitPORTJISR: return;
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTPORTJ
 
+#ifndef EI_NOTPORTK
 ISR(PORTK_VECT) {
   uint8_t current;
   uint8_t interruptMask;
@@ -1141,6 +1245,7 @@ ISR(PORTK_VECT) {
   exitPORTKISR: return;
 #endif // NEEDFORSPEED
 }
+#endif // EI_NOTPORTK
 #elif defined ARDUINO_LEONARDO
   // No other Pin Change Interrupt ports than B on Leonardo
 #endif // defined ARDUINO_328

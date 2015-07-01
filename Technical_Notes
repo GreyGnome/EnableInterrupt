@@ -716,3 +716,43 @@ Calling the function pointers referred to in an array, using while loop:
 							Then a couple of cycles to get out.
 
 
+===========================================================================================================
+Space Optimizations
+===========================================================================================================
+Compile Simple.ino, using pin 10, compile for ATmega2560:
+Program:    6402 bytes (2.4% Full)
+(.text + .data + .bootloader)
+
+Data:        859 bytes (10.5% Full)
+(.data + .bss + .noinit)
+
+
+Compile Simple.ino, using pin 10, define EI_NOTEXTERNAL:
+Program:    5328 bytes (2.0% Full)
+(.text + .data + .bootloader)
+
+Data:        843 bytes (10.3% Full)
+(.data + .bss + .noinit)
+
+Compile Simple.ino, using pin 10, define EI_NOTPORTJ:
+Program:    5006 bytes (1.9% Full)
+(.text + .data + .bootloader)
+
+Data:        825 bytes (10.1% Full)
+(.data + .bss + .noinit)
+
+Compile Simple.ino, using pin 10, define EI_NOTPORTJ EI_NOTPORTK:
+Program:    4686 bytes (1.8% Full)
+(.text + .data + .bootloader)
+
+Data:        806 bytes (9.8% Full)
+(.data + .bss + .noinit)
+
+
+Compile Simple.ino, using pin 10, define EI_NOTPORTJ EI_NOTPORTK EI_NOTEXTERNAL:
+Program:    4674 bytes (1.8% Full)
+(.text + .data + .bootloader)
+
+Data:        806 bytes (9.8% Full)
+(.data + .bss + .noinit)
+
