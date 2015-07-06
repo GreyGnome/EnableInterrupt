@@ -73,9 +73,10 @@ define disableInterrupt(pin) detachInterrupt(pin)
  * interrupt type (External, or Pin Change) normally applies to that pin, with priority to
  * External Interrupt. 
  *
- * Believe it or not, that complexity is all because of pins 2 and 3 on the ATmega328-based
- * Arduinos. Those are the only pins in the Arduino line that can share External or Pin Change
- * Interrupt types. Otherwise, each pin only supports a single type of interrupt and the
+ * The interruptDesignator is required because on the ATmega328 processor pins 2 and 3 support
+ * ''either'' pin change or * external interrupts. On 644/1284-based systems, pin change interrupts
+ * are supported on all pins and external interruptsare supported on pins 2, 10, and 11. 
+ * Otherwise, each pin only supports a single type of interrupt and the
  * PINCHANGEINTERRUPT scheme changes nothing. This means you can ignore this whole discussion
  * for ATmega2560- or ATmega32U4-based Arduinos. You can probably safely ignore it for
  * ATmega328-based Arduinos, too.
@@ -149,6 +150,17 @@ typedef void (*interruptFunctionType)(void);
   __AVR_ATmega328__ || __AVR_ATmega328P__
 
 #define ARDUINO_328
+#if defined EI_NOTPINCHANGE
+#ifndef EI_NOTPORTB
+#define EI_NOTPORTB
+#endif
+#ifndef EI_NOTPORTC
+#define EI_NOTPORTC
+#endif
+#ifndef EI_NOTPORTD
+#define EI_NOTPORTD
+#endif
+#endif
 
 #ifndef NEEDFORSPEED
 const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
@@ -263,6 +275,17 @@ static volatile uint8_t portSnapshotD;
 #elif defined __AVR_ATmega640__ || defined __AVR_ATmega2560__ || defined __AVR_ATmega1280__ || \
   defined __AVR_ATmega1281__ || defined __AVR_ATmega2561__
 #define ARDUINO_MEGA
+#if defined EI_NOTPINCHANGE
+#ifndef EI_NOTPORTB
+#define EI_NOTPORTB
+#endif
+#ifndef EI_NOTPORTJ
+#define EI_NOTPORTJ
+#endif
+#ifndef EI_NOTPORTK
+#define EI_NOTPORTK
+#endif
+#endif
 
 volatile uint8_t portJPCMSK=0; // This is a shifted version of PCMSK for PortJ, so I
 			                         //	don't have to perform a shift in the IRQ.
@@ -438,6 +461,11 @@ static volatile uint8_t portSnapshotK;
 /* LEONARDO ***************************************************************************/
 #elif defined __AVR_ATmega32U4__ || defined __AVR_ATmega16U4__
 #define ARDUINO_LEONARDO
+#if defined EI_NOTPINCHANGE
+#ifndef EI_NOTPORTB
+#define EI_NOTPORTB
+#endif
+#endif
 
 /* To derive this list: 
    sed -n -e '1,/digital_pin_to_port_PGM/d' -e '/^}/,$d' -e '/P/p' \
@@ -508,6 +536,20 @@ static volatile uint8_t portSnapshotB;
 /* 644/1284 ***************************************************************************/
 #elif defined __AVR_ATmega1284P__ || defined __AVR_ATmega1284__ || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__)
 #define MIGHTY1284
+#if defined EI_NOTPINCHANGE
+#ifndef EI_NOTPORTA
+#define EI_NOTPORTA
+#endif
+#ifndef EI_NOTPORTB
+#define EI_NOTPORTB
+#endif
+#ifndef EI_NOTPORTC
+#define EI_NOTPORTC
+#endif
+#ifndef EI_NOTPORTD
+#define EI_NOTPORTD
+#endif
+#endif
 
 #ifndef INPUT_PULLUP
 #define INPUT_PULLUP 0x2
