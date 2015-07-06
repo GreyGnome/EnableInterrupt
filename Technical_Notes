@@ -376,7 +376,7 @@ ATmega644 / 1284 Support (MIGHTY1284 used as a reference, NOT Sanguino)
 // Sanguino, Mosquino uino bobino bonanafannafofino, me my momino...
 #if defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega1284__) || defined(__AVR_ATmega1284P__)
 
-// Here I use the might-1284p pinout from https://maniacbug.wordpress.com/2011/11/27/arduino-on-atmega1284p-4/
+// Here I use the mighty-1284p pinout from https://maniacbug.wordpress.com/2011/11/27/arduino-on-atmega1284p-4/
                     +---\/---+
           (D 0) PB0 |1     40| PA0 (AI 0 / D24)
           (D 1) PB1 |2     39| PA1 (AI 1 / D25)
@@ -556,7 +556,7 @@ atmega8.build.mcu=atmega8
 robotControl.build.mcu=atmega32u4
 robotMotor.build.mcu=atmega32u4
 
-ISR Register handing
+ISR Register handling
 
 Tested the following code to ensure that all registers would be pushed/popped correctly, even
 if I was using NAKED_ISR. Note that I did not run code, I merely eyeballed the output to ensure
