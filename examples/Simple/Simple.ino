@@ -17,7 +17,7 @@ void setup() {
   enableInterrupt(ARDUINOPIN, interruptFunction, CHANGE);
 }
 
-// In the loop we just check display interruptCount. The value is updated by the interrupt routine.
+// In the loop we just display interruptCount. The value is updated by the interrupt routine.
 void loop() {
   Serial.println("---------------------------------------");
   delay(1000);
