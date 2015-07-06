@@ -7,14 +7,11 @@ Functions:
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
-*_What's New?_ Tue Jun 23 06:47:10 CDT 2015 Version 0.6.3 of the
-library has been released. This release includes an Object Oriented
-example, OOSimple, in the examples/ directory. There are no other changes
-since version 0.6.2. It also meets the requirements of the Arduino 1.5.x library
-specification, and includes support for the ATmega1284p line of processors
-(includes ATmega644). The Mighty 1284 is used as the basis.  As I don't have a
-1284-based processor, this code compiles but has not been tested. Bug reports
-encouraged and welcomed!*
+*_What's New?_ Tue Jun 23 06:47:10 CDT 2015 Version 0.7.0 of the library has
+been released. This release includes compiler directives that allow you
+to eliminate unneeded ports and memory allocations, to more efficiently
+utilize code and static RAM. See https://github.com/GreyGnome/EnableInterrupt/wiki/SaveMemory 
+for the new features.*
 
 The EnableInterrupt library is a new Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
