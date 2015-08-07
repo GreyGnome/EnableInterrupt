@@ -339,6 +339,21 @@ the library's code and thus is not supported by this library.  It is the same
 pin the Arduino uses to upload sketches, and it is connected to the FT232RL
 USB-to-Serial chip (ATmega16U2 on the R3).
 
+static const uint8_t SS   = 53;
+static const uint8_t MOSI = 51;
+static const uint8_t MISO = 50;
+static const uint8_t SCK  = 52;
+static const uint8_t A8 = 62;
+static const uint8_t A9 = 63;
+static const uint8_t A10 = 64;
+static const uint8_t A11 = 65;
+static const uint8_t A12 = 66;
+static const uint8_t A13 = 67;
+static const uint8_t A14 = 68;
+static const uint8_t A15 = 69;
+
+
+
 // PIN CHANGE INTERRUPTS REGISTER BESTIARY for the ATmega2560
 
 PCICR: 7   6   5   4   3   2   1   0  (When PCIE2 is set and GIE is set, PCI2 is enabled)
