@@ -55,6 +55,7 @@ if (portNumber==PJ) {
   portSnapshotJ=*portInputRegister(portNumber);
   pcmsk=&PCMSK1;
   PCICR |= _BV(1);
+  // TODO: I think the order of these is flipped. Test. BUG??? -Mike
   portJPCMSK|=portMask; // because PCMSK1 is shifted wrt. PortJ.
   portMask <<= 1; // Handle port J's oddness. PJ0 is actually 1 on PCMSK1.
 }
