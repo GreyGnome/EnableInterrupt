@@ -7,11 +7,10 @@ Functions:
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
-*_What's New?_ Tue Jun 23 06:47:10 CDT 2015 Version 0.7.0 of the library has
-been released. This release includes compiler directives that allow you
-to eliminate unneeded ports and memory allocations, to more efficiently
-utilize code and static RAM. See https://github.com/GreyGnome/EnableInterrupt/wiki/SaveMemory 
-for the new features.*
+*_What's New?_ Tue Jun 23 06:47:10 CDT 2015 Version 0.8.0 of the library has
+been released. This release includes a compiler directive that allows you
+to query a variable and know which pin triggered the interrupt
+(sorry, this capability is not available on the Due). See https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#Determine the Pin That Was Interrupted.
 
 The EnableInterrupt library is a new Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
@@ -102,6 +101,7 @@ back to your sketch. For a review of this issue see
 https://github.com/GreyGnome/EnableInterrupt/blob/master/Interrupt%20Timing.pdf
 
 # USAGE:
+## Basic Usage
 *enableInterrupt*- Enables interrupt on a selected Arduino pin.
 ```C
 enableInterrupt(uint8_t pinNumber, void (*userFunction)(void), uint8_t mode);
@@ -152,6 +152,15 @@ ignore this whole discussion for ATmega2560, ATmega32U4, or SAM3X8E (Due)-based 
 
 It is possible to change the user function assigned to an interrupt after enabling it (if you
 want). Later in your code simply disable the interrupt and enable it with a different function.
+
+## Determine the Pin That Was Interrupted
+There is a facility in the library to identify the most recent pin that triggered an interrupt. Set the following definition '''before''' including the EnableInterrupt.h file in your sketch:
+```
+ #define EI_ARDUINO_INTERRUPTED_PIN
+```
+Then, the ATmega chip will set a variable with every interrupt, and you can query it to find which pin interrupted your sketch. The variable is arduinoInterruptedPin and it is of type uint8_t.
+
+See the https://github.com/GreyGnome/EnableInterrupt/wiki/Usage wiki page for more information.
 
 # PIN / PORT BESTIARY
 Theoretically pins 0 and 1 (RX and TX) are supported but as these pins have
