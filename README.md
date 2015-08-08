@@ -10,7 +10,7 @@ disableInterrupt - Disables interrupt on the selected Arduino pin.
 *_What's New?_ Tue Jun 23 06:47:10 CDT 2015 Version 0.8.0 of the library has
 been released. This release includes a compiler directive that allows you
 to query a variable and know which pin triggered the interrupt
-(sorry, this capability is not available on the Due). See https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#Determine the Pin That Was Interrupted.
+(sorry, this capability is not available on the Due). See https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#Determine_the_Pin_That_Was_Interrupted
 
 The EnableInterrupt library is a new Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
