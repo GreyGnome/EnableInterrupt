@@ -1,3 +1,14 @@
+Fri Aug  7 06:44:55 CDT 2015
+Version 0.8.0. This release includes the function to set a variable that can be queried by the programmer's
+ISR, to determine which pin was interrupted. Define EI_ARDUINO_INTERRUPTED_PIN in the main sketch.
+
+Also:
+My Mega2560 failed right in the middle of testing this release. So that platform is not fully tested.
+The InterruptedPin2560.ino sketch was giving me some inconsistent results: I saw  pin 71 interrupted twice,
+and pin 70 not at all. I think there is a bug in utility/ei_PinChange2560.h, but I will release before I resolve
+this. If there is anyone who could test on the 2560 platform- run the InterruptedPin2560.ino sketch and send me
+the output- I would appreciate it.
+
 Mon Jul  6 17:41:05 CDT 2015
 This release includes compiler directives that allow you to eliminate unneeded ports and memory allocations, to more efficiently utilize code and static RAM. See https://github.com/GreyGnome/EnableInterrupt/wiki/SaveMemory for the new features.
 
