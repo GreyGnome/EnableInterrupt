@@ -795,7 +795,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #elif defined ARDUINO_LEONARDO
   if ( (arduinoPin > 3) && (arduinoPin != 7) ) {
 #endif
-#if defined ARDUINO_328 || defined MIGHT1284 || defined ARDUINO_LEONARDO
+#if defined ARDUINO_328 || defined MIGHTY1284 || defined ARDUINO_LEONARDO
     portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
     portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
 #elif defined ARDUINO_MEGA
@@ -929,7 +929,7 @@ void disableInterrupt (uint8_t interruptDesignator) {
 #elif defined ARDUINO_LEONARDO
   if ( (arduinoPin > 3) && (arduinoPin != 7) ) {
 #endif
-#if defined ARDUINO_328 || defined MIGHT1284 || defined ARDUINO_LEONARDO
+#if defined ARDUINO_328 || defined MIGHTY1284 || defined ARDUINO_LEONARDO
     portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
     portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
 #elif defined ARDUINO_MEGA
@@ -990,7 +990,7 @@ void disableInterrupt (uint8_t interruptDesignator) {
 ISR(INT0_vect) {
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
-#if defined MIGHT1284
+#if defined MIGHTY1284
   arduinoInterruptedPin=ARDUINO_PIN_D2;
 #elif defined ARDUINO_MEGA
   arduinoInterruptedPin=ARDUINO_PIN_D0;
@@ -1028,7 +1028,7 @@ ISR(INT0_vect) {
 ISR(INT1_vect) {
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
-#if defined MIGHT1284
+#if defined MIGHTY1284
   arduinoInterruptedPin=ARDUINO_PIN_D3;
 #elif defined ARDUINO_MEGA
   arduinoInterruptedPin=ARDUINO_PIN_D1;
@@ -1067,7 +1067,7 @@ ISR(INT1_vect) {
 ISR(INT2_vect) {
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
-#if defined MIGHT1284
+#if defined MIGHTY1284
   arduinoInterruptedPin=ARDUINO_PIN_B2;
 #elif defined ARDUINO_MEGA
   arduinoInterruptedPin=ARDUINO_PIN_D2;

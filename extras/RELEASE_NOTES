@@ -1,3 +1,6 @@
+Sat Aug  8 12:03:24 CDT 2015
+Version 0.8.1. I forgot to include some fixes for an issue on the website; https://github.com/GreyGnome/EnableInterrupt/issues/13 (having to do with the 1284 chip). These are now included.
+
 Fri Aug  7 06:44:55 CDT 2015
 Version 0.8.0. This release includes the function to set a variable that can be queried by the programmer's
 ISR, to determine which pin was interrupted. Define EI_ARDUINO_INTERRUPTED_PIN in the main sketch.
