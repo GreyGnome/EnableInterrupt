@@ -35,7 +35,9 @@ uint8_t arduinoInterruptedPin=0;
 // *************************************************************************************
 // *************************************************************************************
 
+////////////////////////////////////////////////////
 // Arduino Due (not Duemilanove) macros. Easy-peasy.
+////////////////////////////////////////////////////
 #if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__
 #ifdef NEEDFORSPEED
 #error Due is already fast; the NEEDFORSPEED definition does not make sense on it.
@@ -44,11 +46,14 @@ define enableInterrupt(pin,userFunc,mode) attachInterrupt(pin, userFunc,mode)
 define disableInterrupt(pin) detachInterrupt(pin)
 #else
 
+////////////////////////////////////////////////////
+// ATmel AVR stuff. Harder.
+////////////////////////////////////////////////////
 /* 
- * enableInterrupt- Sets up an interrupt on a selected Arduino pin.
- * or
- * enableInterruptFast- When used with the NEEDFORSPEED macro, sets up an interrupt on a selected Arduino pin.
- * 
+ * enableInterrupt or enableInterruptFast- Enable an interrupt on a selected Arduino pin.
+ *                                         "enableInterruptFast" is used with the
+ *                                         NEEDFORSPEED macro ("HiSpeed mode").
+ *
  * Usage:
  * enableInterrupt(uint8_t pinNumber, void (*userFunction)(void), uint8_t mode);
  * or
@@ -64,7 +69,6 @@ define disableInterrupt(pin) detachInterrupt(pin)
  * disableInterrupt- Disables interrupt on a selected Arduino pin.
  *
  * Usage:
- *
  * disableInterrupt(uint8_t pinNumber);
  * or
  * disableInterrupt(uint8_t interruptDesignator);
@@ -88,6 +92,11 @@ define disableInterrupt(pin) detachInterrupt(pin)
  * ATmega328-based Arduinos, too.
  */
 
+//
+// *************************************************************************************
+// *** Programmers: Below these lines there dwell dragons! Ye have been warned!      ***
+// *************************************************************************************
+//
 void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
 void disableInterrupt(uint8_t interruptDesignator);
 void bogusFunctionPlaceholder(void);
@@ -117,7 +126,7 @@ void bogusFunctionPlaceholder(void) {
 #include "utility/ei_pindefs_speed.h"
 #endif
 
-// Example: EI_printPSTR("This is a nice long string that takes no static ram");
+// Example: EI_printPSTR("This is a nice long string that's stored in flash rom");
 #define EI_printPSTR(x) EI_SerialPrint_P(PSTR(x))
 void EI_SerialPrint_P(const char *str) {
   for (uint8_t c; (c = pgm_read_byte(str)); str++) Serial.write(c);
@@ -744,13 +753,167 @@ static volatile uint8_t portSnapshotD;
 #endif
 #endif // NEEDFORSPEED
 
-
-
 // the vectors (eg, "PCINT0_vect") are defined in the avr.h files, like iom1284p.h
 #define PORTA_VECT PCINT0_vect
 #define PORTB_VECT PCINT1_vect
 #define PORTC_VECT PCINT2_vect
 #define PORTD_VECT PCINT3_vect
+
+/* 24/44/84 ***************************************************************************/
+/* 24/44/84 ***************************************************************************/
+/* 24/44/84 ***************************************************************************/
+#elif defined __AVR_ATtiny24__  || defined __AVR_ATtiny24A__ || defined __AVR_ATtiny44__ || defined __AVR_ATtiny44A__ || defined __AVR_ATtiny84__ || defined  __AVR_ATtiny84A_
+#define EI_ATTINY24
+#if defined EI_NOTPINCHANGE
+#ifndef EI_NOTPORTA
+#define EI_NOTPORTA
+#endif
+#ifndef EI_NOTPORTB
+#define EI_NOTPORTB
+#endif
+#endif
+
+#ifndef INPUT_PULLUP
+#define INPUT_PULLUP 0x2
+#endif
+
+#ifndef NEEDFORSPEED
+#define ARDUINO_PIN_B3 11
+#define ARDUINO_PIN_B2 8
+#define ARDUINO_PIN_B1 9
+#define ARDUINO_PIN_B0 10
+#define ARDUINO_PIN_A0 0
+#define ARDUINO_PIN_A1 1
+#define ARDUINO_PIN_A2 2
+#define ARDUINO_PIN_A3 3
+#define ARDUINO_PIN_A4 4
+#define ARDUINO_PIN_A5 5
+#define ARDUINO_PIN_A6 6
+#define ARDUINO_PIN_A7 7
+
+const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
+  0, // pin 0 == port A, bit 0
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  2, // pin 8 = port B, bit 2
+  1,
+  0,
+  3
+}
+#if ! defined(EI_NOTEXTERNAL) && ! defined(EI_NOTINT0)
+interruptFunctionType externalFunctionPointer=0;
+#endif
+
+#ifndef EI_NOTPORTA
+struct functionPointersPortA {
+  interruptFunctionType pinZero;
+  interruptFunctionType pinOne;
+  interruptFunctionType pinTwo;
+  interruptFunctionType pinThree;
+  interruptFunctionType pinFour;
+  interruptFunctionType pinFive;
+  interruptFunctionType pinSix;
+  interruptFunctionType pinSeven;
+};
+typedef struct functionPointersPortA functionPointersPortA;
+
+functionPointersPortA portAFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+
+// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
+// we have to know how we were defined.
+volatile uint8_t risingPinsPORTA=0;
+volatile uint8_t fallingPinsPORTA=0;
+
+// for the saved state of the ports
+static volatile uint8_t portSnapshotA;
+#endif // ifndef EI_NOTPORTA
+
+#ifndef EI_NOTPORTB
+struct functionPointersPortB {
+  interruptFunctionType pinZero;
+  interruptFunctionType pinOne;
+  interruptFunctionType pinTwo;
+  interruptFunctionType pinThree;
+};
+typedef struct functionPointersPortB functionPointersPortB;
+
+functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL };
+
+// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
+// we have to know how the ports were defined.
+volatile uint8_t risingPinsPORTB=0;
+volatile uint8_t fallingPinsPORTB=0;
+
+// for the saved state of the ports
+static volatile uint8_t portSnapshotB;
+#endif // ifndef EI_NOTPORTB
+#endif // NEEDFORSPEED
+
+#define PORTA_VECT PCINT0_vect
+#define PORTB_VECT PCINT1_vect
+
+#elif defined __AVR_ATtiny25__ || defined  __AVR_ATtiny45__ || defined  __AVR_ATtiny85__
+#define EI_ATTINY25
+#if defined EI_NOTPINCHANGE
+#ifndef EI_NOTPORTB
+#define EI_NOTPORTB
+#endif
+#endif
+
+#ifndef INPUT_PULLUP
+#define INPUT_PULLUP 0x2
+#endif
+
+#ifndef NEEDFORSPEED
+#define ARDUINO_PIN_B0 0
+#define ARDUINO_PIN_B1 1
+#define ARDUINO_PIN_B2 2
+#define ARDUINO_PIN_B3 3
+#define ARDUINO_PIN_B4 4
+#define ARDUINO_PIN_B5 5
+
+const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
+  0, // pin 0 == port B, bit 0
+  1,
+  2,
+  3,
+  4,
+  5
+};
+#if ! defined(EI_NOTEXTERNAL) && ! defined(EI_NOTINT0)
+interruptFunctionType externalFunctionPointer=0;
+#endif
+
+#ifndef EI_NOTPORTB
+struct functionPointersPortB {
+  interruptFunctionType pinZero;
+  interruptFunctionType pinOne;
+  interruptFunctionType pinTwo;
+  interruptFunctionType pinThree;
+  interruptFunctionType pinFour;
+  interruptFunctionType pinFive;
+};
+typedef struct functionPointersPortB functionPointersPortB;
+
+functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL };
+
+// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
+// we have to know how the ports were defined.
+volatile uint8_t risingPinsPORTB=0;
+volatile uint8_t fallingPinsPORTB=0;
+
+// for the saved state of the ports
+static volatile uint8_t portSnapshotB;
+#endif // ifndef EI_NOTPORTB
+
+#define PORTB_VECT PCINT0_vect
+
+#endif // NEEDFORSPEED
 
 #endif // #if defined __AVR_ATmega168__ || defined __AVR_ATmega168A__ ... (etc.) ...
 
@@ -794,10 +957,27 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
                                                       arduinoPin != 11) ) {
 #elif defined ARDUINO_LEONARDO
   if ( (arduinoPin > 3) && (arduinoPin != 7) ) {
+#elif defined ATtiny24
+  if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 8) ) {
+#elif defined ATtiny25
+  if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2) ) {
 #endif
 #if defined ARDUINO_328 || defined MIGHTY1284 || defined ARDUINO_LEONARDO
     portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
     portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
+#elif defined ATtiny25
+    portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
+    portNumber=PB;
+#elif defined ATtiny24
+    // This is not a true Arduino pin... it's pin 4 on the chip, which is RESET.
+    // I could imagine that one would want to use that pin for something other than RESET.
+    if (arduinoPin == 11) {
+      portMask=_BV(3);
+      portNumber=PB;
+    } else {
+      portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
+      portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
+    }
 #elif defined ARDUINO_MEGA
   // NOTE: PJ2-6 and PE6 & 7 are not exposed on the Arduino, but they are supported here
   // for software interrupts and support of non-Arduino platforms which expose more pins.
@@ -831,6 +1011,10 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #include "utility/ei_PinChange2560.h"
 #elif defined ARDUINO_LEONARDO
 #include "utility/ei_PinChangeLeonardo.h"
+#elif defined ATtiny24
+#include "utility/ei_PinChangeTiny24.h"
+#elif defined ATtiny25
+#include "utility/ei_PinChangeTiny25.h"
 #endif
 #undef EI_SECTION_RISING
     }
@@ -845,6 +1029,10 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #include "utility/ei_PinChange2560.h"
 #elif defined ARDUINO_LEONARDO
 #include "utility/ei_PinChangeLeonardo.h"
+#elif defined ATtiny24
+#include "utility/ei_PinChangeTiny24.h"
+#elif defined ATtiny25
+#include "utility/ei_PinChangeTiny25.h"
 #endif
 #undef EI_SECTION_FALLING
     }
@@ -868,6 +1056,10 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #include "utility/ei_PinChange2560.h"
 #elif defined ARDUINO_LEONARDO
 #include "utility/ei_PinChangeLeonardo.h"
+#elif defined ATtiny24
+#include "utility/ei_PinChangeTiny24.h"
+#elif defined ATtiny25
+#include "utility/ei_PinChangeTiny25.h"
 #endif
 #undef EI_SECTION_ASSIGNFUNCTIONSREGISTERS
 
@@ -897,6 +1089,8 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 #include "utility/ei_External2560.h"
 #elif defined ARDUINO_LEONARDO
 #include "utility/ei_ExternalLeonardo.h"
+#elif defined EI_ATTINY24
+#include "utility/ei_ExternalTiny24.h"
 #endif
 #undef EI_SECTION_ENABLEEXTERNAL
 
