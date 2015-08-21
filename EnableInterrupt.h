@@ -230,13 +230,6 @@ typedef struct functionPointersPortB functionPointersPortB;
 
 functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL };
 
-// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
-// we have to know how the ports were defined.
-volatile uint8_t risingPinsPORTB=0;
-volatile uint8_t fallingPinsPORTB=0;
-
-// for the saved state of the ports
-static volatile uint8_t portSnapshotB;
 #endif // EI_NOTPORTB
 
 #ifndef EI_NOTPORTC
@@ -253,13 +246,6 @@ typedef struct functionPointersPortC functionPointersPortC;
 
 functionPointersPortC portCFunctions = { NULL, NULL, NULL, NULL, NULL, NULL };
 
-// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
-// we have to know how the ports were defined.
-volatile uint8_t risingPinsPORTC=0;
-volatile uint8_t fallingPinsPORTC=0;
-
-// for the saved state of the ports
-static volatile uint8_t portSnapshotC;
 #endif // EI_NOTPORTC
 
 #ifndef EI_NOTPORTD
@@ -278,15 +264,29 @@ typedef struct functionPointersPortD functionPointersPortD;
 
 functionPointersPortD portDFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
-// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
-// we have to know how the ports were defined.
-volatile uint8_t risingPinsPORTD=0;
-volatile uint8_t fallingPinsPORTD=0;
-
-// for the saved state of the ports
-static volatile uint8_t portSnapshotD;
 #endif // EI_NOTPORTD
 #endif // NEEDFORSPEED
+
+// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
+// we have to know how the ports were defined.
+#ifndef EI_NOTPORTB
+volatile uint8_t risingPinsPORTB=0;
+volatile uint8_t fallingPinsPORTB=0;
+// for the saved state of the ports
+static volatile uint8_t portSnapshotB;
+#endif
+
+#ifndef EI_NOTPORTC
+volatile uint8_t risingPinsPORTC=0;
+volatile uint8_t fallingPinsPORTC=0;
+static volatile uint8_t portSnapshotC;
+#endif
+
+#ifndef EI_NOTPORTD
+volatile uint8_t risingPinsPORTD=0;
+volatile uint8_t fallingPinsPORTD=0;
+static volatile uint8_t portSnapshotD;
+#endif
 
 // the PCINT?_vect's are defined in the avr.h files, like iom328p.h
 #define PORTB_VECT PCINT0_vect
@@ -449,12 +449,6 @@ struct functionPointersPortB {
 typedef struct functionPointersPortB functionPointersPortB;
 
 functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-
-volatile uint8_t risingPinsPORTB=0;
-volatile uint8_t fallingPinsPORTB=0;
-
-// for the saved state of the ports
-static volatile uint8_t portSnapshotB;
 #endif
 
 #ifndef EI_NOTPORTJ
@@ -476,13 +470,6 @@ typedef struct functionPointersPortJ functionPointersPortJ;
 
 functionPointersPortJ portJFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
-// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
-// we have to know how we were defined.
-volatile uint8_t risingPinsPORTJ=0;
-volatile uint8_t fallingPinsPORTJ=0;
-
-// for the saved state of the ports
-static volatile uint8_t portSnapshotJ;
 #endif
 
 #ifndef EI_NOTPORTK
@@ -499,14 +486,28 @@ struct functionPointersPortK {
 typedef struct functionPointersPortK functionPointersPortK;
 
 functionPointersPortK portKFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-
-volatile uint8_t risingPinsPORTK=0;
-volatile uint8_t fallingPinsPORTK=0;
-
-// for the saved state of the ports
-static volatile uint8_t portSnapshotK;
 #endif
 #endif // NEEDFORSPEED
+
+// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
+// we have to know how we were defined.
+#ifndef EI_NOTPORTB
+volatile uint8_t risingPinsPORTB=0;
+volatile uint8_t fallingPinsPORTB=0;
+static volatile uint8_t portSnapshotB;
+#endif
+
+#ifndef EI_NOTPORTJ
+volatile uint8_t risingPinsPORTJ=0;
+volatile uint8_t fallingPinsPORTJ=0;
+static volatile uint8_t portSnapshotJ;
+#endif
+
+#ifndef EI_NOTPORTK
+volatile uint8_t risingPinsPORTK=0;
+volatile uint8_t fallingPinsPORTK=0;
+static volatile uint8_t portSnapshotK;
+#endif
 
 #define PORTB_VECT PCINT0_vect
 #define PORTJ_VECT PCINT1_vect
@@ -587,6 +588,10 @@ typedef struct functionPointersPortB functionPointersPortB;
 
 functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
+#endif
+#endif // NEEDFOR SPEED
+
+#ifndef EI_NOTPORTB
 // For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
 // we have to know how we were defined.
 volatile uint8_t risingPinsPORTB=0;
@@ -595,8 +600,6 @@ volatile uint8_t fallingPinsPORTB=0;
 // for the saved state of the ports
 static volatile uint8_t portSnapshotB;
 #endif
-#endif // NEEDFOR SPEED
-
 #define PORTB_VECT PCINT0_vect
 
 /* 644/1284 ***************************************************************************/
@@ -711,40 +714,48 @@ struct functionPointers {
 #ifndef EI_NOTPORTA
 typedef struct functionPointers functionPointersPortA;
 functionPointers portAFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
-// we have to know how the ports were defined.
-volatile uint8_t risingPinsPORTA=0;
-volatile uint8_t fallingPinsPORTA=0;
-// for the saved state of the ports
-static volatile uint8_t portSnapshotA;
 #endif
 
 #ifndef EI_NOTPORTB
 typedef struct functionPointers functionPointersPortB;
 functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-volatile uint8_t risingPinsPORTB=0;
-volatile uint8_t fallingPinsPORTB=0;
-static volatile uint8_t portSnapshotB;
 #endif
 
 #ifndef EI_NOTPORTC
 typedef struct functionPointers functionPointersPortC;
 functionPointersPortC portCFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-volatile uint8_t risingPinsPORTC=0;
-volatile uint8_t fallingPinsPORTC=0;
-static volatile uint8_t portSnapshotC;
 #endif
 
 #ifndef EI_NOTPORTD
 typedef struct functionPointers functionPointersPortD;
 functionPointersPortD portDFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-volatile uint8_t risingPinsPORTD=0;
-volatile uint8_t fallingPinsPORTD=0;
-static volatile uint8_t portSnapshotD;
 #endif
 #endif // NEEDFORSPEED
 
 
+// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
+// we have to know how the ports were defined.
+#ifndef EI_NOTPORTA
+volatile uint8_t risingPinsPORTA=0;
+volatile uint8_t fallingPinsPORTA=0;
+// for the saved state of the ports
+static volatile uint8_t portSnapshotA;
+#endif
+#ifndef EI_NOTPORTB
+volatile uint8_t risingPinsPORTB=0;
+volatile uint8_t fallingPinsPORTB=0;
+static volatile uint8_t portSnapshotB;
+#endif
+#ifndef EI_NOTPORTC
+volatile uint8_t risingPinsPORTC=0;
+volatile uint8_t fallingPinsPORTC=0;
+static volatile uint8_t portSnapshotC;
+#endif
+#ifndef EI_NOTPORTD
+volatile uint8_t risingPinsPORTD=0;
+volatile uint8_t fallingPinsPORTD=0;
+static volatile uint8_t portSnapshotD;
+#endif
 
 // the vectors (eg, "PCINT0_vect") are defined in the avr.h files, like iom1284p.h
 #define PORTA_VECT PCINT0_vect
