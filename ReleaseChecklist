@@ -1,0 +1,16 @@
+- Tests:
+	- Simple
+	- HiSpeed
+	- AllPins328
+	- AllPins2560
+- README.md up-to-date?
+- extras/RELEASE_NOTES consistent with README.md?
+- library.properties current?
+- Git Tagged?
+- Zip file created?
+- BitTray:
+	- Upload Zip file
+	- Update the downloads area
+- Git commit
+- Push files to GitHub
+- Post to Arduino forums
