@@ -22,9 +22,6 @@
 #define EnableInterrupt_h
 #include <Arduino.h>
 
-#ifdef EI_ARDUINO_INTERRUPTED_PIN
-uint8_t arduinoInterruptedPin=0;
-#endif
 // *************************************************************************************
 // *************************************************************************************
 // Function Prototypes *****************************************************************
@@ -101,6 +98,10 @@ void bogusFunctionPlaceholder(void);
 // *************************************************************************************
 // End Function Prototypes *************************************************************
 // *************************************************************************************
+
+#ifdef EI_ARDUINO_INTERRUPTED_PIN
+uint8_t arduinoInterruptedPin=0;
+#endif
 
 #undef PINCHANGEINTERRUPT
 #define PINCHANGEINTERRUPT 0x80
