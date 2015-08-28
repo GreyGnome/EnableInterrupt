@@ -1,18 +1,15 @@
 # EnableInterrupt
 New Arduino interrupt library, designed for all versions of the Arduino.
-NEW: 644/1284 support, using the Mighty1284 as the basis. See https://github.com/maniacbug/mighty-1284p.
+NEW: Bugfixes! Also, 1284 tests were run based on JChristensen's work at https://github.com/JChristensen/mini1284 (supports the 1.6.x IDE).
 Functions:
 
 ```
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
-*_What's New?_ Tue Jun 23 06:47:10 CDT 2015 Version 0.8.1 of the library has
-been released. This release includes a compiler directive that allows you
-to query a variable and know which pin triggered the interrupt
-(sorry, this capability is not available on the Due). See https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#Determine_the_Pin_That_Was_Interrupted
-
-(update: I forgot to include some fixes for an issue with the 1284 chip. This has now been included.)
+*_What's New?_ Thu Aug 27 22:23:18 CDT 2015
+Version 0.8.2 of the library has been released. This release includes a number of bug
+fixes (sorry!). See the Release Notes in the extras directory for details.
 
 The EnableInterrupt library is a new Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
