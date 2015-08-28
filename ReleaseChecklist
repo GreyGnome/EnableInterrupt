@@ -5,7 +5,7 @@
 	- HiSpeedAllPins2560
 	- AllPins328
 	- AllPins2560
-	- Mighty1284p
+	- Mighty1284p (compile only)
 - README.md up-to-date?
 - extras/RELEASE_NOTES consistent with README.md?
 - library.properties current?
