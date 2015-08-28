@@ -1,4 +1,8 @@
-// EnableInterrupt Simple example sketch
+// EnableInterrupt Simple example sketch for the ATmega 644/1284 series of chips.
+// Note that this sketch is kind of silly, because it uses printf's which depend on
+// Arduino's USB-serial converters that don't come with a naked 1284, naturally.
+// This sketch is merely to ensure a proper compile.
+
 // See the Wiki at http://code.google.com/p/arduino-pinchangeint/wiki for more information.
 
 // This example demonstrates the use of the EnableInterrupt library on all pins.
