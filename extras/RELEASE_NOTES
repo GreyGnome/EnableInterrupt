@@ -1,3 +1,6 @@
+Thu Aug 27 22:24:39 CDT 2015
+Version 0.8.2. Includes bugfixes for issues raised by engwan, MakkyB, and juanricos; HiSpeed mode was not working but now it is. I also received some nice bug reports and testing from TomWS1. Finally, the library.properties file was out of date.
+
 Sat Aug  8 12:03:24 CDT 2015
 Version 0.8.1. I forgot to include some fixes for an issue on the website; https://github.com/GreyGnome/EnableInterrupt/issues/13 (having to do with the 1284 chip). These are now included.
 
