@@ -464,7 +464,7 @@ PCICR: 7   6   5   4   3   2   1   0  (When PCIE2 is set and GIE is set, PCI2 is
                    PCIE3   2   1   0   Likewise for 1 and 0.
        r   r   r   r  rw  rw  rw  rw
 
-PCIFR: 7   6   5   4   3   2   1   0  (When logic change triggers IRQ, bececomes set. Cleared when
+PCIFR: 7   6   5   4   3   2   1   0  (When logic change triggers IRQ, becomes set. Cleared when
                    PCIF3   2   1   0   IRQ is executed. PCIF2 == PCIE2, etc.)
        r   r   r   r  rw  rw  rw  rw
 
@@ -494,6 +494,159 @@ PCMSK0:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is e
      PA7 PA6 PA5 PA4 PA3 PA2 PA1 PA0   =PORTB
       24  25  26  27  28 29   30  31   -->Sanguino Pins, DIP40 package
  
+
+=====================================================================================================
+=====================================================================================================
+ATtiny 24/44/84 support
+=====================================================================================================
+=====================================================================================================
+Support for this chip is based on David Mellis' work at https://github.com/damellis/attiny
+This is an ATmega that comes in a 14-pin configuration. There are two ports, A and B. PCint pins are
+configured on both ports. The following is the pinout, and shows the Arduino pin numbering scheme: 
+// ATtiny24/44/84 / ARDUINO
+//
+//                           +-\/-+
+//                     VCC  1|    |14  GND
+//             (D 10)  PB0  2|    |13  PA0  (D  0) == AREF
+//             (D  9)  PB1  3|    |12  PA1  (D  1) 
+//                     PB3  4|    |11  PA2  (D  2) 
+//  PWM  INT0  (D  8)  PB2  5|    |10  PA3  (D  3) 
+//  PWM        (D  7)  PA7  6|    |9   PA4  (D  4) 
+//  PWM        (D  6)  PA6  7|    |8   PA5  (D  5)        PWM
+//                           +----+
+
+gcc CPU designations are as follows:
+__AVR_ATtiny24__  __AVR_ATtiny24A__  __AVR_ATtiny44__  __AVR_ATtiny44A__
+__AVR_ATtiny84__  __AVR_ATtiny84A__
+
+The following External Interrupts are available on the ATtiny24/44/84:
+Arduino(tiny)
+  Pin*  PORT INT  ATmega644/1284 pin
+   8    PB2   0      5
+
+The following Pin Change Interrupts are available on the ATmega24/44/84:
+Arduino(tiny)                          Arduino(tiny)
+  Pin*  PORT PCINT ATmega24/44/84 pin    Pin*  PORT PCINT ATmega24/44/84 pin
+   0     PA0   0        13                 5    PA5   5         8
+   1     PA1   1        12                 6    PA6   6         7
+   2     PA2   2        11                 7    PA7   7         6
+   3     PA3   3        10                 8    PB2  10         5
+   4     PA4   4         9                 9    PB1   9         3
+                                          10    PB0   8         2
+                                   "fake" 11    PB3  11         4
+
+Interrupt registers are different on the Tiny series. Interrupts are set by MCUCR, GIMSK, GIFR, PCMSK0, and PCMSK1.
+
+EXTERNAL INTERRUPTS
+-------------------
+MCUCR:
+ ISC:  -   -   -   -   -   -  01  00  Interrupt Sense Control Bits (ISCxx)
+       rw  rw rw  rw  rw  rw  rw  rw
+                           ISC01  00
+
+INT0 "is activated if the SREG I-flag and the MCUCR mask is set" (but see GIMSK, below).
+ISC01      ISC00
+  0          0     INT0 interrupted on LOW level
+  1          1     INT0 interrupted on CHANGE
+  0          0     INT0 interrupted on FALLING
+  1          1     INT0 interrupted on RISING
+
+GIMSK:
+When INT0 == 1  and SREG I-flag set, External Interrupt enabled.
+When PCIE1 == 1 and SREG I-flag set, pin change Interrupt PCINT11:8 enabled.
+When PCIE0 == 1 and SREG I-flag set, pin change Interrupt PCINT7:0 enabled.
+       -   INT0  PCIE0  -   -   -   -
+              PCIE1
+       rw  rw  rw  rw  rw  rw  rw  rw
+      --------------------------------
+
+
+GIFR:  7   6   5   4   3   2   1   0  (When logic change triggers IRQ, becomes set. Cleared when
+         INTF0   PCIF0   2   1   0     IRQ is executed. INTF0 == INT0, etc.)
+       -     PCIF1     -   -   -   -   INT0 is always cleared when INT0 is a LOW interrupt
+       r   rw  rw  rw  r   r   r   r
+
+PCMSK1:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT15:8
+                 PCINT11 ...  PCINT8   If PCIE1 in GIMSK and this bit is set, it is enabled on that
+       r   r   r   r  rw  rw  rw  rw   pin.)
+       -   -   -   - PB3 PB2 PB1 PB0   =PORTB
+       -   -   -   -   4   5   3   2   -->ATtiny 24/44/84 Pins, DIP14 package
+       -   -   -   -  11*  8   9  10   -->Arduino Pins, DIP14 package. * - "Fake" Arduino pin.
+
+PCMSK0:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT7:0
+  PCINT7            ...       PCINT0   If PCIE0 in GIMSK and this bit is set, it is enabled on that
+      rw  rw  rw  rw  rw  rw  rw  rw   pin.)
+     PA7 PA6 PA5 PA4 PA3 PA2 PA1 PA0   =PORTA
+       7   6   5   4   3   2   1   1   -->ATtiny 24/44/84 Pins, DIP14 package
+       6   7   8   9  10  11  12  13   -->Arduino Pins, DIP14 package. * - "Fake" Arduino pin.
+
+=====================================================================================================
+=====================================================================================================
+ATtiny 25/45/85 support
+=====================================================================================================
+=====================================================================================================
+Support for this chip is based on David Mellis' work at https://github.com/damellis/attiny
+This is an ATmega that comes in an 8-pin configuration. There is a single port, B.
+
+gcc CPU designations are as follows:
+__AVR_ATtiny25__  __AVR_ATtiny45__  __AVR_ATtiny85__
+
+The following is the pinout, and shows the Arduino pin numbering scheme:
+// ATtiny25/45/85 / ARDUINO
+//
+//              +-\/-+
+// (D 5) PB5  1|    |8  Vcc
+// (D 3) PB3  2|    |7  PB2 (D 2) (INT0)
+// (D 4) PB4  3|    |6  PB1 (D 1)
+//       GND  4|    |5  PB0 (D 0)
+//             +----+
+
+The following External Interrupts are available on the ATtiny25/45/85:
+Arduino(tiny)
+  Pin*  PORT INT  ATtiny25/45/85 pin
+   2    PB2   0      7
+
+The following Pin Change Interrupts are available on the ATmega25/45/85:
+Arduino(tiny)                          Arduino(tiny)
+  Pin*  PORT PCINT ATmega25/45/85 pin    Pin*  PORT PCINT ATmega25/45/85 pin
+   0     PB0   0        5                  3    PB3   3         2
+   1     PB1   1        6                  4    PB4   4         3
+   2     PB2   2        7                  5    PB5   5         1
+
+Interrupt registers are different on the Tiny series. Interrupts are set by MCUCR, GIMSK, GIFR, PCMSK0, and PCMSK1.
+
+
+MCUCR:
+ ISC:  -   -   -   -   -   -  01  00  Interrupt Sense Control Bits (ISCxx)
+       rw  rw rw  rw  rw  rw  rw  rw
+                           ISC01  00
+
+INT0 "is activated if the SREG I-flag and the MCUCR mask is set" (but see GIMSK, below).
+ISC01      ISC00
+  0          0     INT0 interrupted on LOW level
+  1          1     INT0 interrupted on CHANGE
+  0          0     INT0 interrupted on FALLING
+  1          1     INT0 interrupted on RISING
+
+GIMSK:
+When INT0 == 1 and SREG I-flag set, External Interrupt enabled.
+When PCIE == 1 and SREG I-flag set, pin change Interrupt PCINT5:0 enabled.
+       -   INT0    -   -   -   -   -
+              PCIE
+       r   rw  rw  r   r   r   r   r 
+      --------------------------------
+
+
+GIFR:  7   6   5   4   3   2   1   0  (When logic change triggers IRQ, becomes set. Cleared when
+         INT0                        IRQ is executed. INT0 == INT0, etc.)
+       -     PCIE  -  -   -   -   -   INT0 is always cleared when INT0 is a LOW interrupt
+       r   rw  rw  r  r   r   r   r
+
+PCMSK :7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is enabled on PCINT7:0
+             PCINT5  ...      PCINT0   If PCIE0 in GIMSK and this bit is set, it is enabled on that
+      rw  rw  rw  rw  rw  rw  rw  rw   pin.)
+       -   - PB5 PB4 PB3 PB2 PB1 PB0   =PORTB
+               1   3   2   7   6   5   -->ATtiny 25/45/85 Pins, DIP8 package
 
 
 =================================================================================================================
