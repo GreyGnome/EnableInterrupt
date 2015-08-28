@@ -1,8 +1,11 @@
 - Tests:
 	- Simple
 	- HiSpeed
+	- HiSpeedAllPins328
+	- HiSpeedAllPins2560
 	- AllPins328
 	- AllPins2560
+	- Mighty1284p
 - README.md up-to-date?
 - extras/RELEASE_NOTES consistent with README.md?
 - library.properties current?
