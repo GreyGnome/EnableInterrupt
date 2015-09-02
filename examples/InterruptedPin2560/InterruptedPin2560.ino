@@ -94,11 +94,16 @@ void setup() {
   setupInterrupt(A14);
   setupInterrupt(A15);
   //// 0b01111100
+  // MIKE- Why turn them all high? I think they should be 0!
   DDRJ  |= PIN70_PORTBITMAP | PIN71_PORTBITMAP | PIN72_PORTBITMAP
 	  | PIN73_PORTBITMAP | PIN74_PORTBITMAP ; // Non-Arduino Port J pins all become output.
-  PORTJ |= PIN70_PORTBITMAP | PIN71_PORTBITMAP | PIN72_PORTBITMAP
-	  | PIN73_PORTBITMAP | PIN74_PORTBITMAP ; // Turn them all high.
-  enableInterrupt(70, interruptFunctionPin70, CHANGE);
+  PORTJ &= ~(PIN70_PORTBITMAP | PIN71_PORTBITMAP | PIN72_PORTBITMAP
+	  | PIN73_PORTBITMAP | PIN74_PORTBITMAP) ; // Turn them all low.
+  //// 0b11000000
+  DDRE  |= PIN75_PORTBITMAP | PIN76_PORTBITMAP; // Non-Arduino Port E pins all become output.
+  PORTE &= ~(PIN75_PORTBITMAP | PIN76_PORTBITMAP); // Turn them all low.
+  // MIKE- replace this if necessary: enableInterrupt(70, interruptFunctionPin70, CHANGE);
+  enableInterrupt(70, interruptFunction, CHANGE);
   enableInterrupt(71, interruptFunction, CHANGE);
   enableInterrupt(72, interruptFunction, CHANGE);
   enableInterrupt(73, interruptFunction, CHANGE);
@@ -110,9 +115,6 @@ void setup() {
   setupExInterrupt(18);
   setupExInterrupt(2);
   setupExInterrupt(3);
-  //// 0b11000000
-  DDRE  |= PIN75_PORTBITMAP | PIN76_PORTBITMAP; // Non-Arduino Port E pins all become output.
-  PORTE |= PIN75_PORTBITMAP | PIN76_PORTBITMAP; // Turn them all high.
   enableInterrupt(75, interruptExFunction, CHANGE);
   enableInterrupt(76, interruptExFunction, CHANGE);
 }
@@ -127,11 +129,12 @@ uint8_t toggleCounter=0;
 uint16_t loopCounter=0;
 uint8_t portj_follower = PIN70_PORTBITMAP;
 uint8_t porte_follower = PIN75_PORTBITMAP;
-uint8_t fake_pin_state = 0;
+uint8_t current_pin_state = 0;
 // In the loop, we just check to see where the interrupt count is at. The value gets updated by
 // the interrupt routine.
 void loop() {
 
+  /*
   if (toggleCounter & 0x80) {
     EI_printPSTR("Toggle 20, 71, 75, A8, 15, MISO...");
     delay(200);
@@ -155,32 +158,35 @@ void loop() {
       enabledToggle=FLOP;
     }
     toggleCounter=0;
-  }
+  }*/
   loopCounter++;
-  //  portjfollower           00000100  PORTJ 00000000
-  //  portefollower  00000000           PORTE 00000000
-  //                                    fake_pin_state 0
-  if (loopCounter == 0xFFFF) {
-    if ((portj_follower <= PIN70_PORTBITMAP) || (porte_follower >= PIN75_PORTBITMAP)) {
+  //  Starting positions:
+  //  portjfollower           00000100  PORTJ 00000000  // Keep track of port j
+  //  portefollower  00000000           PORTE 00000000  // Keep track of port e
+  //  current_pin_state                 0               // track the state of the current pin
+  if (loopCounter == 0x3FFF) {
+    if (portj_follower <= PIN74_PORTBITMAP) {
       EI_printPSTR("Interrupt fake pins...");
-      if (portj_follower <= PIN70_PORTBITMAP) {
-        if (fake_pin_state) {
-          PORTJ ^= portj_follower; // turn it off
-          portj_follower <<= 1;
-          fake_pin_state = 0;
-        } else { 
-          PORTJ ^= portj_follower; // turn it on
-          fake_pin_state=1;
-        }
-      } else { // if porte_follower >= PIN75_PORTBITMAP
-        if (fake_pin_state) {
-          PORTE ^= porte_follower; // turn it off
-          porte_follower <<= 1;
-          fake_pin_state=0;
-        } else {
-          PORTE ^= porte_follower; // turn it on
-          fake_pin_state=1;
-        }
+      // If the pin is on, turn it off, and go to the next pin
+      if (current_pin_state) {
+        PORTJ ^= portj_follower; // turn it off
+        portj_follower <<= 1;
+        current_pin_state=0;
+      } else { 
+        // if the pin is off, turn it on
+        PORTJ ^= portj_follower; // turn it on
+        current_pin_state=1;
+      }
+      delay(1); // run a few instructions after triggering the interrupt.
+    } else if (porte_follower >= PIN75_PORTBITMAP) {
+      EI_printPSTR("Interrupt fake pins...");
+      if (current_pin_state) {
+        PORTE ^= porte_follower; // turn it off
+        porte_follower <<= 1;
+        current_pin_state=0;
+      } else {
+        PORTE ^= porte_follower; // turn it on
+        current_pin_state=1;
       }
       delay(1); // run a few instructions after triggering the interrupt.
     } else {
@@ -195,10 +201,6 @@ void loop() {
     arduinoInterruptedPin=0;
     pinChangeInterruptFlag=0;
     toggleCounter++;
-    if (pin70Flag) {
-      EI_printPSTR("Pin70 interrupt!\n");
-      pin70Flag=0;
-    }
   }
   if (externalInterruptFlag) {
     //EI_printPSTR("External interrupt, pin "); Serial.println(arduinoInterruptedPin);
