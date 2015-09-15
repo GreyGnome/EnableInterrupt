@@ -22,6 +22,7 @@
 #define EnableInterrupt_h
 #include <Arduino.h>
 
+/* (comment) Function Prototypes/*{{{*/
 // *************************************************************************************
 // *************************************************************************************
 // Function Prototypes *****************************************************************
@@ -30,18 +31,18 @@
 // *** These are the only functions the end user (programmer) needs to consider.     ***
 // *** This means you!                                                               ***
 // *************************************************************************************
-// *************************************************************************************
+*//*}}}*/
 
 // Arduino Due (not Duemilanove) macros. Easy-peasy.
-#if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__
+#if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__/*{{{*/
 #ifdef NEEDFORSPEED
 #error Due is already fast; the NEEDFORSPEED definition does not make sense on it.
 #endif
 define enableInterrupt(pin,userFunc,mode) attachInterrupt(pin, userFunc,mode)
-define disableInterrupt(pin) detachInterrupt(pin)
+define disableInterrupt(pin) detachInterrupt(pin)/*}}}*/
 #else
 
-/* 
+/* (comment) Usage:/*{{{*/
  * enableInterrupt- Sets up an interrupt on a selected Arduino pin.
  * or
  * enableInterruptFast- When used with the NEEDFORSPEED macro, sets up an interrupt on a selected Arduino pin.
@@ -83,7 +84,7 @@ define disableInterrupt(pin) detachInterrupt(pin)
  * PINCHANGEINTERRUPT scheme changes nothing. This means you can ignore this whole discussion
  * for ATmega2560- or ATmega32U4-based Arduinos. You can probably safely ignore it for
  * ATmega328-based Arduinos, too.
- */
+ *//*}}}*/
 
 void enableInterrupt(uint8_t interruptDesignator, void (*userFunction)(void), uint8_t mode);
 void disableInterrupt(uint8_t interruptDesignator);
@@ -93,7 +94,6 @@ void bogusFunctionPlaceholder(void);
 // enableInterruptFast(uint8_t interruptDesignator, uint8_t mode);
 #define enableInterruptFast(x, y) enableInterrupt(x, bogusFunctionPlaceholder, y)
 #endif
-
 
 // *************************************************************************************
 // End Function Prototypes *************************************************************
@@ -112,17 +112,18 @@ uint8_t arduinoInterruptedPin=0;
 #define attachPinChangeInterrupt(pin,userFunc,mode)     enableInterrupt(pin, userFunc, mode)
 
 #ifndef LIBCALL_ENABLEINTERRUPT // LIBCALL_ENABLEINTERRUPT ****************************************
-#ifdef NEEDFORSPEED
-void bogusFunctionPlaceholder(void) {
-}
-#include "utility/ei_pindefs_speed.h"
-#endif
 
 // Example: EI_printPSTR("This is a nice long string that takes no static ram");
 #define EI_printPSTR(x) EI_SerialPrint_P(PSTR(x))
 void EI_SerialPrint_P(const char *str) {
   for (uint8_t c; (c = pgm_read_byte(str)); str++) Serial.write(c);
 } 
+
+#ifdef NEEDFORSPEED
+void bogusFunctionPlaceholder(void) {
+}
+#include "utility/ei_pindefs_speed.h"
+#endif
 
 /* Arduino pin to ATmega port translaton is found doing digital_pin_to_port_PGM[] */
 /* Arduino pin to PCMSKx bitmask is found by doing digital_pin_to_bit_mask_PGM[] */
@@ -152,11 +153,10 @@ typedef void (*interruptFunctionType)(void);
 /* UNO SERIES *************************************************************************/
 /* UNO SERIES *************************************************************************/
 #if defined __AVR_ATmega168__ || defined __AVR_ATmega168A__ || defined __AVR_ATmega168P__ || \
-  __AVR_ATmega168PA__ || \
-  __AVR_ATmega328__ || __AVR_ATmega328P__
-
+  defined __AVR_ATmega168PA__ || defined __AVR_ATmega328__ || defined __AVR_ATmega328P__
 #define ARDUINO_328
-#if defined EI_NOTPINCHANGE
+
+#if defined EI_NOTPINCHANGE /*{{{*/
 #ifndef EI_NOTPORTB
 #define EI_NOTPORTB
 #endif
@@ -169,6 +169,7 @@ typedef void (*interruptFunctionType)(void);
 #endif // defined EI_NOTPINCHANGE
 
 #ifndef NEEDFORSPEED
+
 #define ARDUINO_PIN_B0 8
 #define ARDUINO_PIN_B1 9
 #define ARDUINO_PIN_B2 10
@@ -292,7 +293,7 @@ static volatile uint8_t portSnapshotD;
 // the PCINT?_vect's are defined in the avr.h files, like iom328p.h
 #define PORTB_VECT PCINT0_vect
 #define PORTC_VECT PCINT1_vect
-#define PORTD_VECT PCINT2_vect
+#define PORTD_VECT PCINT2_vect/*}}}*/
 
 /* MEGA SERIES ************************************************************************/
 /* MEGA SERIES ************************************************************************/
@@ -300,7 +301,8 @@ static volatile uint8_t portSnapshotD;
 #elif defined __AVR_ATmega640__ || defined __AVR_ATmega2560__ || defined __AVR_ATmega1280__ || \
   defined __AVR_ATmega1281__ || defined __AVR_ATmega2561__
 #define ARDUINO_MEGA
-#if defined EI_NOTPINCHANGE
+
+#if defined EI_NOTPINCHANGE/*{{{*/
 #ifndef EI_NOTPORTB
 #define EI_NOTPORTB
 #endif
@@ -450,6 +452,12 @@ struct functionPointersPortB {
 typedef struct functionPointersPortB functionPointersPortB;
 
 functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+
+volatile uint8_t risingPinsPORTB=0;
+volatile uint8_t fallingPinsPORTB=0;
+
+// for the saved state of the ports
+static volatile uint8_t portSnapshotB;
 #endif
 
 #ifndef EI_NOTPORTJ
@@ -513,13 +521,15 @@ static volatile uint8_t portSnapshotK;
 #define PORTB_VECT PCINT0_vect
 #define PORTJ_VECT PCINT1_vect
 #define PORTK_VECT PCINT2_vect
+/*}}}*/
 
 /* LEONARDO ***************************************************************************/
 /* LEONARDO ***************************************************************************/
 /* LEONARDO ***************************************************************************/
 #elif defined __AVR_ATmega32U4__ || defined __AVR_ATmega16U4__
 #define ARDUINO_LEONARDO
-#if defined EI_NOTPINCHANGE
+
+#if defined EI_NOTPINCHANGE/*{{{*/
 #ifndef EI_NOTPORTB
 #define EI_NOTPORTB
 #endif
@@ -602,13 +612,15 @@ volatile uint8_t fallingPinsPORTB=0;
 static volatile uint8_t portSnapshotB;
 #endif
 #define PORTB_VECT PCINT0_vect
+/*}}}*/
 
 /* 644/1284 ***************************************************************************/
 /* 644/1284 ***************************************************************************/
 /* 644/1284 ***************************************************************************/
 #elif defined __AVR_ATmega1284P__ || defined __AVR_ATmega1284__ || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__)
 #define MIGHTY1284
-#if defined EI_NOTPINCHANGE
+
+#if defined EI_NOTPINCHANGE/*{{{*/
 #ifndef EI_NOTPORTA
 #define EI_NOTPORTA
 #endif
@@ -738,13 +750,15 @@ functionPointersPortD portDFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NUL
 #define PORTB_VECT PCINT1_vect
 #define PORTC_VECT PCINT2_vect
 #define PORTD_VECT PCINT3_vect
+/*}}}*/
 
 /* 24/44/84 ***************************************************************************/
 /* 24/44/84 ***************************************************************************/
 /* 24/44/84 ***************************************************************************/
 #elif defined __AVR_ATtiny24__  || defined __AVR_ATtiny24A__ || defined __AVR_ATtiny44__ || defined __AVR_ATtiny44A__ || defined __AVR_ATtiny84__ || defined  __AVR_ATtiny84A_
 #define EI_ATTINY24
-#if defined EI_NOTPINCHANGE
+
+#if defined EI_NOTPINCHANGE/*{{{*/
 #ifndef EI_NOTPORTA
 #define EI_NOTPORTA
 #endif
@@ -758,6 +772,7 @@ functionPointersPortD portDFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NUL
 #endif
 
 #ifndef NEEDFORSPEED
+
 #define ARDUINO_PIN_B3 11
 #define ARDUINO_PIN_B2 8
 #define ARDUINO_PIN_B1 9
@@ -806,12 +821,6 @@ typedef struct functionPointersPortA functionPointersPortA;
 
 functionPointersPortA portAFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
-// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
-// we have to know how we were defined.
-volatile uint8_t risingPinsPORTA=0;
-volatile uint8_t fallingPinsPORTA=0;
-// for the saved state of the ports
-static volatile uint8_t portSnapshotA;
 #endif // ifndef EI_NOTPORTA
 #ifndef EI_NOTPORTB
 struct functionPointersPortB {
@@ -823,23 +832,35 @@ struct functionPointersPortB {
 typedef struct functionPointersPortB functionPointersPortB;
 
 functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL };
-
-// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
-// we have to know how the ports were defined.
-volatile uint8_t risingPinsPORTB=0;
-volatile uint8_t fallingPinsPORTB=0;
-
-// for the saved state of the ports
-static volatile uint8_t portSnapshotB;
 #endif // ifndef EI_NOTPORTB
 #endif // NEEDFORSPEED
 
-#define PORTA_VECT PCINT0_vect
-#define PORTB_VECT PCINT1_vect
+// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
+// we have to know how we were defined.
+#ifndef EI_PORTA
+volatile uint8_t risingPinsPORTA=0;
+volatile uint8_t fallingPinsPORTA=0;
+// for the saved state of the ports
+static volatile uint8_t portSnapshotA;
+#endif
 
+#ifndef EI_NOTPORTB
+volatile uint8_t risingPinsPORTB=0;
+volatile uint8_t fallingPinsPORTB=0;
+// for the saved state of the ports
+static volatile uint8_t portSnapshotB;
+#endif
+
+#define PORTA_VECT PCINT0_vect
+#define PORTB_VECT PCINT1_vect/*}}}*/
+
+/* 25/45/85 ***************************************************************************/
+/* 25/45/85 ***************************************************************************/
+/* 25/45/85 ***************************************************************************/
 #elif defined __AVR_ATtiny25__ || defined  __AVR_ATtiny45__ || defined  __AVR_ATtiny85__
 #define EI_ATTINY25
-#if defined EI_NOTPINCHANGE
+
+#if defined EI_NOTPINCHANGE/*{{{*/
 #ifndef EI_NOTPORTB
 #define EI_NOTPORTB
 #endif
@@ -854,6 +875,9 @@ volatile uint8_t fallingPinsPORTD=0;
 static volatile uint8_t portSnapshotD;
 #endif
 
+#ifndef INPUT_PULLUP
+#define INPUT_PULLUP 0x2
+#endif
 // the vectors (eg, "PCINT0_vect") are defined in the avr.h files, like iom1284p.h
 #define PORTA_VECT PCINT0_vect
 #define PORTB_VECT PCINT1_vect
@@ -906,6 +930,8 @@ static volatile uint8_t portSnapshotB;
 
 #endif // NEEDFORSPEED
 
+#endif // defined EI_NOTPINCHANGE/*}}}*/
+
 #endif // #if defined __AVR_ATmega168__ || defined __AVR_ATmega168A__ ... (etc.) ...
 
 // ===========================================================================================
@@ -937,10 +963,10 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
   arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
 
   // *************************************************************************************
-  // *************************************************************************************
   // Pin Change Interrupts
   // *************************************************************************************
-  // *************************************************************************************
+
+/*{{{*/
 #if defined ARDUINO_328
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
 #elif defined MIGHTY1284
@@ -1029,6 +1055,8 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     }
 
 #ifndef NEEDFORSPEED
+    // When an interrupted pin is found, this will be used to choose the function.
+    // This is used in the utility/<#included files>, below.
     portBitNumber=pgm_read_byte(&digital_pin_to_port_bit_number_PGM[arduinoPin]);
 #endif
 
@@ -1058,14 +1086,13 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 
     // With the exception of the Global Interrupt Enable bit in SREG, interrupts on the arduinoPin
     // are now ready. GIE may have already been set on a previous enable, so it's important
-    // to take note of the order in which things were done, above.
+    // to take note of the order in which things were done, above./*}}}*/
 
-  // *************************************************************************************
   // *************************************************************************************
   // External Interrupts
   // *************************************************************************************
-  // *************************************************************************************
-  } else {
+
+  } else {/*{{{*/
 #ifndef EI_NOTEXTERNAL
     uint8_t origSREG; // to save for interrupts
     origSREG = SREG;
@@ -1090,6 +1117,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
   }
   SREG |= (1 << SREG_I); // GIE bit in SREG. From /usr/avr/include/avr/common.h
 }
+/*}}}*/
 
 // ===========================================================================================
 // ===========================================================================================
@@ -1106,17 +1134,31 @@ void disableInterrupt (uint8_t interruptDesignator) {
   origSREG = SREG;
   cli();
   arduinoPin=interruptDesignator & ~PINCHANGEINTERRUPT;
+
+/*{{{*/
 #if defined ARDUINO_328
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
 #elif defined MIGHTY1284
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 10 &&
                                                       arduinoPin != 11) ) {
+#elif defined ATtiny24
+  if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 8) ) {
 #elif defined ARDUINO_LEONARDO
   if ( (arduinoPin > 3) && (arduinoPin != 7) ) {
 #endif
 #if defined ARDUINO_328 || defined MIGHTY1284 || defined ARDUINO_LEONARDO
     portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
     portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
+#elif defined ATtiny24
+    // This is not a true Arduino pin... it's pin 4 on the chip, which is RESET.
+    // I could imagine that one would want to use that pin for something other than RESET.
+    if (arduinoPin == 11) {
+      portMask=_BV(3);
+      portNumber=PB;
+    } else {
+      portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
+      portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
+    }
 #elif defined ARDUINO_MEGA
   // NOTE: PJ2-6 and PE6 & 7 are not exposed on the Arduino, but they are supported here
   // for software interrupts and support of non-Arduino platforms which expose more pins.
@@ -1144,6 +1186,8 @@ void disableInterrupt (uint8_t interruptDesignator) {
 #include "utility/ei_PinChange2560.h"
 #elif defined LEONARDO
 #include "utility/ei_PinChangeLeonardo.h"
+#elif defined ATtiny24
+#include "utility/ei_PinChangeTiny24.h"
 #endif
 #undef EI_SECTION_DISABLEPINCHANGE
   } else {
@@ -1157,11 +1201,14 @@ void disableInterrupt (uint8_t interruptDesignator) {
 #include "utility/ei_External2560.h"
 #elif defined ARDUINO_LEONARDO
 #include "utility/ei_ExternalLeonardo.h"
+#elif defined ATtiny24
+#include "utility/ei_PinChangeTiny24.h"
 #endif
 #undef EI_SECTION_DISABLEEXTERNAL
 #endif
   }
-  SREG = origSREG;
+  SREG = origSREG;/*}}}*/
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1170,9 +1217,12 @@ void disableInterrupt (uint8_t interruptDesignator) {
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 
+// *************************************************************************************
+// External Interrupts
+// *************************************************************************************
 #ifndef EI_NOTEXTERNAL
 #ifndef EI_NOTINT0
-ISR(INT0_vect) {
+ISR(INT0_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
 #if defined MIGHTY1284
@@ -1206,11 +1256,11 @@ ISR(INT0_vect) {
 #endif
 #endif
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTINT0
 
 #ifndef EI_NOTINT1
-ISR(INT1_vect) {
+ISR(INT1_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
 #if defined MIGHTY1284
@@ -1244,12 +1294,12 @@ ISR(INT1_vect) {
 #endif
 #endif
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTINT1
 
 #if defined ARDUINO_MEGA || defined ARDUINO_LEONARDO || defined MIGHTY1284
 #ifndef EI_NOTINT2
-ISR(INT2_vect) {
+ISR(INT2_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
 #if defined MIGHTY1284
@@ -1275,13 +1325,13 @@ ISR(INT2_vect) {
 #endif
 #endif
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTINT2
 #endif // ARDUINO_MEGA || ARDUINO_LEONARDO || MIGHTY1284
 
 #if defined ARDUINO_MEGA || defined ARDUINO_LEONARDO
 #ifndef EI_NOTINT3
-ISR(INT3_vect) {
+ISR(INT3_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
 #if defined ARDUINO_MEGA
@@ -1302,13 +1352,13 @@ ISR(INT3_vect) {
 #endif
 #endif
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTINT3
 #endif // ARDUINO_MEGA || ARDUINO_LEONARDO
 
 #if defined ARDUINO_MEGA
 #ifndef EI_NOTINT4
-ISR(INT4_vect) {
+ISR(INT4_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
   arduinoInterruptedPin=ARDUINO_PIN_E4;
@@ -1319,11 +1369,11 @@ ISR(INT4_vect) {
   INTERRUPT_FLAG_PIN2++;
 #endif
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTINT4
 
 #ifndef EI_NOTINT5
-ISR(INT5_vect) {
+ISR(INT5_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
   arduinoInterruptedPin=ARDUINO_PIN_E5;
@@ -1334,11 +1384,11 @@ ISR(INT5_vect) {
   INTERRUPT_FLAG_PIN3++;
 #endif
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTINT5
 
 #ifndef EI_NOTINT6
-ISR(INT6_vect) {
+ISR(INT6_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
   arduinoInterruptedPin=ARDUINO_PIN_E6;
@@ -1349,11 +1399,11 @@ ISR(INT6_vect) {
   INTERRUPT_FLAG_PIN75++;
 #endif
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTINT6
 
 #ifndef EI_NOTINT7
-ISR(INT7_vect) {
+ISR(INT7_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
   arduinoInterruptedPin=ARDUINO_PIN_E7;
@@ -1364,13 +1414,13 @@ ISR(INT7_vect) {
   INTERRUPT_FLAG_PIN76++;
 #endif
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTINT7
 #endif // defined ARDUINO_MEGA
 
 #if defined ARDUINO_LEONARDO
 #ifndef EI_NOTINT6
-ISR(INT6_vect) {
+ISR(INT6_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
   arduinoInterruptedPin=ARDUINO_PIN_E6;
@@ -1381,14 +1431,19 @@ ISR(INT6_vect) {
   INTERRUPT_FLAG_PIN7++;
 #endif
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTINT6
 #endif // defined ARDUINO_LEONARDO
 #endif // EI_NOTEXTERNAL
+// *************************************************************************************
+// *************************************************************************************
 
-#if defined MIGHTY1284
+// *************************************************************************************
+// Pin Change Interrupts
+// *************************************************************************************
+#if defined MIGHTY1284 || defined EI_ATTINY24
 #ifndef EI_NOTPORTA
-ISR(PORTA_VECT) {
+ISR(PORTA_VECT) {/*{{{*/
   uint8_t current;
   uint8_t interruptMask;
   uint8_t changedPins;
@@ -1435,12 +1490,12 @@ ISR(PORTA_VECT) {
 #endif // NEEDFORSPEED
   // FOR MEASUREMENT ONLY
   // exitPORTBISR: PORTC &= ~(1 << PC5); // SIGNAL THAT WE ARE LEAVING THE INTERRUPT
-}
+}/*}}}*/
 #endif // EI_NOTPORTA
 #endif // MIGHTY1284
 
 #ifndef EI_NOTPORTB
-ISR(PORTB_VECT) {
+ISR(PORTB_VECT) {/*{{{*/
   uint8_t current;
   uint8_t interruptMask;
   uint8_t changedPins;
@@ -1472,9 +1527,11 @@ ISR(PORTB_VECT) {
   if (interruptMask & _BV(1)) { arduinoInterruptedPin=ARDUINO_PIN_B1; portBFunctions.pinOne(); }
   if (interruptMask & _BV(2)) { arduinoInterruptedPin=ARDUINO_PIN_B2; portBFunctions.pinTwo(); }
   if (interruptMask & _BV(3)) { arduinoInterruptedPin=ARDUINO_PIN_B3; portBFunctions.pinThree(); }
+#if ! (defined EI_ATTINY24)
   if (interruptMask & _BV(4)) { arduinoInterruptedPin=ARDUINO_PIN_B4; portBFunctions.pinFour(); }
   if (interruptMask & _BV(5)) { arduinoInterruptedPin=ARDUINO_PIN_B5; portBFunctions.pinFive(); }
-#ifndef ARDUINO_328
+#endif
+#if ! (defined ARDUINO_328) && ! (defined EI_ATTINY24)
   if (interruptMask & _BV(6)) { arduinoInterruptedPin=ARDUINO_PIN_B6; portBFunctions.pinSix(); }
   if (interruptMask & _BV(7)) { arduinoInterruptedPin=ARDUINO_PIN_B7; portBFunctions.pinSeven(); }
 #endif
@@ -1483,9 +1540,11 @@ ISR(PORTB_VECT) {
   if (interruptMask & _BV(1)) portBFunctions.pinOne();
   if (interruptMask & _BV(2)) portBFunctions.pinTwo();
   if (interruptMask & _BV(3)) portBFunctions.pinThree();
+#if ! (defined EI_ATTINY24)
   if (interruptMask & _BV(4)) portBFunctions.pinFour();
   if (interruptMask & _BV(5)) portBFunctions.pinFive();
-#ifndef ARDUINO_328
+#endif
+#if ! (defined ARDUINO_328) && ! (defined EI_ATTINY24)
   if (interruptMask & _BV(6)) portBFunctions.pinSix();
   if (interruptMask & _BV(7)) portBFunctions.pinSeven();
 #endif
@@ -1494,12 +1553,12 @@ ISR(PORTB_VECT) {
   // FOR MEASUREMENT ONLY
   // exitPORTBISR: PORTC &= ~(1 << PC5); // SIGNAL THAT WE ARE LEAVING THE INTERRUPT
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTPORTB
 
 #if defined ARDUINO_328 || defined MIGHTY1284
 #ifndef EI_NOTPORTC
-ISR(PORTC_VECT) {
+ISR(PORTC_VECT) {/*{{{*/
   uint8_t current;
   uint8_t interruptMask;
   uint8_t changedPins;
@@ -1547,11 +1606,11 @@ ISR(PORTC_VECT) {
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   exitPORTCISR: return;
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTPORTC
 
 #ifndef EI_NOTPORTD
-ISR(PORTD_VECT) {
+ISR(PORTD_VECT) {/*{{{*/
   uint8_t current;
   uint8_t interruptMask;
   uint8_t changedPins;
@@ -1596,12 +1655,12 @@ ISR(PORTD_VECT) {
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   exitPORTDISR: return;
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTPORTD
 
 #elif defined ARDUINO_MEGA
 #ifndef EI_NOTPORTJ
-ISR(PORTJ_VECT) {
+ISR(PORTJ_VECT) {/*{{{*/
   uint8_t current;
   uint8_t interruptMask;
   uint8_t changedPins;
@@ -1643,11 +1702,11 @@ ISR(PORTJ_VECT) {
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   exitPORTJISR: return;
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTPORTJ
 
 #ifndef EI_NOTPORTK
-ISR(PORTK_VECT) {
+ISR(PORTK_VECT) {/*{{{*/
   uint8_t current;
   uint8_t interruptMask;
   uint8_t changedPins;
@@ -1691,11 +1750,13 @@ ISR(PORTK_VECT) {
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   exitPORTKISR: return;
 #endif // NEEDFORSPEED
-}
+}/*}}}*/
 #endif // EI_NOTPORTK
 #elif defined ARDUINO_LEONARDO
   // No other Pin Change Interrupt ports than B on Leonardo
 #endif // defined ARDUINO_328
+// *************************************************************************************
+// *************************************************************************************
 
 #endif // #ifndef LIBCALL_ENABLEINTERRUPT *********************************************************
 #endif // #if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__
