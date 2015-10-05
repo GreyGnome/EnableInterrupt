@@ -1,3 +1,8 @@
+Tue Sep 29 06:34:58 CDT 2015
+Version 0.9.0. ATtiny support has been added! Support files come from https://github.com/damellis/attiny .
+Chips supported include ATtiny44/84 and ATtiny 45/85. As always, bug reports are welcome at
+https://github.com/GreyGnome/EnableInterrupt/issues .
+
 Thu Aug 27 22:24:39 CDT 2015
 Version 0.8.2. Includes bugfixes for issues raised by engwan, MakkyB, and juanricos; HiSpeed mode was not working but now it is. I also received some nice bug reports and testing from TomWS1. Finally, the library.properties file was out of date.
 

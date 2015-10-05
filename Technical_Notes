@@ -497,9 +497,11 @@ PCMSK0:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is e
 
 =====================================================================================================
 =====================================================================================================
-ATtiny 24/44/84 support
+ATtiny 24/44/84 support ATTINY24
 =====================================================================================================
 =====================================================================================================
+Only the 44/84 are supported.
+
 Support for this chip is based on David Mellis' work at https://github.com/damellis/attiny
 This is an ATmega that comes in a 14-pin configuration. There are two ports, A and B. PCint pins are
 configured on both ports. The following is the pinout, and shows the Arduino pin numbering scheme: 
@@ -521,7 +523,7 @@ __AVR_ATtiny84__  __AVR_ATtiny84A__
 
 The following External Interrupts are available on the ATtiny24/44/84:
 Arduino(tiny)
-  Pin*  PORT INT  ATmega644/1284 pin
+  Pin*  PORT INT  ATtiny44/84 pin
    8    PB2   0      5
 
 The following Pin Change Interrupts are available on the ATmega24/44/84:
@@ -582,9 +584,10 @@ PCMSK0:7   6   5   4   3   2   1   0  (Selects whether pin change interrupt is e
 
 =====================================================================================================
 =====================================================================================================
-ATtiny 25/45/85 support
+ATtiny 25/45/85 support ATTINY25
 =====================================================================================================
 =====================================================================================================
+Only the ATtiny 45/85 are supported.
 Support for this chip is based on David Mellis' work at https://github.com/damellis/attiny
 This is an ATmega that comes in an 8-pin configuration. There is a single port, B.
 
@@ -594,7 +597,7 @@ __AVR_ATtiny25__  __AVR_ATtiny45__  __AVR_ATtiny85__
 The following is the pinout, and shows the Arduino pin numbering scheme:
 // ATtiny25/45/85 / ARDUINO
 //
-//              +-\/-+
+//             +-\/-+
 // (D 5) PB5  1|    |8  Vcc
 // (D 3) PB3  2|    |7  PB2 (D 2) (INT0)
 // (D 4) PB4  3|    |6  PB1 (D 1)
