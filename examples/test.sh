@@ -12,6 +12,7 @@ InterruptedPin328
 Mighty1284p
 OOSimple
 Simple
+SimpleWithLibrary
 "
 
 for example in $examples; do
