@@ -599,9 +599,9 @@ The following is the pinout, and shows the Arduino pin numbering scheme:
 //
 //             +-\/-+
 // (D 5) PB5  1|    |8  Vcc
-// (D 3) PB3  2|    |7  PB2 (D 2) (INT0)
-// (D 4) PB4  3|    |6  PB1 (D 1)
-//       GND  4|    |5  PB0 (D 0)
+// (D 3) PB3  2|    |7  PB2 (D 2) (INT0)   (== Gemma B2)
+// (D 4) PB4  3|    |6  PB1 (D 1)          (== Gemma B1)
+//       GND  4|    |5  PB0 (D 0)          (== Gemma B0)
 //             +----+
 
 The following External Interrupts are available on the ATtiny25/45/85:
