@@ -12,7 +12,7 @@
 // 1. You must be using a fairly recent version of the Arduino IDE software on your PC/Mac,
 // that is, version 1.0.1 or later. Check Help->About Arduino in the IDE.
 
-// 2. Wire a simple switch to any Analog or Digital pin (known as ARDUINOPIN, defined below)
+// 2. Wire a simple switch to an Analog or Digital pin (pin 8 in the example below)
 // that supports interrupts. See https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#Summary
 // Attach the other end to a GND pin. A "single pole single throw momentary contact normally
 // open" // pushbutton switch is best for the most interrupting fun.
