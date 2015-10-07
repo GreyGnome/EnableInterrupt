@@ -6,6 +6,7 @@
 	- AllPins328
 	- HiSpeedAllPins2560
 	- AllPins2560
+	- ATtinyBlink
 - README.md up-to-date?
 - extras/RELEASE_NOTES consistent with README.md?
 - library.properties current?
