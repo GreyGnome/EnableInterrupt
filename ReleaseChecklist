@@ -1,11 +1,11 @@
+- examples/test.sh compiles
 - Tests:
 	- Simple
 	- HiSpeed
 	- HiSpeedAllPins328
-	- HiSpeedAllPins2560
 	- AllPins328
+	- HiSpeedAllPins2560
 	- AllPins2560
-	- Mighty1284p (compile only)
 - README.md up-to-date?
 - extras/RELEASE_NOTES consistent with README.md?
 - library.properties current?
