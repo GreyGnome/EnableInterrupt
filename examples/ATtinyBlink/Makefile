@@ -36,15 +36,15 @@
 # support the smaller 'tinies).
 ARDUINO_DIR = /home/schwager/bin/arduino-1.6.4
 # 14-pin, ATtiny44/84
-BOARD_SUB = attiny44
-CFLAGS_STD = -g -I /home/schwager/sketchbook/hardware/attiny/variants/tiny14
-CXXFLAGS_STD = -g -I /home/schwager/sketchbook/hardware/attiny/variants/tiny14
+#BOARD_SUB = attiny44
+#CFLAGS_STD = -g -I /home/schwager/sketchbook/hardware/attiny/variants/tiny14
+#CXXFLAGS_STD = -g -I /home/schwager/sketchbook/hardware/attiny/variants/tiny14
 #  
 
 # 8-pin, ATtiny45/85
-#BOARD_SUB = attiny45
-#CFLAGS_STD = -g -I /home/schwager/sketchbook/hardware/attiny/variants/tiny8
-#CXXFLAGS_STD = -g -I /home/schwager/sketchbook/hardware/attiny/variants/tiny8
+BOARD_SUB = attiny85
+CFLAGS_STD = -g -I /home/schwager/sketchbook/hardware/attiny/variants/tiny8
+CXXFLAGS_STD = -g -I /home/schwager/sketchbook/hardware/attiny/variants/tiny8
 
 ISP_PROG = usbasp
 BOARD_TAG = attiny
