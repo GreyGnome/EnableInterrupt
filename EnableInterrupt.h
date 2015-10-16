@@ -33,10 +33,12 @@
 // *************************************************************************************
 *//*}}}*/
 
-// Arduino Due (not Duemilanove) macros. Easy-peasy.
-#if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__/*{{{*/
+// Arduino Due (not Duemilanove) and Zero macros. Easy-peasy.
+// Zero uses the __SAMD21G18A__ processor macro (2015-10-13) but we will use this handy macro, to
+// avoid breaking the library over tiny changes.
+#if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__ || defined ARDUINO_SAMD_ZERO/*{{{*/
 #ifdef NEEDFORSPEED
-#error Due is already fast; the NEEDFORSPEED definition does not make sense on it.
+#error Due and Zero are already fast; the NEEDFORSPEED definition does not make sense on it.
 #endif
 #define enableInterrupt(pin,userFunc,mode) attachInterrupt(pin, userFunc,mode)
 #define disableInterrupt(pin) detachInterrupt(pin)/*}}}*/

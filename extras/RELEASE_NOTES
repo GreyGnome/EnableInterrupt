@@ -1,3 +1,6 @@
+Fri Oct 16 07:58:45 CDT 2015
+Version 0.9.1. Bug fixes to examples/OOSimple (thanks RobertClemenzi!). Arduino Zero support added (this is a trivial preprocessor macro check; see the Usage wiki page). Wiki pages updated, especially the FAQ.
+
 Tue Sep 29 06:34:58 CDT 2015
 Version 0.9.0. ATtiny support has been added! Support files come from https://github.com/damellis/attiny .
 Chips supported include ATtiny44/84 and ATtiny 45/85 (including Gemma). As always, bug reports are

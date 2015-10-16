@@ -1,4 +1,5 @@
 - examples/test.sh compiles
+- Use Arduino IDE, compile "SimpleDueZero"
 - Tests:
 	- Simple
 	- HiSpeed
@@ -10,8 +11,8 @@
 - README.md up-to-date?
 - extras/RELEASE_NOTES consistent with README.md?
 - library.properties current?
-- Git Tagged?
-- Zip file created?
+- Git Tagged?  git tag -a 2.31 -m 'my version 1.4'; git push origin 2.31 OR git push origin --tags
+- Zip file created?  ~/bin/zipei 0.9.0
 - BinTray:
 	- Upload Zip file
 	- Update the downloads area

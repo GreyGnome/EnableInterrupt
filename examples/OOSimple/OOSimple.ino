@@ -31,25 +31,49 @@ uint8_t Simple::getSimpleVariable() {
   return _sv;
 }
 
-extern "C" void *createSimple() {
+#ifdef __cplusplus
+extern "C" {
+#endif
+void *createSimple() {
   return new Simple();
 }
+#ifdef __cplusplus
+}
+#endif
 
-extern "C" uint8_t getSimpleVariable(void *anObject) {
+#ifdef __cplusplus
+extern "C" {
+#endif
+uint8_t getSimpleVariable(void *anObject) {
   return static_cast<Simple*>(anObject)->getSimpleVariable();
 }
+#ifdef __cplusplus
+}
+#endif
 
-extern "C" void updateSimpleVariable(void *anObject) {
+#ifdef __cplusplus
+extern "C" {
+#endif
+void updateSimpleVariable(void *anObject) {
   static_cast<Simple*>(anObject)->updateSimpleVariable();
 }
+#ifdef __cplusplus
+}
+#endif
 
 void *simpleObject0; // this is numbered 0. You can create more, for example void *simpleObject1
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 // If you create more objects, you need to create more interruptFunctionN()'s
 // that update their simple variables, for example interruptFunction1() .
-extern "C" void interruptFunction0() {
+void interruptFunction0() {
   updateSimpleVariable(simpleObject0);
 }
+#ifdef __cplusplus
+}
+#endif
 
 // Attach the interrupt in setup()
 void setup() {

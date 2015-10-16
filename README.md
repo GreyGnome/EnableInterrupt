@@ -8,15 +8,12 @@ Functions:
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
-*_What's New?_ Tue Sep 29 06:29:38 CDT 2015
-Version 0.9.0 of the library has been released. This release adds ATtiny support.
-Chips ATtiny44/84/45/85 are supported; DA Mellis' work at https://github.com/damellis/attiny
-was used for testing but the Gemma should work too. See the Release Notes in the extras
-directory for details.
+*_What's New?_ Fri Oct 16 07:52:45 CDT 2015
+Version 0.9.1 of the library has been released. Arduino Zero support added. Bug fixes in examples/OOSimple (thanks RobertClemenzi). And don't forget about the ATtiny support added in 0.9.0! See the Release Notes in the extras directory for details.
 
 The EnableInterrupt library is an Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
-boards, like the mini), Due, Leonardo (and other ATmega32u4-based boards, like the
+boards, like the mini), Due, Zero, Leonardo (and other ATmega32u4-based boards, like the
 Micro), the Mega2560 (and other ATmega2560-based boards, like the MegaADK),
 and for non-Arduino chips: the 644/1284p (using the Mighty1284 for support files
 and pin numbering), ATtiny 44/84, and ATtiny 45/85 (using DA Mellis' support files).
