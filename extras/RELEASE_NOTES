@@ -1,3 +1,7 @@
+Sat Oct 17 12:03:03 CDT 2015
+Version 0.9.2. I discovered a rather pernicious bug, wherein the library was setting the global interrupt enable bit. This could cause a serious and difficult-to-debug race condition, as it is not the job of the library to manage that bit. The chips come with interrupts enabled so exi
+sting code should not be affected. My thanks to http://gammon.com.au/interrupts (the 'How are interrupts queued?' section).
+
 Fri Oct 16 07:58:45 CDT 2015
 Version 0.9.1. Bug fixes to examples/OOSimple (thanks RobertClemenzi!). Arduino Zero support added (this is a trivial preprocessor macro check; see the Usage wiki page). Wiki pages updated, especially the FAQ.
 
