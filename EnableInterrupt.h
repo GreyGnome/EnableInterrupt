@@ -1155,7 +1155,6 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
     SREG=origSREG;
 #endif
   }
-  SREG |= (1 << SREG_I); // GIE bit in SREG. From /usr/avr/include/avr/common.h
 }
 /*}}}*/
 
