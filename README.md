@@ -9,8 +9,9 @@ enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
 
-*_What's New?_ Sat Oct 17 11:56:01 CDT 2015
-Version 0.9.2 of the library has been released. I discovered a rather pernicious bug, wherein the library was setting the global interrupt enable bit. This could cause a serious and difficult-to-debug race condition, as it is not the job of the library to manage that bit. The chips come with interrupts enabled so existing code should not be affected. My thanks to http://gammon.com.au/interrupts (the 'How are interrupts queued?' section).
+*_What's New?_ Mon Oct 19 07:45:08 CDT 2015 Version 0.9.3 of the library has been released. Thanks to RobertClemenzi, who pointed out that "Useless.cpp" is not included with the distribution zip file.
+
+IMPORTANT NOTE: In 0.9.2 I discovered a rather pernicious bug, wherein the library was setting the global interrupt enable bit. This could cause a serious and difficult-to-debug race condition, as it is not the job of the library to manage that bit. The chips come with interrupts enabled so existing code should not be affected, but if you were relying on that behavior note that it has changed. My thanks to http://gammon.com.au/interrupts (the 'How are interrupts queued?' section).
 
 The EnableInterrupt library is an Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
