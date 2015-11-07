@@ -101,10 +101,6 @@ void bogusFunctionPlaceholder(void);
 // End Function Prototypes *************************************************************
 // *************************************************************************************
 
-#ifdef EI_ARDUINO_INTERRUPTED_PIN
-uint8_t arduinoInterruptedPin=0;
-#endif
-
 #undef PINCHANGEINTERRUPT
 #define PINCHANGEINTERRUPT 0x80
 
@@ -114,6 +110,11 @@ uint8_t arduinoInterruptedPin=0;
 #define attachPinChangeInterrupt(pin,userFunc,mode)     enableInterrupt(pin, userFunc, mode)
 
 #ifndef LIBCALL_ENABLEINTERRUPT // LIBCALL_ENABLEINTERRUPT ****************************************
+
+#ifdef EI_ARDUINO_INTERRUPTED_PIN
+volatile uint8_t arduinoInterruptedPin=0;
+#endif
+
 
 #ifdef NEEDFORSPEED
 void bogusFunctionPlaceholder(void) {
@@ -210,7 +211,7 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   2,
   3,
   4,
-  5,
+  5
 };
 
 #if ! defined(EI_NOTEXTERNAL) && ! defined(EI_NOTINT0) && ! defined (EI_NOTINT1)
@@ -433,7 +434,7 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   5, // PJ5  pin: fake73 PJ5
   6, // PJ6  pin: fake74 PJ6
   6, // PE6  pin: fake75 PE6
-  7, // PE7  pin: fake76 PE7
+  7  // PE7  pin: fake76 PE7
 };
 
 #if ! defined(EI_NOTEXTERNAL) && ! defined(EI_NOTINT0) && ! defined(EI_NOTINT1) && ! defined(EI_NOTINT2) && ! defined(EI_NOTINT3) && ! defined(EI_NOTINT4) && ! defined(EI_NOTINT5) && ! defined(EI_NOTINT6) && ! defined(EI_NOTINT7)
@@ -577,7 +578,7 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   3, // PB3  pin: D14 MISO
   1, // PB1  pin: D15 SCK
   2, // PB2  pin: D16 MOSI
-  0, // PB0  pin: D17 SS (RXLED). Available on non-Leonardo 32u4 boards, at least (exposed on the Leonardo??)
+  0  // PB0  pin: D17 SS (RXLED). Available on non-Leonardo 32u4 boards, at least (exposed on the Leonardo??)
 // There are no ports we care about after pin 17.
 };
 
@@ -709,7 +710,7 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   4,
   5,
   6,
-  7,
+  7
 };
 
 
@@ -1827,6 +1828,10 @@ ISR(PORTK_VECT) {/*{{{*/
 // *************************************************************************************
 // *************************************************************************************
 
+#else
+#ifdef EI_ARDUINO_INTERRUPTED_PIN
+extern volatile uint8_t arduinoInterruptedPin;
+#endif
 #endif // #ifndef LIBCALL_ENABLEINTERRUPT *********************************************************
 #endif // #if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__
 #endif // #ifndef EnableInterrupt_h ***************************************************************

@@ -1,3 +1,6 @@
+Fri Nov  6 19:13:20 CST 2015
+Version 0.9.4. Thanks again to RobertClemenzi, who discovered 2 bugs: 1. A spurious comma in some array definitions caused a compiler warning, and more importantly, 2. it was impossible to use arduinoInterruptedPin if this library was used to support other libraries. Fixed them both.
+
 Mon Oct 19 07:45:08 CDT 2015
 Version 0.9.3. Thanks to RobertClemenzi, who pointed out that "Useless.cpp" is not included with the distribution zip file. The only change is to add that file to the distribution zip file.
 

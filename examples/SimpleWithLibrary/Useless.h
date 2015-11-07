@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <Arduino.h>
 
+#define EI_ARDUINO_INTERRUPTED_PIN
 #include <EnableInterrupt.h>
 
 class UselessClass {

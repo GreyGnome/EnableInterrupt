@@ -6,6 +6,7 @@
 // This sketch is only known to compile. It has not been tested functionally.
 
 // See https://github.com/GreyGnome/EnableInterrupt and the README.md for more information.
+#define EI_ARDUINO_INTERRUPTED_PIN
 #include <EnableInterrupt.h>
 #define USELESSPIN 10
 #include "Useless.h"

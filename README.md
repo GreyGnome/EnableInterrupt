@@ -9,7 +9,7 @@ enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 ```
 
-*_What's New?_ Mon Oct 19 07:45:08 CDT 2015 Version 0.9.3 of the library has been released. Thanks to RobertClemenzi, who pointed out that "Useless.cpp" is not included with the distribution zip file.
+*_What's New?_ Fri Nov  6 19:13:20 CST 2015 Version 0.9.4 of the library has been released. Thanks to RobertClemenzi, who pointed out 2 bugs: 1. A spurious comma in some array definitions caused a compiler warning, and 2. More importantly, it was impossible to use arduinoInterruptedPin if this library was used to support other libraries.
 
 IMPORTANT NOTE: In 0.9.2 I discovered a rather pernicious bug, wherein the library was setting the global interrupt enable bit. This could cause a serious and difficult-to-debug race condition, as it is not the job of the library to manage that bit. The chips come with interrupts enabled so existing code should not be affected, but if you were relying on that behavior note that it has changed. My thanks to http://gammon.com.au/interrupts (the 'How are interrupts queued?' section).
 
