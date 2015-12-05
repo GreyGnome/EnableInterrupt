@@ -109,7 +109,13 @@ void bogusFunctionPlaceholder(void);
 #define detachPinChangeInterrupt(pin)                   disableInterrupt(pin)
 #define attachPinChangeInterrupt(pin,userFunc,mode)     enableInterrupt(pin, userFunc, mode)
 
-#ifndef LIBCALL_ENABLEINTERRUPT // LIBCALL_ENABLEINTERRUPT ****************************************
+#ifdef LIBCALL_ENABLEINTERRUPT // LIBCALL_ENABLEINTERRUPT ****************************************
+
+#ifdef EI_ARDUINO_INTERRUPTED_PIN
+extern volatile uint8_t arduinoInterruptedPin;
+#endif
+
+#else
 
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
 volatile uint8_t arduinoInterruptedPin=0;
@@ -1581,7 +1587,7 @@ ISR(PORTB_VECT) {/*{{{*/
   interruptMask = fallingPinsPORTB & ~current;
   interruptMask = interruptMask | tmp;
   interruptMask = changedPins & interruptMask;
-#ifdef MIGHTY1284
+#if (defined MIGHTY1284) || (defined EI_ATTINY24)
   interruptMask = PCMSK1 & interruptMask;
 #else
 #ifdef EI_ATTINY25
@@ -1828,10 +1834,6 @@ ISR(PORTK_VECT) {/*{{{*/
 // *************************************************************************************
 // *************************************************************************************
 
-#else
-#ifdef EI_ARDUINO_INTERRUPTED_PIN
-extern volatile uint8_t arduinoInterruptedPin;
-#endif
 #endif // #ifndef LIBCALL_ENABLEINTERRUPT *********************************************************
 #endif // #if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__
 #endif // #ifndef EnableInterrupt_h ***************************************************************
