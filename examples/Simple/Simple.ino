@@ -3,7 +3,7 @@
 #include <EnableInterrupt.h>
 
 // Modify this at your leisure. Refer to https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#Summary
-#define ARDUINOPIN 10
+#define ARDUINOPIN 7
 
 volatile uint16_t interruptCount=0; // The count will go back to 0 after hitting 65535.
 
@@ -13,7 +13,12 @@ void interruptFunction() {
 
 void setup() {
   Serial.begin(115200);
+#ifdef MIGHTY1284
+  DDRA=0x0;    DDRB=0x0;   DDRC=0x0;   DDRD=0x0; // set all pins as inputs
+  PORTA=0xFF; PORTB=0xFF; PORTC=0xFF; PORTD=0xFF; // turn on all pullup resistors.
+#else
   pinMode(ARDUINOPIN, INPUT_PULLUP);  // See http://arduino.cc/en/Tutorial/DigitalPins
+#endif
   enableInterrupt(ARDUINOPIN, interruptFunction, CHANGE);
 }
 
