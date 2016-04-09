@@ -1,5 +1,6 @@
 {
   "name": "EnableInterrupt",
+  "version": "0.9.4",
   "frameworks": "Arduino",
   "keywords": "interrupt, interrupts, pin, pins",
   "description": "Assign an interrupt to any supported pin on all Arduinos, plus ATtiny 84/85 and ATmega 644/1284.",
