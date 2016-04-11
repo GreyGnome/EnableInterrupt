@@ -18,10 +18,10 @@
   if (interruptMask & _BV(5)) INTERRUPT_FLAG_PIN21++;
 #endif
 #if defined INTERRUPT_FLAG_PIN22
-  if (interruptMask & _BV(5)) INTERRUPT_FLAG_PIN22++;
+  if (interruptMask & _BV(6)) INTERRUPT_FLAG_PIN22++;
 #endif
 #if defined INTERRUPT_FLAG_PIN23
-  if (interruptMask & _BV(5)) INTERRUPT_FLAG_PIN23++;
+  if (interruptMask & _BV(7)) INTERRUPT_FLAG_PIN23++;
 #endif
 #endif
 
