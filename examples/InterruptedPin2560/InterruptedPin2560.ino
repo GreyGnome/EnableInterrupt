@@ -198,6 +198,7 @@ void loop() {
   if (pinChangeInterruptFlag) {
     //EI_printPSTR("Pin Change interrupt, pin "); Serial.println(arduinoInterruptedPin);
     EI_printPSTR("pci: "); Serial.println(pinChangeInterruptFlag);
+    EI_printPSTR(", state: "); Serial.println(arduinoPinState);
     arduinoInterruptedPin=0;
     pinChangeInterruptFlag=0;
     toggleCounter++;
@@ -205,6 +206,7 @@ void loop() {
   if (externalInterruptFlag) {
     //EI_printPSTR("External interrupt, pin "); Serial.println(arduinoInterruptedPin);
     EI_printPSTR("ext: "); Serial.println(externalInterruptFlag);
+    EI_printPSTR(", state: "); Serial.println(arduinoPinState);
     arduinoInterruptedPin=0;
     externalInterruptFlag=0;
     toggleCounter++;

@@ -10,16 +10,19 @@
 
 volatile uint8_t externalInterruptFlag=0;
 volatile uint8_t pinChangeInterruptFlag=0;
+volatile uint8_t pinState=0;
 
 #ifdef ARDUINO_328
 #define PINCOUNT(x) pin ##x ##Count
 
 void interruptFunction () {
   pinChangeInterruptFlag=arduinoInterruptedPin;
+  pinState=arduinoPinState;
 }
 
 void interruptExFunction () {
   externalInterruptFlag=arduinoInterruptedPin;
+  pinState=arduinoPinState;
 }
 
 #define disablePCInterrupt(x) \
@@ -139,11 +142,13 @@ void loop() {
   if (pinChangeInterruptFlag) {
     EI_printPSTR("Pin Change interrupt, pin "); Serial.println(pinChangeInterruptFlag);
     pinChangeInterruptFlag=0;
+    EI_printPSTR(", pin state: "); Serial.println(pinState);
     toggleCounter++;
   }
   if (externalInterruptFlag) {
     EI_printPSTR("External interrupt, pin "); Serial.println(externalInterruptFlag);
     externalInterruptFlag=0;
+    EI_printPSTR(", pin state: "); Serial.println(pinState);
     toggleCounter++;
   }
 }
