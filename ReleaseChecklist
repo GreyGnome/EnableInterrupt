@@ -1,4 +1,5 @@
 - examples/test.sh compiles
+- #pragma message in .h file up-to-date?
 - Use Arduino IDE, compile "SimpleDueZero"
 - Tests:
 	- Simple
