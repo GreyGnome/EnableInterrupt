@@ -1,15 +1,12 @@
 # EnableInterrupt
 New Arduino interrupt library, designed for all versions of the Arduino.
-NEW: ATtiny support! ATtiny 44/84 and 45/85 supported!
 
 Functions:
 
-```
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
-```
 
-*_What's New?_ Fri Nov  6 19:13:20 CST 2015 Version 0.9.4 of the library has been released. Thanks to RobertClemenzi, who pointed out 2 bugs: 1. A spurious comma in some array definitions caused a compiler warning, and 2. More importantly, it was impossible to use arduinoInterruptedPin if this library was used to support other libraries.
+*_What's New?_ Wed Apr 27 18:07:02 CDT 2016 Version 0.9.5 of the library has been released. Added the arduinoPinState variable, which is available when EI_INTERRUPTED_PIN is defined. Added support for platformio http://platformio.org/ (thanks dorkusprime!).
 
 IMPORTANT NOTE: In 0.9.2 I discovered a rather pernicious bug, wherein the library was setting the global interrupt enable bit. This could cause a serious and difficult-to-debug race condition, as it is not the job of the library to manage that bit. The chips come with interrupts enabled so existing code should not be affected, but if you were relying on that behavior note that it has changed. My thanks to http://gammon.com.au/interrupts (the 'How are interrupts queued?' section).
 

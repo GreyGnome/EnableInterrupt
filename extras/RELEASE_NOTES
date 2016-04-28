@@ -1,3 +1,6 @@
+Wed Apr 27 18:07:02 CDT 2016
+Version 0.9.5 of the library has been released. Added the arduinoPinState variable, which is available when EI_INTERRUPTED_PIN is defined. Added support for platformio http://platformio.org/ (thanks dorkusprime!).
+
 Fri Nov  6 19:13:20 CST 2015
 Version 0.9.4. Thanks again to RobertClemenzi, who discovered 2 bugs: 1. A spurious comma in some array definitions caused a compiler warning, and more importantly, 2. it was impossible to use arduinoInterruptedPin if this library was used to support other libraries. Fixed them both.
 

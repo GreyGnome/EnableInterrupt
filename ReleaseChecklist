@@ -11,6 +11,7 @@
 - README.md up-to-date?
 - extras/RELEASE_NOTES consistent with README.md?
 - library.properties current?
+- library.json current?
 - Git Tagged?  git tag -a 2.31 -m 'my version 1.4'; git push origin 2.31 OR git push origin --tags
 - Zip file created?  ~/bin/zipei 0.9.0
 - BinTray:
