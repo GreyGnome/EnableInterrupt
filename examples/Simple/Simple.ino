@@ -3,7 +3,13 @@
 #include <EnableInterrupt.h>
 
 // Modify this at your leisure. Refer to https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#Summary
+#if defined __AVR_ATmega640__ || defined __AVR_ATmega2560__ || defined __AVR_ATmega1280__ || \
+	      defined __AVR_ATmega1281__ || defined __AVR_ATmega2561__
+#define ARDUINOPIN 10
+#else
+// Pin 7 is useful on Arduino Uno, Leonardo, Mighty1284, ATtiny84...
 #define ARDUINOPIN 7
+#endif
 
 volatile uint16_t interruptCount=0; // The count will go back to 0 after hitting 65535.
 
