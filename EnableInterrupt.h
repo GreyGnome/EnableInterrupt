@@ -1656,7 +1656,11 @@ ISR(PORTC_VECT) {/*{{{*/
   interruptMask = fallingPinsPORTC & ~current;
   interruptMask = interruptMask | tmp;
   interruptMask = changedPins & interruptMask;
+#if (defined MIGHTY1284)
+  interruptMask = PCMSK2 & interruptMask;
+#else
   interruptMask = PCMSK1 & interruptMask;
+#endif
 
   portSnapshotC = current;
 #ifdef NEEDFORSPEED
@@ -1708,8 +1712,11 @@ ISR(PORTD_VECT) {/*{{{*/
   interruptMask = fallingPinsPORTD & ~current;
   interruptMask = interruptMask | tmp;
   interruptMask = changedPins & interruptMask;
+#if (defined MIGHTY1284)
+  interruptMask = PCMSK3 & interruptMask;
+#else
   interruptMask = PCMSK2 & interruptMask;
-
+#endif
 
   portSnapshotD = current;
 #ifdef NEEDFORSPEED
