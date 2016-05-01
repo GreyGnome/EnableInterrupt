@@ -19,7 +19,7 @@
 // Many definitions in /usr/avr/include/avr/io.h
 
 #ifndef EnableInterrupt_h
-#pragma message("NOTICE: *** EnableInterrupt library version 0.9.5. This is not a problem. Keep calm, and carry on. ***")
+#pragma message("NOTICE: *** EnableInterrupt library PRIOR TO version 0.9.6. This is not a problem. Keep calm, and carry on. ***")
 #define EnableInterrupt_h
 #include <Arduino.h>
 
@@ -1285,17 +1285,17 @@ ISR(INT0_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
 #if defined MIGHTY1284
-  arduinoInterruptedPin=ARDUINO_PIN_D2;
+  arduinoInterruptedPin=ARDUINO_PIN_D2; arduinoPinState=PIND & _BV(2);
 #elif defined ARDUINO_MEGA
-  arduinoInterruptedPin=ARDUINO_PIN_D0;
+  arduinoInterruptedPin=ARDUINO_PIN_D0; arduinoPinState=PIND & _BV(0);
 #elif defined ARDUINO_LEONARDO
-  arduinoInterruptedPin=ARDUINO_PIN_D0;
+  arduinoInterruptedPin=ARDUINO_PIN_D0; arduinoPinState=PIND & _BV(0);
 #elif defined ARDUINO_328
-  arduinoInterruptedPin=ARDUINO_PIN_D2;
+  arduinoInterruptedPin=ARDUINO_PIN_D2; arduinoPinState=PIND & _BV(2);
 #elif defined EI_ATTINY24
-  arduinoInterruptedPin=ARDUINO_PIN_B2;
+  arduinoInterruptedPin=ARDUINO_PIN_B2; arduinoPinState=PINB & _BV(2);
 #elif defined EI_ATTINY25
-  arduinoInterruptedPin=ARDUINO_PIN_B0;
+  arduinoInterruptedPin=ARDUINO_PIN_B0; arduinoPinState=PINB & _BV(0);
 #endif
 #endif // EI_ARDUINO_INTERRUPTED_PIN
 #if ! defined EI_ATTINY25 && ! defined EI_ATTINY24
@@ -1344,13 +1344,13 @@ ISR(INT1_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
 #if defined MIGHTY1284
-  arduinoInterruptedPin=ARDUINO_PIN_D3;
+  arduinoInterruptedPin=ARDUINO_PIN_D3; arduinoPinState=PIND & _BV(3);
 #elif defined ARDUINO_MEGA
-  arduinoInterruptedPin=ARDUINO_PIN_D1;
+  arduinoInterruptedPin=ARDUINO_PIN_D1; arduinoPinState=PIND & _BV(1);
 #elif defined ARDUINO_LEONARDO
-  arduinoInterruptedPin=ARDUINO_PIN_D1;
+  arduinoInterruptedPin=ARDUINO_PIN_D1; arduinoPinState=PIND & _BV(1);
 #elif defined ARDUINO_328
-  arduinoInterruptedPin=ARDUINO_PIN_D3;
+  arduinoInterruptedPin=ARDUINO_PIN_D3; arduinoPinState=PIND & _BV(3);
 #endif
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   (*functionPointerArrayEXTERNAL[1])();
@@ -1384,11 +1384,11 @@ ISR(INT2_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
 #if defined MIGHTY1284
-  arduinoInterruptedPin=ARDUINO_PIN_B2;
+  arduinoInterruptedPin=ARDUINO_PIN_B2; arduinoPinState=PINB & _BV(2);
 #elif defined ARDUINO_MEGA
-  arduinoInterruptedPin=ARDUINO_PIN_D2;
+  arduinoInterruptedPin=ARDUINO_PIN_D2; arduinoPinState=PIND & _BV(2);
 #elif defined ARDUINO_LEONARDO
-  arduinoInterruptedPin=ARDUINO_PIN_D2;
+  arduinoInterruptedPin=ARDUINO_PIN_D2; arduinoPinState=PIND & _BV(2);
 #endif
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   (*functionPointerArrayEXTERNAL[2])();
@@ -1416,9 +1416,9 @@ ISR(INT3_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
 #if defined ARDUINO_MEGA
-  arduinoInterruptedPin=ARDUINO_PIN_D3;
+  arduinoInterruptedPin=ARDUINO_PIN_D3; arduinoPinState=PIND & _BV(3);
 #elif defined ARDUINO_LEONARDO
-  arduinoInterruptedPin=ARDUINO_PIN_D3;
+  arduinoInterruptedPin=ARDUINO_PIN_D3; arduinoPinState=PIND & _BV(3);
 #endif
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   (*functionPointerArrayEXTERNAL[3])();
@@ -1442,7 +1442,7 @@ ISR(INT3_vect) {/*{{{*/
 ISR(INT4_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
-  arduinoInterruptedPin=ARDUINO_PIN_E4;
+  arduinoInterruptedPin=ARDUINO_PIN_E4; arduinoPinState=PINE & _BV(4);
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   (*functionPointerArrayEXTERNAL[4])();
 #else
@@ -1457,7 +1457,7 @@ ISR(INT4_vect) {/*{{{*/
 ISR(INT5_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
-  arduinoInterruptedPin=ARDUINO_PIN_E5;
+  arduinoInterruptedPin=ARDUINO_PIN_E5; arduinoPinState=PINE & _BV(5);
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   (*functionPointerArrayEXTERNAL[5])();
 #else
@@ -1472,7 +1472,7 @@ ISR(INT5_vect) {/*{{{*/
 ISR(INT6_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
-  arduinoInterruptedPin=ARDUINO_PIN_E6;
+  arduinoInterruptedPin=ARDUINO_PIN_E6; arduinoPinState=PINE & _BV(6);
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   (*functionPointerArrayEXTERNAL[6])();
 #else
@@ -1487,7 +1487,7 @@ ISR(INT6_vect) {/*{{{*/
 ISR(INT7_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
-  arduinoInterruptedPin=ARDUINO_PIN_E7;
+  arduinoInterruptedPin=ARDUINO_PIN_E7; arduinoPinState=PINE & _BV(7);
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   (*functionPointerArrayEXTERNAL[7])();
 #else
@@ -1504,7 +1504,7 @@ ISR(INT7_vect) {/*{{{*/
 ISR(INT6_vect) {/*{{{*/
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
-  arduinoInterruptedPin=ARDUINO_PIN_E6;
+  arduinoInterruptedPin=ARDUINO_PIN_E6; arduinoPinState=PINE & _BV(6);
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   (*functionPointerArrayEXTERNAL[4])();
 #else
