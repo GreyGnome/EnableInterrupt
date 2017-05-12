@@ -2,7 +2,7 @@
 #ifdef EI_SECTION_ENABLEEXTERNAL
 switch (arduinoPin) {
 #ifndef EI_NOTINT0
-  case 10 : // INT0
+  case ARDUINO_PIN_D2 : // INT0
     EIMSK &= ~_BV(0);
 #ifndef NEEDFORSPEED
     functionPointerArrayEXTERNAL[0] = userFunction;
@@ -14,7 +14,7 @@ switch (arduinoPin) {
     break;
 #endif
 #ifndef EI_NOTINT1
-  case 11 : // INT1
+  case ARDUINO_PIN_D3 : // INT1
     EIMSK &= ~_BV(1);
 #ifndef NEEDFORSPEED
     functionPointerArrayEXTERNAL[1] = userFunction;
@@ -26,7 +26,7 @@ switch (arduinoPin) {
     break;
 #endif
 #ifndef EI_NOTINT2
-  case 2 : // INT2
+  case ARDUINO_PIN_B2 : // INT2
     EIMSK &= ~_BV(2);
 #ifndef NEEDFORSPEED
     functionPointerArrayEXTERNAL[2] = userFunction;
