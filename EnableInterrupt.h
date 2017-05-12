@@ -19,7 +19,7 @@
 // Many definitions in /usr/avr/include/avr/io.h
 
 #ifndef EnableInterrupt_h
-#pragma message("NOTICE: *** EnableInterrupt library PRIOR TO version 0.9.6. This is not a problem. Keep calm, and carry on. ***")
+#pragma message("NOTICE: *** EnableInterrupt library PRIOR TO version 0.9.8. This is not a problem. Keep calm, and carry on. ***")
 #define EnableInterrupt_h
 #include <Arduino.h>
 
@@ -37,7 +37,7 @@
 // Arduino Due (not Duemilanove) and Zero macros. Easy-peasy.
 // Zero uses the __SAMD21G18A__ processor macro (2015-10-13) but we will use this handy macro, to
 // avoid breaking the library over tiny changes.
-#if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__ || defined __SAMD21G18A__ || defined ARDUINO_SAMD_ZERO/*{{{*/
+#if defined __SAM3U4E__ || defined __SAM3X8E__ || defined __SAM3X8H__ || defined ARDUINO_SAMD_ZERO/*{{{*/
 #ifdef NEEDFORSPEED
 #error Due and Zero are already fast; the NEEDFORSPEED definition does not make sense on it.
 #endif
@@ -662,14 +662,6 @@ static volatile uint8_t portSnapshotB;
 #define ARDUINO_PIN_A5 29
 #define ARDUINO_PIN_A6 30
 #define ARDUINO_PIN_A7 31
-#define ARDUINO_PIN_B0 0
-#define ARDUINO_PIN_B1 1
-#define ARDUINO_PIN_B2 2
-#define ARDUINO_PIN_B3 3
-#define ARDUINO_PIN_B4 4
-#define ARDUINO_PIN_B5 5
-#define ARDUINO_PIN_B6 6
-#define ARDUINO_PIN_B7 7
 #define ARDUINO_PIN_C0 16
 #define ARDUINO_PIN_C1 17
 #define ARDUINO_PIN_C2 18
@@ -678,25 +670,9 @@ static volatile uint8_t portSnapshotB;
 #define ARDUINO_PIN_C5 21
 #define ARDUINO_PIN_C6 22
 #define ARDUINO_PIN_C7 23
-#define ARDUINO_PIN_D0 8
-#define ARDUINO_PIN_D1 9
-#define ARDUINO_PIN_D2 10
-#define ARDUINO_PIN_D3 11
-#define ARDUINO_PIN_D4 12
-#define ARDUINO_PIN_D5 13
-#define ARDUINO_PIN_D6 14
-#define ARDUINO_PIN_D7 15
 
 // For boards with the 44 pin options:  vectors B & D are reversed
 #if defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI
-#define ARDUINO_PIN_D0 0
-#define ARDUINO_PIN_D1 1
-#define ARDUINO_PIN_D2 2
-#define ARDUINO_PIN_D3 3
-#define ARDUINO_PIN_D4 4
-#define ARDUINO_PIN_D5 5
-#define ARDUINO_PIN_D6 6
-#define ARDUINO_PIN_D7 7
 #define ARDUINO_PIN_B0 8
 #define ARDUINO_PIN_B1 9
 #define ARDUINO_PIN_B2 10
@@ -705,6 +681,31 @@ static volatile uint8_t portSnapshotB;
 #define ARDUINO_PIN_B5 13
 #define ARDUINO_PIN_B6 14
 #define ARDUINO_PIN_B7 15
+#define ARDUINO_PIN_D0 0
+#define ARDUINO_PIN_D1 1
+#define ARDUINO_PIN_D2 2
+#define ARDUINO_PIN_D3 3
+#define ARDUINO_PIN_D4 4
+#define ARDUINO_PIN_D5 5
+#define ARDUINO_PIN_D6 6
+#define ARDUINO_PIN_D7 7
+#else
+#define ARDUINO_PIN_B0 0
+#define ARDUINO_PIN_B1 1
+#define ARDUINO_PIN_B2 2
+#define ARDUINO_PIN_B3 3
+#define ARDUINO_PIN_B4 4
+#define ARDUINO_PIN_B5 5
+#define ARDUINO_PIN_B6 6
+#define ARDUINO_PIN_B7 7
+#define ARDUINO_PIN_D0 8
+#define ARDUINO_PIN_D1 9
+#define ARDUINO_PIN_D2 10
+#define ARDUINO_PIN_D3 11
+#define ARDUINO_PIN_D4 12
+#define ARDUINO_PIN_D5 13
+#define ARDUINO_PIN_D6 14
+#define ARDUINO_PIN_D7 15
 #endif
 
 const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
@@ -1037,7 +1038,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 /*{{{*/
 #if defined ARDUINO_328
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
-#elif defined MIGHTY1284 && (defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI)
+#elif defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 10 && arduinoPin != 2 &&
                                                       arduinoPin != 3) ) {
 #elif defined MIGHTY1284
@@ -1212,7 +1213,7 @@ void disableInterrupt (uint8_t interruptDesignator) {
 /*{{{*/
 #if defined ARDUINO_328
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
-#elif defined MIGHTY1284 && (defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI)
+#elif defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 10 && arduinoPin != 2 &&
                                                       arduinoPin != 3) ) {
 #elif defined MIGHTY1284
