@@ -1038,12 +1038,9 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
 /*{{{*/
 #if defined ARDUINO_328
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
-#elif defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI
-  if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 10 && arduinoPin != 2 &&
-                                                      arduinoPin != 3) ) {
 #elif defined MIGHTY1284
-  if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 10 &&
-                                                      arduinoPin != 11) ) {
+  if ( (interruptDesignator & PINCHANGEINTERRUPT) ||
+     (arduinoPin != ARDUINO_PIN_B2 && arduinoPin != ARDUINO_PIN_D2 && arduinoPin != ARDUINO_PIN_D3) ) {
 #elif defined ARDUINO_LEONARDO
   if ( (arduinoPin > 3) && (arduinoPin != 7) ) {
 #elif defined EI_ATTINY24
@@ -1213,12 +1210,9 @@ void disableInterrupt (uint8_t interruptDesignator) {
 /*{{{*/
 #if defined ARDUINO_328
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 3) ) {
-#elif defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI
-  if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 10 && arduinoPin != 2 &&
-                                                      arduinoPin != 3) ) {
 #elif defined MIGHTY1284
-  if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 2 && arduinoPin != 10 &&
-                                                      arduinoPin != 11) ) {
+if ( (interruptDesignator & PINCHANGEINTERRUPT) ||
+   (arduinoPin != ARDUINO_PIN_B2 && arduinoPin != ARDUINO_PIN_D2 && arduinoPin != ARDUINO_PIN_D3) ) {
 #elif defined EI_ATTINY24
   if ( (interruptDesignator & PINCHANGEINTERRUPT) || (arduinoPin != 8) ) {
 #elif defined EI_ATTINY25
