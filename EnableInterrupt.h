@@ -675,7 +675,7 @@ static volatile uint8_t portSnapshotB;
 #if defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI
 #define ARDUINO_PIN_B0 8
 #define ARDUINO_PIN_B1 9
-#define ARDUINO_PIN_B2 10
+#define ARDUINO_PIN_B2 10  // INT2
 #define ARDUINO_PIN_B3 11
 #define ARDUINO_PIN_B4 12
 #define ARDUINO_PIN_B5 13
@@ -683,8 +683,8 @@ static volatile uint8_t portSnapshotB;
 #define ARDUINO_PIN_B7 15
 #define ARDUINO_PIN_D0 0
 #define ARDUINO_PIN_D1 1
-#define ARDUINO_PIN_D2 2
-#define ARDUINO_PIN_D3 3
+#define ARDUINO_PIN_D2 2  // INT0
+#define ARDUINO_PIN_D3 3  // INT1
 #define ARDUINO_PIN_D4 4
 #define ARDUINO_PIN_D5 5
 #define ARDUINO_PIN_D6 6
@@ -692,7 +692,7 @@ static volatile uint8_t portSnapshotB;
 #else
 #define ARDUINO_PIN_B0 0
 #define ARDUINO_PIN_B1 1
-#define ARDUINO_PIN_B2 2
+#define ARDUINO_PIN_B2 2  // INT2
 #define ARDUINO_PIN_B3 3
 #define ARDUINO_PIN_B4 4
 #define ARDUINO_PIN_B5 5
@@ -700,8 +700,8 @@ static volatile uint8_t portSnapshotB;
 #define ARDUINO_PIN_B7 7
 #define ARDUINO_PIN_D0 8
 #define ARDUINO_PIN_D1 9
-#define ARDUINO_PIN_D2 10
-#define ARDUINO_PIN_D3 11
+#define ARDUINO_PIN_D2 10  // INT0
+#define ARDUINO_PIN_D3 11  // INT1
 #define ARDUINO_PIN_D4 12
 #define ARDUINO_PIN_D5 13
 #define ARDUINO_PIN_D6 14
@@ -1325,7 +1325,9 @@ ISR(INT0_vect) {/*{{{*/
   externalFunctionPointer();
 #endif
 #else
-#if defined MIGHTY1284
+#if defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI
+  INTERRUPT_FLAG_PIN2++;
+#elif defined MIGHTY1284
   INTERRUPT_FLAG_PIN10++;
 #endif
 #if defined ARDUINO_MEGA
@@ -1376,7 +1378,9 @@ ISR(INT1_vect) {/*{{{*/
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   (*functionPointerArrayEXTERNAL[1])();
 #else
-#if defined MIGHTY1284
+#if defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI
+  INTERRUPT_FLAG_PIN3++;
+#elif defined MIGHTY1284
   INTERRUPT_FLAG_PIN11++;
 #endif
 #if defined ARDUINO_MEGA
@@ -1414,7 +1418,9 @@ ISR(INT2_vect) {/*{{{*/
 #endif // EI_ARDUINO_INTERRUPTED_PIN
   (*functionPointerArrayEXTERNAL[2])();
 #else
-#if defined MIGHTY1284
+#if defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI
+  INTERRUPT_FLAG_PIN10++;
+#elif defined MIGHTY1284
   INTERRUPT_FLAG_PIN2++;
 #endif
 #if defined ARDUINO_MEGA

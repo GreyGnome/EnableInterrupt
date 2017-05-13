@@ -23,7 +23,7 @@
 #ifdef INTERRUPT_FLAG_PIN7
   if (interruptMask & _BV(7)) INTERRUPT_FLAG_PIN7++;
 #endif
-#else if defined MIGHTY1284
+#elif defined MIGHTY1284
 #if defined INTERRUPT_FLAG_PIN8
   if (interruptMask & _BV(0)) INTERRUPT_FLAG_PIN8++;
 #endif
