@@ -19,7 +19,7 @@
 // Many definitions in /usr/avr/include/avr/io.h
 
 #ifndef EnableInterrupt_h
-#pragma message("NOTICE: *** EnableInterrupt library PRIOR TO version 0.9.6. This is not a problem. Keep calm, and carry on. ***")
+#pragma message("NOTICE: *** EnableInterrupt library version 0.9.6. This is not a problem. Keep calm, and carry on. ***")
 #define EnableInterrupt_h
 #include <Arduino.h>
 
@@ -1305,7 +1305,7 @@ ISR(INT0_vect) {/*{{{*/
 #endif
 #else
 #if defined MIGHTY1284
-  INTERRUPT_FLAG_PIN10++ 
+  INTERRUPT_FLAG_PIN10++;
 #endif
 #if defined ARDUINO_MEGA
 #ifdef INTERRUPT_FLAG_PIN21
@@ -1356,7 +1356,7 @@ ISR(INT1_vect) {/*{{{*/
   (*functionPointerArrayEXTERNAL[1])();
 #else
 #if defined MIGHTY1284
-  INTERRUPT_FLAG_PIN11++ 
+  INTERRUPT_FLAG_PIN11++;
 #endif
 #if defined ARDUINO_MEGA
 #ifdef INTERRUPT_FLAG_PIN20
@@ -1394,7 +1394,7 @@ ISR(INT2_vect) {/*{{{*/
   (*functionPointerArrayEXTERNAL[2])();
 #else
 #if defined MIGHTY1284
-  INTERRUPT_FLAG_PIN2++ 
+  INTERRUPT_FLAG_PIN2++;
 #endif
 #if defined ARDUINO_MEGA
 #ifdef INTERRUPT_FLAG_PIN19
