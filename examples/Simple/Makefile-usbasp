@@ -15,7 +15,7 @@
 ## Arduino Make file. Refer to https://github.com/sudar/Arduino-Makefile
 #
 
-ARDUINO_DIR = /home/schwager/bin/arduino-1.6.4
+ARDUINO_DIR = /home/schwager/bin/arduino-1.8.4
 BOARD_SUB = atmega1284p
 CFLAGS_STD = -g -I /home/schwager/sketchbook/hardware/mighty-1284p-master/variants/standard
 CXXFLAGS_STD = -g -I /home/schwager/sketchbook/hardware/mighty-1284p-master/variants/standard

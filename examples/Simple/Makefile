@@ -1,5 +1,13 @@
 ## Arduino Makefile, see https://github.com/sudar/Arduino-Makefile (it's awesome!)
-BOARD_TAG    = atmega328
+#ARDUINO_DIR = /home/schwager/bin/arduino-1.6.8
+ARDUINO_DIR = /home/schwager/bin/arduino-1.8.4
+#ARDMK_DIR = /home/schwager/Projects/Arduino/libraries/EnableInterrupt/examples/Simple
+ARDMK_DIR = /usr/share/arduino
+#AVR_TOOLS_DIR = /home/schwager/bin/arduino-1.6.8/hardware/tools/avr
+AVR_TOOLS_DIR = /home/schwager/bin/arduino-1.8.4/hardware/tools/avr
+
+BOARD_TAG    = pro
+BOARD_SUB    = 16MHzatmega328
 ARDUINO_PORT = /dev/ttyUSB0
 ##BOARD_TAG    = 2560
 ##ARDUINO_PORT = /dev/ttyACM0
