@@ -2,7 +2,7 @@
 #ifdef EI_SECTION_ENABLEEXTERNAL
 switch (arduinoPin) {
 #ifndef EI_NOTINT0
-  case 10 : // INT0
+  case ARDUINO_PIN_D2 : // INT0  (Either 2 or 10)
     EIMSK &= ~_BV(0);
 #ifndef NEEDFORSPEED
     functionPointerArrayEXTERNAL[0] = userFunction;
@@ -14,7 +14,7 @@ switch (arduinoPin) {
     break;
 #endif
 #ifndef EI_NOTINT1
-  case 11 : // INT1
+  case ARDUINO_PIN_D3 : // INT1  (Either 3 or 11)
     EIMSK &= ~_BV(1);
 #ifndef NEEDFORSPEED
     functionPointerArrayEXTERNAL[1] = userFunction;
@@ -26,7 +26,7 @@ switch (arduinoPin) {
     break;
 #endif
 #ifndef EI_NOTINT2
-  case 2 : // INT2
+  case ARDUINO_PIN_B2 : // INT2  (Either 10 or 2)
     EIMSK &= ~_BV(2);
 #ifndef NEEDFORSPEED
     functionPointerArrayEXTERNAL[2] = userFunction;
@@ -42,21 +42,21 @@ switch (arduinoPin) {
 
 #ifdef EI_SECTION_DISABLEEXTERNAL
 #ifndef EI_NOTINT0
-if (arduinoPin == 10) {
+if (arduinoPin == ARDUINO_PIN_D2) {  // INT0  (Either 2 or 10)
   EIMSK &= ~_BV(0);
   EICRA &= (~_BV(0) & ~_BV(1));
   EIFR  |= _BV(0); // using a clue from the ATmega2560 datasheet.
 }
 #endif
 #ifndef EI_NOTINT1
-if (arduinoPin == 11) {
+if (arduinoPin == ARDUINO_PIN_D3) {  // INT1  (Either 3 or 11)
   EIMSK &= ~_BV(1);
   EICRA &= (~_BV(2) & ~_BV(3));
   EIFR  |= _BV(1); // using a clue from the ATmega2560 datasheet.
 }
 #endif
 #ifndef EI_NOTINT2
-if (arduinoPin == 2) {
+if (arduinoPin == ARDUINO_PIN_B2) {  // INT2  (Either 10 or 2)
   EIMSK &= ~_BV(2);
   EICRA &= (~_BV(4) & ~_BV(5));
   EIFR  |= _BV(2); // using a clue from the ATmega2560 datasheet.

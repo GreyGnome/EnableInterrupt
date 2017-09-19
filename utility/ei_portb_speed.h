@@ -1,4 +1,29 @@
-#if defined MIGHTY1284
+#if defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI
+#if defined INTERRUPT_FLAG_PIN8
+  if (interruptMask & _BV(0)) INTERRUPT_FLAG_PIN8++;
+#endif
+#if defined INTERRUPT_FLAG_PIN9
+  if (interruptMask & _BV(1)) INTERRUPT_FLAG_PIN9++;
+#endif
+#if defined INTERRUPT_FLAG_PIN10
+  if (interruptMask & _BV(2)) INTERRUPT_FLAG_PIN10++;
+#endif
+#if defined INTERRUPT_FLAG_PIN11
+  if (interruptMask & _BV(3)) INTERRUPT_FLAG_PIN11++;
+#endif
+#if defined INTERRUPT_FLAG_PIN12
+  if (interruptMask & _BV(4)) INTERRUPT_FLAG_PIN12++;
+#endif
+#if defined INTERRUPT_FLAG_PIN13
+  if (interruptMask & _BV(5)) INTERRUPT_FLAG_PIN13++;
+#endif
+#if defined INTERRUPT_FLAG_PIN14
+  if (interruptMask & _BV(6)) INTERRUPT_FLAG_PIN14++;
+#endif
+#if defined INTERRUPT_FLAG_PIN15
+  if (interruptMask & _BV(7)) INTERRUPT_FLAG_PIN15++;
+#endif
+#elif defined MIGHTY1284
 #ifdef INTERRUPT_FLAG_PIN0
   if (interruptMask & _BV(0)) INTERRUPT_FLAG_PIN0++;
 #endif
