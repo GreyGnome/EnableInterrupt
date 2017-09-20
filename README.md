@@ -6,9 +6,12 @@ Functions:
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 
-*_What's New?_ Wed Apr 27 18:07:02 CDT 2016 Version 0.9.5 of the library has been released. Added the arduinoPinState variable, which is available when EI_INTERRUPTED_PIN is defined. Added support for platformio http://platformio.org/ (thanks dorkusprime!).
-
-IMPORTANT NOTE: In 0.9.2 I discovered a rather pernicious bug, wherein the library was setting the global interrupt enable bit. This could cause a serious and difficult-to-debug race condition, as it is not the job of the library to manage that bit. The chips come with interrupts enabled so existing code should not be affected, but if you were relying on that behavior note that it has changed. My thanks to http://gammon.com.au/interrupts (the 'How are interrupts queued?' section).
+*_What's New?_ Tue Sep 19 18:02:21 CDT 2017 Version 0.9.8 of the library has been released.
+There were a number of outstanding pull requests that were merged into the library. Thanks
+to Loranzo Cafaro for his switch debounce example, to Jevon Wild for his changes to make the
+library more functional with PlatformIO (http://docs.platformio.org/en/latest/what-is-platformio.html),
+Ricardo JL Rufino for some PlatformIO fixes to the library.json file, and Sara Damiano for
+adding support for the Sodaq Mbili and EnviroDIY Mayfly.
 
 The EnableInterrupt library is an Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
@@ -39,18 +42,7 @@ For a tutorial on interrupts, see
 http://www.engblaze.com/we-interrupt-this-program-to-bring-you-a-tutorial-on-arduino-interrupts/
 The posting gets into low-level details on interrupts.
 
-**NOTICE** Many of the interrupt pins on the ATmega processor used in the Uno,
-Leonardo, ATmega2560, and ATmega644/1284p are "Pin Change Interrupt pins". This means
-that under the sheets, the pins *only* trigger on CHANGE, and a number of pins share a
-single interrupt subroutine. The library enables these interrupt types to appear
-normal, so that each pin can support RISING, FALLING, or CHANGE, and each pin
-can support its own user-defined interrupt subroutine. But there is a *significant*
-time between when the interrupt triggers and when the pins are read to determine
-what actually happened (rising or falling) and which pin changed. Therefore, these
-pins are *not* suitable for fast changing signals, and under the right conditions
-such events as a bouncing switch may actually be missed. Caveat Programmer.
-If you're concerned about this, continue to read the following information and
-make sure to read the wiki pages; especially see https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#atmega-processor-interrupt-types .
+IMPORTANT NOTE: In 0.9.2 I discovered a rather pernicious bug, wherein the library was setting the global interrupt enable bit. This could cause a serious and difficult-to-debug race condition, as it is not the job of the library to manage that bit. The chips come with interrupts enabled so existing code should not be affected, but if you were relying on that behavior note that it has changed. My thanks to http://gammon.com.au/interrupts (the 'How are interrupts queued?' section).
 
 ## ATmega Processor Interrupt Types
 Note that the ATmega processor at the heart of the Arduino Uno/Mega2560/Leonardo/ATmega1284
@@ -78,25 +70,38 @@ interrupt pins. On the Leonardo there are 7 pin change interrupt pins in additio
 to the 5 external interrupt pins. See PIN BESTIARY below for the pin numbers and
 other details.
 
-Pin Change interrupts trigger on all RISING and FALLING signal edges.
+Pin Change interrupts trigger on all RISING and FALLING (ie, "CHANGE") signal edges.
 Furthermore, the processor's pins, and pin change interrupts, are grouped into
 “port”s, so for example on the Arduino Uno there are three ports and therefore
 only 3 interrupt vectors (subroutines) available for the entire body of 20 pin
 change interrupt pins.
 
 ### The Library and Pin Change Interrupts
+The foregoing means that not only do pin change interrupts trigger on 
+all pin transitions, but a number of pins share a
+single interrupt subroutine. It's the library's function to make pin change interrupts
+appear that each pin can support RISING, FALLING, or CHANGE, and each pin
+can support its own user-defined interrupt subroutine.
+
 When an event triggers an interrupt on any interrupt-enabled pin on a port, a
-subroutine attached to that pin's port is triggered. It is up to the interrupt
+library subroutine ("interrupt handler", "interrupt service routine", or "ISR")
+attached to that pin's port is triggered. It is up to the EnableInterrupt
 library to set the proper port to receive interrupts for a pin, to determine
 what happened when an interrupt is triggered (which pin? ...did the signal rise,
 or fall?), to handle it properly (Did we care if the signal fell? Did we care
-if it rose?), then to call the programmer's chosen subroutine. This makes the
+if it rose?), then to call the programmer's chosen subroutine (ISR). This makes the
 job of resolving the action on a single pin somewhat complicated. There is a
-modest slowdown in the interrupt routine because of this complication. Perhaps
-more importantly, there is some latency between the interrupt and the system
-determining exactly which pin and what change caused it. So the signal could
-have changed by the time the pin's status is read, returning a false reading
-back to your sketch. For a review of this issue see
+definitive slowdown in the interrupt routine because of this complication.
+So there is a significant*
+time between when the interrupt triggers and when the pins are read to determine
+what actually happened (rising or falling) and which pin changed.
+So the signal could have changed by the time the pin's status is read, returning
+a false reading back to your sketch. Therefore, these
+pins are *not* suitable for fast changing signals, and under the right conditions
+such events as a bouncing switch may actually be missed. Caveat Programmer.
+If you're concerned about this, continue to read the following information and
+make sure to read the wiki pages; especially see https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#atmega-processor-interrupt-types .
+For a further review of this issue see
 https://github.com/GreyGnome/EnableInterrupt/blob/master/Interrupt%20Timing.pdf
 
 # USAGE:
@@ -319,3 +324,67 @@ Pin     Interrupt               Pin*  PORT PCINT ATmega644/1284 pin    Pin*  POR
                                                                     25/A1    PA1   1        39
                                                                     24/A0    PA0   0        40
 </pre>
+# Thanks!
+Thank you for downloading and enjoying the EnableInterrupt library.
+I hope you find it useful. This software would not be nearly as useful as it is
+without the help of the following people:
+
+Thanks to Loranzo Cafaro for his switch debounce example, to Jevon Wild for his changes to make the
+library more functional with PlatformIO (http://docs.platformio.org/en/latest/what-is-platformio.html),
+Ricardo JL Rufino for some PlatformIO fixes to the library.json file, and Sara Damiano for
+adding support for the Sodaq Mbili and EnviroDIY Mayfly.
+
+And, from the past, this library's predecessor was the PinChangeInt library.
+I have done a complete rewrite and not used any of its code, but I learned
+a lot by doing the previous one and I feel like I still owe a debt of gratitude
+to all the geeks who created/contributed/helped/debugged. So without further
+ado, I present the "ACKNOWLEDGEMENTS" section from the previous library. Note
+that "this" library refers to PinChangeInt:
+
+> This library was originally written by Chris J. Kiick, Robot builder and all
+around geek, who said of it,
+>        "Hi, Yeah, I wrote the original PCint library. It was a bit of a hack
+        and the new one has better features.  I intended the code to be freely
+        usable.  Didn't really think about a license.  Feel free to use it in
+        your code: I hereby grant you permission."
+> Thanks, Chris! A hack? I dare say not, if I have taken this any further it's
+merely by standing on the shoulders of giants. This library was the best
+"tutorial" I found on Arduino Pin Change Interrupts and because of that I
+decided to continue to maintain and (hopefully) improve it. We, the Arduino
+community of robot builders and geeks, owe you a great debt of gratitude for
+your hack- a hack in the finest sense.
+
+> The library was then picked up by Lex Talionis, who created the Google Code
+website. We all owe a debt of thanks to Lex, too, for all his hard work! He is
+currently the other official maintainer of this code.
+
+> Many thanks to all the contributors who have contributed bug fixes, code, and
+suggestions to this project: 
+
+> John Boiles and Baziki (who added fixes to PcInt), Maurice Beelen, nms277,
+Akesson Karlpetter, and Orly Andico for various fixes to this code, Rob Tillaart
+for some excellent code reviews and nice optimizations, Andre' Franken for a
+good bug report that kept me thinking, cserveny.tamas a special shout out for
+providing the MEGA code to PinChangeInt, and Pat O'Brien for testing and
+reporting on the Arduino Yun.- Thanks!
+
+> A HUGE thanks to JRHelbert for fixing the PJ0 and PJ1 interrupt PCMSK1 issue on
+the Mega... 06/2014
+
+> A HUGE thanks to Jan Baeyens ("jantje"), who has graciously DONATED an Arduino
+Mega ADK to the PinChangeInt project!!! Wow, thanks Jan! This makes the
+2560-based Arduino Mega a first class supported platform- I will be able to test
+it and verify that it works.
+
+> Finally, a shout out to Leonard Bernstein. I was inspired by him
+(https://www.youtube.com/watch?feature=player_detailpage&v=R9g3Q-qvtss#t=1160)
+from a Ted talk by Itay Talgam. None of the contributors, myself included, has
+any interest in making money from this library and so I decided to free up the
+code as much as possible for any purpose.  ...But! You must give credit where
+credit is due (it's not only a nice idea, it's the law- as in, the license
+terms)!
+
+> "If you love something,  give it away."
+
+> f apologize if I have forgotten anyone here. Please let me know if so.
+
