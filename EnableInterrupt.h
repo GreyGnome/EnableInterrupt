@@ -672,6 +672,7 @@ static volatile uint8_t portSnapshotB;
 #define ARDUINO_PIN_C7 23
 
 // For boards with the 44 pin options:  vectors B & D are reversed
+// Thanks to Sara Damiano for these updates!!!
 #if defined ARDUINO_AVR_ENVIRODIY_MAYFLY || defined ARDUINO_AVR_SODAQ_MBILI
 #define ARDUINO_PIN_B0 8
 #define ARDUINO_PIN_B1 9
