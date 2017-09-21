@@ -17,8 +17,8 @@ The EnableInterrupt library is an Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
 boards, like the mini), Due, Zero, Leonardo (and other ATmega32u4-based boards, like the
 Micro), the Mega2560 (and other ATmega2560-based boards, like the MegaADK),
-and for non-Arduino chips: the 644/1284p (using the Mighty1284 for support files
-and pin numbering), ATtiny 44/84, and ATtiny 45/85 (using DA Mellis' support files).
+and for non-Arduino chips: the 644/1284p (Mighty1284, Sodaq Mbili and EnviroDIY Mayfly)
+ATtiny 44/84, and ATtiny 45/85 (using DA Mellis' support files).
 The library enables you to assign an interrupt to pins on your chip
 that support them, and presents a common interface to all supported chips. This
 means that on the Arduino Uno and Mega you don't give it an interrupt number, as per
@@ -186,7 +186,7 @@ Interrupt Type | Pins
 -------------- | --------------
 External       | 0-3 and 7
 Pin Change     | 8-11 and SCK, MOSI, MISO
-### Mighty 1284
+### Mighty 1284, Sodaq Mbili, EnviroDIY Mayfly
 Interrupt Type | Pins
 -------------- | --------------
 External       | 2 10 11
@@ -297,7 +297,7 @@ the library's code and thus is not supported by this library.  It is the same
 pin the Arduino uses to upload sketches, and it is connected to the FT232RL
 USB-to-Serial chip (ATmega16U2 on the R3).
 
-### Mighty 1284 Support
+### Mighty 1284, EnviroDIY Mayfly, Sodaq Mbili Support
 The ATmega 1284p shares pinout with the 644; the only difference is in memory
 size. We use the "Mighty 1284" platform as our model, because the needed files are
 mature and complete.
@@ -323,10 +323,37 @@ Pin     Interrupt               Pin*  PORT PCINT ATmega644/1284 pin    Pin*  POR
                                14     PD6  30        20             26/A2    PA2   2        38
                                                                     25/A1    PA1   1        39
                                                                     24/A0    PA0   0        40
+
+Mayfly                          Mayfly                                 Mayfly
+Mbili   External                Mbili                                  Mbili           
+Pin     Interrupt               Pin*  PORT PCINT ATmega644/1284 pin    Pin*  PORT PCINT ATmega644/1284 pin
+                Port            8     PB0   8         1                 7    PD7  31        21
+2       INT2    PB2             9     PB1   9         2                16    PC0  16        22
+10      INT1    PD2            10     PB2   2         3                17    PC1  17        23
+11      INT0    PD3            11     PB3  11         4                18    PC2  18        24
+                               12     PB4  12         5                19    PC3  19        25
+                               13     PB5  13         6                20    PC4  20        26
+                               14     PB6  14         7                21    PC5  21        27
+                               15     PB7  15         8                22    PC6  22        28
+                                0     PD0  24        14                23    PC7  23        29
+                                1     PD1  25        15             31/A7    PA7   7        33
+                                2     PD2  26        16             30/A6    PA6   6        34
+                                3     PD3  27        17             29/A5    PA5   5        35
+                                4     PD4  28        18             28/A4    PA4   4        36
+                                5     PD5  29        19             27/A3    PA3   3        37
+                                6     PD6  30        20             26/A2    PA2   2        38
+                                                                    25/A1    PA1   1        39
+                                                                    24/A0    PA0   0        40
+</pre>
 </pre>
 # Thanks!
 Thank you for downloading and enjoying the EnableInterrupt library.
-I hope you find it useful. This software would not be nearly as useful as it is
+I hope you find it useful. Heck, I wrote it for you- yeah, that's right- you.
+The Maker and/or Geek sitting before your project and trying to make little
+computers do fun stuff. It's not easy, and my hat goes off to you. I hope I've
+made stuff a little easier for you.
+
+This software would not be nearly as useful as it is
 without the help of the following people:
 
 Thanks to Loranzo Cafaro for his switch debounce example, to Jevon Wild for his changes to make the
@@ -339,7 +366,7 @@ I have done a complete rewrite and not used any of its code, but I learned
 a lot by doing the previous one and I feel like I still owe a debt of gratitude
 to all the geeks who created/contributed/helped/debugged. So without further
 ado, I present the "ACKNOWLEDGEMENTS" section from the previous library. Note
-that "this" library refers to PinChangeInt:
+that "this" library in the following refers to PinChangeInt:
 
 > This library was originally written by Chris J. Kiick, Robot builder and all
 around geek, who said of it,
@@ -386,5 +413,5 @@ terms)!
 
 > "If you love something,  give it away."
 
-> f apologize if I have forgotten anyone here. Please let me know if so.
+I apologize if I have forgotten anyone here. Please let me know if so.
 
