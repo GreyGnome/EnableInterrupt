@@ -297,7 +297,7 @@ the library's code and thus is not supported by this library.  It is the same
 pin the Arduino uses to upload sketches, and it is connected to the FT232RL
 USB-to-Serial chip (ATmega16U2 on the R3).
 
-### Mighty 1284, EnviroDIY Mayfly, Sodaq Mbili Support
+### Mighty 1284, Bobuino, EnviroDIY Mayfly, Sodaq Mbili Support
 The ATmega 1284p shares pinout with the 644; the only difference is in memory
 size. We use the "Mighty 1284" platform as our model, because the needed files are
 mature and complete.
@@ -323,6 +323,26 @@ Pin     Interrupt               Pin*  PORT PCINT ATmega644/1284 pin    Pin*  POR
                                14     PD6  30        20             26/A2    PA2   2        38
                                                                     25/A1    PA1   1        39
                                                                     24/A0    PA0   0        40
+
+Bobuino External                Bobuino                                Bobuino           
+Pin     Interrupt               Pin*  PORT PCINT ATmega644/1284 pin    Pin*  PORT PCINT ATmega644/1284 pin
+                Port            4     PB0   8         1                31    PD7  31        21
+2       INT2    PB2             5     PB1   9         2                22    PC0  16        22
+10      INT1    PD2             6     PB2   2         3                23    PC1  17        23
+11      INT0    PD3             7     PB3  11         4                24    PC2  18        24
+                               10     PB4  12         5                25    PC3  19        25
+                               11     PB5  13         6                26    PC4  20        26
+                               12     PB6  14         7                27    PC5  21        27
+                               13     PB7  15         8                28    PC6  22        28
+                                0     PD0  24        14                29    PC7  23        29
+                                1     PD1  25        15             14/A0    PA7   7        33
+                                2     PD2  26        16             15/A1    PA6   6        34
+                                3     PD3  27        17             16/A2    PA5   5        35
+                               30     PD4  28        18             17/A3    PA4   4        36
+                                8     PD5  29        19             18/A4    PA3   3        37
+                                9     PD6  30        20             19/A5    PA2   2        38
+                                                                    20/A6    PA1   1        39
+                                                                    21/A7    PA0   0        40
 
 Mayfly                          Mayfly                                 Mayfly
 Mbili   External                Mbili                                  Mbili           

@@ -654,6 +654,79 @@ static volatile uint8_t portSnapshotB;
 #endif
 
 #ifndef NEEDFORSPEED
+#if defined BOBUINO_PINOUT
+#define ARDUINO_PIN_A0 21
+#define ARDUINO_PIN_A1 20
+#define ARDUINO_PIN_A2 19
+#define ARDUINO_PIN_A3 18
+#define ARDUINO_PIN_A4 17
+#define ARDUINO_PIN_A5 16
+#define ARDUINO_PIN_A6 15
+#define ARDUINO_PIN_A7 14
+#define ARDUINO_PIN_B0 4
+#define ARDUINO_PIN_B1 5
+#define ARDUINO_PIN_B2 6  // INT2
+#define ARDUINO_PIN_B3 7
+#define ARDUINO_PIN_B4 10
+#define ARDUINO_PIN_B5 11
+#define ARDUINO_PIN_B6 12
+#define ARDUINO_PIN_B7 13
+#define ARDUINO_PIN_C0 22
+#define ARDUINO_PIN_C1 23
+#define ARDUINO_PIN_C2 24
+#define ARDUINO_PIN_C3 25
+#define ARDUINO_PIN_C4 26
+#define ARDUINO_PIN_C5 27
+#define ARDUINO_PIN_C6 28
+#define ARDUINO_PIN_C7 29
+#define ARDUINO_PIN_D0 0
+#define ARDUINO_PIN_D1 1
+#define ARDUINO_PIN_D2 2  // INT0
+#define ARDUINO_PIN_D3 3  // INT1
+#define ARDUINO_PIN_D4 30
+#define ARDUINO_PIN_D5 8
+#define ARDUINO_PIN_D6 9
+#define ARDUINO_PIN_D7 31
+
+const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
+  0, // PD0
+  1, // PD1
+  2, // PD2
+  3, // PD3
+  0, // PB0
+  1, // PB1
+  2, // PB2
+  3, // PB3
+  5, // PD5
+  6, // PD6
+
+  4, // PB4
+  5, // PB5
+  6, // PB6
+  7, // PB7
+  7, // PA7
+  6, // PA6
+  5, // PA5
+  4, // PA4
+  3, // PA3
+  2, // PA2
+
+  1, // PA1
+  0, // PA0
+  0, // PC0
+  1, // PC1
+  2, // PC2
+  3, // PC3
+  4, // PC4
+  5, // PC5
+  6, // PC6
+  7, // PC7
+
+  4, // PD4
+  7, // PD7
+};
+
+#else
 #define ARDUINO_PIN_A0 24
 #define ARDUINO_PIN_A1 25
 #define ARDUINO_PIN_A2 26
@@ -743,6 +816,7 @@ const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
   6,
   7
 };
+#endif
 
 
 #if ! defined(EI_NOTEXTERNAL) && ! defined(EI_NOTINT0) && ! defined(EI_NOTINT1) && ! defined(EI_NOTINT2)
