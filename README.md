@@ -6,12 +6,8 @@ Functions:
 enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 
-*_What's New?_ Tue Sep 19 18:02:21 CDT 2017 Version 0.9.8 of the library has been released.
-There were a number of outstanding pull requests that were merged into the library. Thanks
-to Loranzo Cafaro for his switch debounce example, to Jevon Wild for his changes to make the
-library more functional with PlatformIO (http://docs.platformio.org/en/latest/what-is-platformio.html),
-Ricardo JL Rufino for some PlatformIO fixes to the library.json file, and Sara Damiano for
-adding support for the Sodaq Mbili and EnviroDIY Mayfly.
+
+*_What's New?_ Fri Jun 22 06:49:57 CDT 2018 Version 1.0.0 of the library has been released. Alex Reinert contributed Bobuino support. Thanks, Alex! And at this point, I think it's long past due that we stick a non-beta sticker on this thing. Congratulations, EnableInterrupt- you are all grown up. Version 1.0.0 it is.
 
 The EnableInterrupt library is an Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based

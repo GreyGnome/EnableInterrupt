@@ -1,3 +1,15 @@
+Fri Jun 22 06:47:13 CDT 2018
+Version 1.0.0
+Alex Reinert contributed Bobuino support. Thanks, Alex!  And at this point, I think it's long past due that we stick a non-beta sticker on this thing. Congratulations, EnableInterrupt- you are all grown up. Version 1.0.0 it is.
+
+Tue Sep 19 18:02:21 CDT 2017
+Version 0.9.8.
+There were a number of outstanding pull requests that were merged into the library. Thanks
+to Loranzo Cafaro for his switch debounce example, to Jevon Wild for his changes to make the
+library more functional with PlatformIO (http://docs.platformio.org/en/latest/what-is-platformio.html),
+Ricardo JL Rufino for some PlatformIO fixes to the library.json file, and Sara Damiano for
+adding support for the Sodaq Mbili and EnviroDIY Mayfly.
+
 Wed Apr 27 18:07:02 CDT 2016
 Version 0.9.5 Added the arduinoPinState variable, which is available when EI_INTERRUPTED_PIN is defined. Added support for platformio http://platformio.org/ (thanks dorkusprime!).
 
