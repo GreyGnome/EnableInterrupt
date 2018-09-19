@@ -7,7 +7,9 @@ enableInterrupt- Enables interrupt on a selected Arduino pin.
 disableInterrupt - Disables interrupt on the selected Arduino pin.
 
 
-*_What's New?_ Fri Jun 22 06:49:57 CDT 2018 Version 1.0.0 of the library has been released. Alex Reinert contributed Bobuino support. Thanks, Alex! And at this point, I think it's long past due that we stick a non-beta sticker on this thing. Congratulations, EnableInterrupt- you are all grown up. Version 1.0.0 it is.
+*_What's New?_
+- Fri Jun 22 06:49:57 CDT 2018
+    - Version 1.0.0 of the library has been released. Alex Reinert contributed Bobuino support. Thanks, Alex! And at this point, I think it's long past due that we stick a non-beta sticker on this thing. Congratulations, EnableInterrupt- you are all grown up. Version 1.0.0 it is.
 
 The EnableInterrupt library is an Arduino interrupt library, designed for
 all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
@@ -73,7 +75,7 @@ only 3 interrupt vectors (subroutines) available for the entire body of 20 pin
 change interrupt pins.
 
 ### The Library and Pin Change Interrupts
-The foregoing means that not only do pin change interrupts trigger on 
+The foregoing means that not only do pin change interrupts trigger on
 all pin transitions, but a number of pins share a
 single interrupt subroutine. It's the library's function to make pin change interrupts
 appear that each pin can support RISING, FALLING, or CHANGE, and each pin
@@ -142,7 +144,7 @@ there's a twist: You can perform a bitwise "and" with the pin number and PINCHAN
 to specify that you want to use a Pin Change Interrupt type of interrupt on those pins that
 support both Pin Change and External Interrupts. Otherwise, the library will choose whatever
 interrupt type (External, or Pin Change) normally applies to that pin,
-with priority to External Interrupt. 
+with priority to External Interrupt.
 
 * The complexity is because of pins 2 and 3 on the ATmega328-based Arduinos, and pins 2, 10,
 and 11 on 1284-based boards. Those are the only pins on the processors supported by this
@@ -402,7 +404,7 @@ website. We all owe a debt of thanks to Lex, too, for all his hard work! He is
 currently the other official maintainer of this code.
 
 > Many thanks to all the contributors who have contributed bug fixes, code, and
-suggestions to this project: 
+suggestions to this project:
 
 > John Boiles and Baziki (who added fixes to PcInt), Maurice Beelen, nms277,
 Akesson Karlpetter, and Orly Andico for various fixes to this code, Rob Tillaart
@@ -430,4 +432,3 @@ terms)!
 > "If you love something,  give it away."
 
 I apologize if I have forgotten anyone here. Please let me know if so.
-
