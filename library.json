@@ -1,6 +1,6 @@
 {
   "name": "EnableInterrupt",
-  "version": "0.9.8",
+  "version": "1.0.0",
   "frameworks": "arduino",
   "platforms" : "atmelavr",
   "keywords": "interrupt, interrupts, pin, pins",
