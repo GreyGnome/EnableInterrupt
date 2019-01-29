@@ -1376,8 +1376,9 @@ void disableInterrupt (uint8_t interruptDesignator) {
 // External Interrupts
 // *************************************************************************************
 #ifndef EI_NOTEXTERNAL
+/*
 #ifndef EI_NOTINT0
-ISR(INT0_vect) {/*{{{*/
+ISR(INT0_vect) {
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
 #if defined MIGHTY1284
@@ -1433,12 +1434,12 @@ ISR(INT0_vect) {/*{{{*/
 #endif
 
 #endif // NEEDFORSPEED
-}/*}}}*/
+}
 #endif // EI_NOTINT0
 
 #if ! defined(EI_ATTINY24) && ! defined(EI_ATTINY25)
 #ifndef EI_NOTINT1
-ISR(INT1_vect) {/*{{{*/
+ISR(INT1_vect) {
 #ifndef NEEDFORSPEED
 #ifdef EI_ARDUINO_INTERRUPTED_PIN
 #if defined MIGHTY1284
@@ -1474,10 +1475,10 @@ ISR(INT1_vect) {/*{{{*/
 #endif
 #endif
 #endif // NEEDFORSPEED
-}/*}}}*/
+}
 #endif // EI_NOTINT1
 #endif
-
+*/
 #if defined ARDUINO_MEGA || defined ARDUINO_LEONARDO || defined MIGHTY1284
 #ifndef EI_NOTINT2
 ISR(INT2_vect) {/*{{{*/
