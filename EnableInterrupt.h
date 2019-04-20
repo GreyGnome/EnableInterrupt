@@ -82,7 +82,7 @@
  *
  * The interruptDesignator is required because on the ATmega328 processor pins 2 and 3 support
  * ''either'' pin change or * external interrupts. On 644/1284-based systems, pin change interrupts
- * are supported on all pins and external interruptsare supported on pins 2, 10, and 11.
+ * are supported on all pins and external interrupts are supported on pins 2, 10, and 11.
  * Otherwise, each pin only supports a single type of interrupt and the
  * PINCHANGEINTERRUPT scheme changes nothing. This means you can ignore this whole discussion
  * for ATmega2560- or ATmega32U4-based Arduinos. You can probably safely ignore it for
@@ -304,11 +304,10 @@ static volatile uint8_t portSnapshotD;
 #define PORTC_VECT PCINT1_vect
 #define PORTD_VECT PCINT2_vect/*}}}*/
 
-/* MEGA SERIES ************************************************************************/
-/* MEGA SERIES ************************************************************************/
-/* MEGA SERIES ************************************************************************/
-#elif defined __AVR_ATmega640__ || defined __AVR_ATmega2560__ || defined __AVR_ATmega1280__ || \
-  defined __AVR_ATmega1281__ || defined __AVR_ATmega2561__
+/* MEGA2560/1280/640 SERIES ************************************************************************/
+/* MEGA2560/1280/640 SERIES ************************************************************************/
+/* MEGA2560/1280/640 SERIES ************************************************************************/
+#elif defined __AVR_ATmega640__ || defined __AVR_ATmega2560__ || defined __AVR_ATmega1280__
 #define ARDUINO_MEGA /*{{{*/
 #define EI_NOTPORTA
 #define EI_NOTPORTC
@@ -527,6 +526,124 @@ static volatile uint8_t portSnapshotK;
 #define PORTB_VECT PCINT0_vect
 #define PORTJ_VECT PCINT1_vect
 #define PORTK_VECT PCINT2_vect
+/*}}}*/
+
+/* MEGA2561/1281 SERIES ************************************************************************/
+/* MEGA2561/1281 SERIES ************************************************************************/
+/* MEGA2561/1281 SERIES ************************************************************************/
+#elif defined __AVR_ATmega1281__ || defined __AVR_ATmega2561__
+#define ARDUINO_MEGA /*{{{*/
+#define EI_NOTPORTA
+#define EI_NOTPORTC
+#define EI_NOTPORTD
+#define EI_NOTPORTJ
+#define EI_NOTPORTK /*}}}*/
+
+#if defined EI_NOTPINCHANGE/*{{{*/
+#ifndef EI_NOTPORTB
+#define EI_NOTPORTB
+#endif
+#endif
+
+#ifndef NEEDFORSPEED
+// Pin change interrupts
+#define ARDUINO_PIN_B0 8
+#define ARDUINO_PIN_B1 9
+#define ARDUINO_PIN_B2 10
+#define ARDUINO_PIN_B3 11
+#define ARDUINO_PIN_B4 12
+#define ARDUINO_PIN_B5 13
+#define ARDUINO_PIN_B6 14
+#define ARDUINO_PIN_B7 15
+
+const uint8_t PROGMEM digital_pin_to_port_bit_number_PGM[] = {
+  0, // PE0  pin: 0
+  1, // PE1  pin: 1
+  2, // PE2  pin: 2
+  3, // PE3  pin: 3
+  4, // PE4  pin: 4
+  5, // PE5  pin: 5
+  6, // PE6  pin: 6
+  7, // PE7  pin: 7
+  0, // PB0  pin: 8
+  1, // PB1  pin: 9
+  2, // PB2  pin: 10
+  3, // PB3  pin: 11
+  4, // PB4  pin: 12
+  5, // PB5  pin: 13
+  6, // PB6  pin: 14
+  7, // PB7  pin: 15
+  3, // PG3  pin: 16
+  4, // PG4  pin: 17
+  0, // PD0  pin: 18
+  1, // PD1  pin: 19
+  2, // PD2  pin: 20
+  3, // PD3  pin: 21
+  4, // PD4  pin: 22
+  5, // PD5  pin: 23
+  6, // PD6  pin: 24
+  7, // PD7  pin: 25
+  0, // PG0  pin: 26
+  1, // PG1  pin: 27
+  0, // PC0  pin: 28
+  1, // PC1  pin: 29
+  2, // PC2  pin: 30
+  3, // PC3  pin: 31
+  4, // PC4  pin: 32
+  5, // PC5  pin: 33
+  6, // PC6  pin: 34
+  7, // PC7  pin: 35
+  2, // PG2  pin: 36
+  7, // PA7  pin: 37
+  6, // PA6  pin: 38
+  5, // PA5  pin: 39
+  4, // PA4  pin: 40
+  3, // PA3  pin: 41
+  2, // PA2  pin: 42
+  1, // PA1  pin: 43
+  0, // PA0  pin: 44
+  0, // PF0  pin: 45
+  1, // PF1  pin: 46
+  2, // PF2  pin: 47
+  3, // PF3  pin: 48
+  4, // PF4  pin: 49
+  5, // PF5  pin: 50
+  6, // PF6  pin: 51
+  7, // PF7  pin: 52
+  5  // PG5  pin: 53
+};
+
+#if ! defined(EI_NOTEXTERNAL) && ! defined(EI_NOTINT0) && ! defined(EI_NOTINT1) && ! defined(EI_NOTINT2) && ! defined(EI_NOTINT3) && ! defined(EI_NOTINT4) && ! defined(EI_NOTINT5) && ! defined(EI_NOTINT6) && ! defined(EI_NOTINT7)
+interruptFunctionType functionPointerArrayEXTERNAL[8];
+#endif
+
+#ifndef EI_NOTPORTB
+struct functionPointersPortB {
+  interruptFunctionType pinZero;
+  interruptFunctionType pinOne;
+  interruptFunctionType pinTwo;
+  interruptFunctionType pinThree;
+  interruptFunctionType pinFour;
+  interruptFunctionType pinFive;
+  interruptFunctionType pinSix;
+  interruptFunctionType pinSeven;
+};
+typedef struct functionPointersPortB functionPointersPortB;
+
+functionPointersPortB portBFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+#endif
+
+#endif // ifndef NEEDFORSPEED
+
+// For Pin Change Interrupts; since we're duplicating FALLING and RISING in software,
+// we have to know how we were defined.
+#ifndef EI_NOTPORTB
+volatile uint8_t risingPinsPORTB=0;
+volatile uint8_t fallingPinsPORTB=0;
+static volatile uint8_t portSnapshotB;
+#endif
+
+#define PORTB_VECT PCINT0_vect
 /*}}}*/
 
 /* LEONARDO ***************************************************************************/
@@ -1140,6 +1257,7 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
     }
 #elif defined ARDUINO_MEGA
+#if defined __AVR_ATmega640__ || defined __AVR_ATmega2560__ || defined __AVR_ATmega1280__
   // NOTE: PJ2-6 and PE6 & 7 are not exposed on the Arduino, but they are supported here
   // for software interrupts and support of non-Arduino platforms which expose more pins.
   // PJ2-6 are called pins 70-74, PE6 is pin 75, PE7 is pin 76.
@@ -1153,6 +1271,11 @@ void enableInterrupt(uint8_t interruptDesignator, interruptFunctionType userFunc
       portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
       portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
     }
+#elif defined __AVR_ATmega1281__ || defined __AVR_ATmega2561__
+  if (!(((arduinoPin >= 4) && (arduinoPin <= 7)) || ((arduinoPin >= 18) && (arduinoPin <=21)))) {
+      portMask=pgm_read_byte(&digital_pin_to_bit_mask_PGM[arduinoPin]);
+      portNumber=pgm_read_byte(&digital_pin_to_port_PGM[arduinoPin]);
+#endif
 #else
 #error Unsupported Arduino platform
 #endif

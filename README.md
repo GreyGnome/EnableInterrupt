@@ -295,6 +295,45 @@ the library's code and thus is not supported by this library.  It is the same
 pin the Arduino uses to upload sketches, and it is connected to the FT232RL
 USB-to-Serial chip (ATmega16U2 on the R3).
 
+### ATmega2561/1281 (MegaCore) Support
+
+<pre>
+External Interrupts ------------------------------------------------------------
+The following External Interrupts are available on the Arduino/MegaCore:
+MegaCore           
+  Pin  PORT INT  ATmega2561/1281 pin
+  18     PD0  0     25
+  19     PD1  1     26
+  20     PD2  2     27
+  21     PD3  3     28
+   4     PE4  4      6
+   5     PE5  5      7
+   6     PE6  6      8
+   7     PE7  7      9
+
+
+Pin Change Interrupts ----------------------------------------------------------
+
+ATMEGA2561/1281 (MegaCore) Pin Change Interrupts
+MegaCore
+ Pin      PORT   PCINT
+  8/SS     PB0     0
+  9/SCK    PB1     1
+  10/MOSI  PB2     2
+  11/MISO  PB3     3
+  12       PB4     4
+  13       PB5     5
+  14       PB6     6
+  15       PB7     7
+   0       PE0     8 - this one is a little odd. *
+</pre>
+
+* Note: Arduino Pin 0 is PE0 (PCINT8), which is RX0. Also, it is the only other
+pin on another port on PCI1. This would make it very costly to integrate with
+the library's code and thus is not supported by this library.  It is the same
+pin the Arduino uses to upload sketches, and it is connected to the FT232RL
+USB-to-Serial chip (ATmega16U2 on the R3).
+
 ### Mighty 1284, Bobuino, EnviroDIY Mayfly, Sodaq Mbili Support
 The ATmega 1284p shares pinout with the 644; the only difference is in memory
 size. We use the "Mighty 1284" platform as our model, because the needed files are
