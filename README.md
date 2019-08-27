@@ -52,11 +52,11 @@ PORT / PIN BESTIARY, below.
 There are a varying number of external interrupt pins on the different
 processors. The Uno supports only 2 and they are mapped to Arduino pins 2 and 3.
 The 2560 supports 6 usable, the Leonardo supports 5, and the ATmega1284p supports 3.
-These interrupts can be set to trigger on RISING, or FALLING, or both ("CHANGE")
-signal levels, or on LOW level. The triggers are interpreted by hardware, so by
-the time your user function is running, you know exactly which pin interrupted at
-the time of the event, and how it changed. On the other hand, as mentioned there
-are a limited number of these pins.
+These interrupts can be set to trigger on one of three signal values: RISING, 
+FALLING, or CHANGE (for both), or on LOW level. The triggers are interpreted by 
+hardware, so by the time your user function is running, you know exactly which 
+pin interrupted at the time of the event, and how it changed. On the other hand, 
+as mentioned there are a limited number of these pins.
 
 ### Pin Change Interrupts
 On the Arduino Uno (and again, all 328p-based boards) and 644/1284-based boards,
