@@ -19,7 +19,6 @@
 // Many definitions in /usr/avr/include/avr/io.h
 
 #ifndef EnableInterrupt_h
-// #pragma message("NOTICE: *** Using EnableInterrupt 1.0.0!***")
 #define EnableInterrupt_h
 #include <Arduino.h>
 

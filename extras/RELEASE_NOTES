@@ -1,3 +1,7 @@
+Wed Sep  4 19:30:45 CDT 2019
+Version 1.1.0
+We add support for the ATmega2561 and 1281 chips, with pinouts defined from the MCUdude/MegaCore project. Code donations by Kizmit99. Plus, a documentation bugfix from Greg Bowler. Thanks, folks!
+
 Fri Jun 22 06:47:13 CDT 2018
 Version 1.0.0
 Alex Reinert contributed Bobuino support. Thanks, Alex!  And at this point, I think it's long past due that we stick a non-beta sticker on this thing. Congratulations, EnableInterrupt- you are all grown up. Version 1.0.0 it is.

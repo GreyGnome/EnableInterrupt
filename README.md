@@ -8,11 +8,13 @@ disableInterrupt - Disables interrupt on the selected Arduino pin.
 
 
 *_What's New?_
-- Fri Jun 22 06:49:57 CDT 2018
-    - Version 1.0.0 of the library has been released. Alex Reinert contributed Bobuino support. Thanks, Alex! And at this point, I think it's long past due that we stick a non-beta sticker on this thing. Congratulations, EnableInterrupt- you are all grown up. Version 1.0.0 it is.
+- Wed Sep  4 19:30:45 CDT 2019
+    - Version 1.1.0 of the library has been released. We add support for the ATmega2561 and 1281 chips,
+with pinouts defined from the MCUdude/MegaCore project. Code donations by Kizmit99. Plus, a documentation
+bugfix from Greg Bowler. Thanks, folks!
 
 The EnableInterrupt library is an Arduino interrupt library, designed for
-all versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
+8-bit versions of the Arduino- at this writing, the Uno (and other ATmega328p-based
 boards, like the mini), Due, Zero, Leonardo (and other ATmega32u4-based boards, like the
 Micro), the Mega2560 (and other ATmega2560-based boards, like the MegaADK),
 and for non-Arduino chips: the 644/1284p (Mighty1284, Sodaq Mbili and EnviroDIY Mayfly)
@@ -23,6 +25,10 @@ means that on the Arduino Uno and Mega you don't give it an interrupt number, as
 http://arduino.cc/en/Reference/attachInterrupt. Rather, your first argument is a
 pin number of a pin that's supported on that chip (see
 https://github.com/GreyGnome/EnableInterrupt/wiki/Usage#pin--port-bestiary ).
+
+32-bit support for Due comes only in the form of a macro that enables your code
+to be shared unchanged between 32- and 8-bit Arduinos. No further support for
+32-bit Arduinos is planned.
 
 ## Download
 See the https://github.com/GreyGnome/EnableInterrupt/wiki/Download page to
@@ -459,6 +465,14 @@ the Mega... 06/2014
 Mega ADK to the PinChangeInt project!!! Wow, thanks Jan! This makes the
 2560-based Arduino Mega a first class supported platform- I will be able to test
 it and verify that it works.
+
+- In 2018, Alex Reinert contributed Bobuino support. Thanks, Alex!
+
+- In 4/2019 Kizmit99 contributed support for the ATmega2561 and 1281 chips, with
+pinouts defined from the MCUdude/MegaCore project. Thanks, Kizmit99!
+
+- In 8/2019 Greg Bowler helped suss out a documentation bug, and contributed
+a patch to make the README.md less confusing. Much appreciated.
 
 > Finally, a shout out to Leonard Bernstein. I was inspired by him
 (https://www.youtube.com/watch?feature=player_detailpage&v=R9g3Q-qvtss#t=1160)
