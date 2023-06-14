@@ -158,7 +158,7 @@ typedef void (*interruptFunctionType)(void);
 /* UNO SERIES *************************************************************************/
 /* UNO SERIES *************************************************************************/
 #if defined __AVR_ATmega168__ || defined __AVR_ATmega168A__ || defined __AVR_ATmega168P__ || \
-  defined __AVR_ATmega168PA__ || defined __AVR_ATmega328__ || defined __AVR_ATmega328P__
+  defined __AVR_ATmega168PA__ || defined __AVR_ATmega328__ || defined __AVR_ATmega328P__ || defined __AVR_ATmega328PB__
 #define ARDUINO_328 /*{{{*/
 #define EI_NOTPORTA
 #define EI_NOTPORTJ
